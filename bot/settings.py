@@ -83,25 +83,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bot.wsgi.application'
 
-
+CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']
 # Database
-'''
-DATABASES = {  
-    'default': {  
-        'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'bot',  
-        'USER': 'root',
-        'PASSWORD': 'dashboard@Root1332',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }  
-}  
-'''
+
 
 DATABASES = {
     'default': {
         'ENGINE': env('ENGINE'),
         'NAME': env('NAME'),
+        'USER': env('USER'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('HOST'),
+        'PORT': env('PORT'),
     }
 }
 

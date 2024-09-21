@@ -107,7 +107,7 @@ class Client(models.Model):
         if settings.DEBUG:
             return f'http://localhost:8000/api/?client={client_id_hash}'
         else:
-            return f'https://bottest.cmagnet-sa.com/api/?client={client_id_hash}'
+            return f'https://chatbot.icsl.me/api/?client={client_id_hash}'
         
     def __str__(self):
         return self.name

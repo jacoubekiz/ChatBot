@@ -22,18 +22,6 @@ class ClientsViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     queryset = Client.objects.all()
 
-
-# class ClientsAPI(generics.ListCreateAPIView):
-#     serializer_class = ClientSerializer
-#     queryset = Client.objects.all()
-
-
-# class ClientAPI(generics.RetrieveUpdateDestroyAPIView):
-#     serializer_class = ClientSerializer
-#     queryset = Client.objects.all()
-
-
-
 class BotAPI(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -51,13 +39,27 @@ class BotAPI(APIView):
             client = Client.objects.get(Q(id = client_id))
         except:
             pass
-        # print(client.flow)
-        flow = client.flow.get(trigger__trigger=request.data['content'])
+
+        try:
+            flow = client.flow.get(trigger__trigger=request.data['content'])
+            chats = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(flow = flow))
+            for c in chats:
+                c.update_state('end')
+                c.isSent = False
+                c.save()
+            # chate = Chat.objects.get(Q(conversation_id = source_id) & Q(client_id = client.id) & Q(flow = flow))
+
+            # chate.update_state('start')
+        except:
+            ch = Chat.objects.get(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(state = 'end'))
+            flow = ch.flow
+            
+        
         file_path = default_storage.path(flow.flow.name)
         chat_flow = read_json(file_path)
         if chat_flow and source_id:
-            
-            chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, client_id = client.id)
+            chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, client_id = client.id, flow=flow )
+            print(chat.state)
             questions = chat_flow['payload']['questions']
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 chat.update_state('start')
@@ -65,23 +67,17 @@ class BotAPI(APIView):
                 next_question_id = None
                 if chat.state == 'start':
                     lang = langid.classify(request.data['content'])
-                    # print(lang)
                     language = lang[0]
                     for ques in questions:
                         try:
                             ques_lang_type = ques['type_language']
-                            print(ques_lang_type)
-                            # print(ques_lang_type == language)
                         except:
                             ques_lang_type = ''
-                        print(ques_lang_type)
                         if ques_lang_type  == language:
                                 question = ques
                                 break
-
                 else:
                     for item in questions:
-
                         if item['id'] == chat.state:
                             question = item
                             break

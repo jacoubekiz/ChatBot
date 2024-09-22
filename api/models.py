@@ -121,6 +121,7 @@ class RestartKeyword(models.Model):
     
 class Chat(models.Model):
     client = models.ForeignKey(Client, null=True, blank=True, on_delete=models.CASCADE)
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, default=1)
     state = models.CharField(max_length=255, blank=True, null=True, default='start')
     conversation_id = models.CharField(max_length=255, blank=True, null=True)
     isSent = models.BooleanField(default=False, null=True, blank=True)

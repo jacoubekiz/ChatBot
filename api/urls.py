@@ -21,5 +21,7 @@ urlpatterns = [
 
     path('get-first-ten-days/', GetFirstTenDays.as_view(), name='get-first-ten-days'),
     path('get-doctors/', GetDoctorsView.as_view(), name='get-doctors'),
+
+    path('get-doctors-calander/<str:doctor_id>/', GetDoctorsCalanderView.as_view(), name='get-doctors-calander'),
 ]
 

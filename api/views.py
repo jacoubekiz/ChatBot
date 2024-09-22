@@ -47,9 +47,6 @@ class BotAPI(APIView):
                 c.update_state('end')
                 c.isSent = False
                 c.save()
-            # chate = Chat.objects.get(Q(conversation_id = source_id) & Q(client_id = client.id) & Q(flow = flow))
-
-            # chate.update_state('start')
         except:
             ch = Chat.objects.get(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(state = 'end'))
             flow = ch.flow
@@ -59,7 +56,6 @@ class BotAPI(APIView):
         chat_flow = read_json(file_path)
         if chat_flow and source_id:
             chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, client_id = client.id, flow=flow )
-            print(chat.state)
             questions = chat_flow['payload']['questions']
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 chat.update_state('start')
@@ -90,7 +86,6 @@ class BotAPI(APIView):
                         chat.save()
                         
                         if r_type == 'list':
-                            print('is the list?')
                             send_message(message_content=message,
                                         choices = choices,
                                         type='interactive', 
@@ -181,9 +176,7 @@ class BotAPI(APIView):
                     
                     else:
                         try:
-                            user_reply = request.data['content'] #If this raises an error then it means that the response has come from Beam not Whatsapp
-                            print('hello jjjjalllallalalalallalalalalallalalallalla')
-                        
+                            user_reply = request.data['content'] #If this raises an error then it means that the response has come from Beam not Whatsapp                        
                         except:
                             
                             try: #If this raises an error then this means that it is a beam user reply not normal beam text message reply
@@ -487,7 +480,6 @@ class GetCalenderView(GenericAPIView):
     def get(self, request, user_id):
         calendar = Calendar.objects.filter(user__id=user_id).all()
         serializer = CalenderSerializer(calendar, many=True)
-        print(timezone.now().day)
         book_an_appointment = BookAnAppointment.objects.filter(Q(user__id = user_id) & Q(day__day__gte=timezone.now().day))
         serializer_book = BookAnAppointmentSerializer(book_an_appointment, many=True)
         return Response({'calender':serializer.data, 'busy_tiem':serializer_book.data}, status=status.HTTP_200_OK)
@@ -661,3 +653,12 @@ class GetDoctorsView(APIView):
         data = serializer_user.data
 
         return Response({'username':data['username']}, status=status.HTTP_200_OK)
+    
+class GetDoctorsCalanderView(APIView):
+    def get(self, request, doctor_id):
+        user = CustomUser.objects.filter(id=doctor_id)
+        calander = user.calendar_set.all()
+        serializer_user = CalenderSerializer(calander, many=True)
+        data = serializer_user.data
+
+        return Response({'username':data['duration']}, status=status.HTTP_200_OK)

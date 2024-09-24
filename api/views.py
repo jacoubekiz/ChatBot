@@ -240,9 +240,7 @@ class BotAPI(APIView):
                         if type_url == 'post':
                             data = question['body']
                             for key, value in data.items():
-                                print(str(type(value)))
                                 if isinstance(value, (int, float)):
-                                    print('tlksjdlkfjsldfjasldfjlajl')
                                     continue
                                 data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
                             response = requests.post(url , headers=headers, json=data)
@@ -269,6 +267,8 @@ class BotAPI(APIView):
                                         return Response({"Message" : "BOT has interacted successfully."},
                                                                 status=status.HTTP_200_OK)
                         else:
+                            chat.isSent = False
+                            chat.save()
                             for option in choices_with_next:
                                 for state in option:
                                     if str(response.status_code) == str(state):
@@ -278,7 +278,6 @@ class BotAPI(APIView):
                         attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id)
                         attr.value = user_reply
                         attr.save()
-                        print(choices_with_next)
                         next_question_id = choices_with_next[1][2]
                         chat.isSent = False
                         chat.save()

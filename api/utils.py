@@ -123,7 +123,7 @@ def send_message(version = '18.0',
         if type == 'interactive':
 
             if interaction_type == 'list':
-                print("my name is list")
+                
                 sections = question['sections']
                 for section in sections:
                     # Rename 'options' to 'rows'
@@ -163,15 +163,18 @@ def send_message(version = '18.0',
                 rows = []
                 if len(choices) > 3:
                     title = "message_content"
-
                     for index, choice in enumerate(choices):
                         row = {
                             "id":f"unique-id-{index}",
                             "title":choice,
-                            "description":"",
+                            
                         }
                         rows.append(row)
+                        if index == 9:
+                            break
+                    print(rows)
                     sections = [{"title":title, "rows":rows}]
+                    
                     payload = json.dumps(
                         {
                             "messaging_product": f"{messaging_product}",

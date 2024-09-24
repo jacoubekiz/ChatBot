@@ -64,12 +64,15 @@ class BotAPI(APIView):
                 if chat.state == 'start':
                     lang = langid.classify(request.data['content'])
                     language = lang[0]
+                    # print(language)
                     for ques in questions:
                         try:
+                            print(ques['type_language'])
                             ques_lang_type = ques['type_language']
                         except:
                             ques_lang_type = ''
                         if ques_lang_type  == language:
+                                print('hello')
                                 question = ques
                                 break
                 else:
@@ -225,8 +228,60 @@ class BotAPI(APIView):
                 
                 # for handle api in flow
                 elif r_type == 'api':
-                    next_question_id = handle_api(question, choices_with_next)
-
+                    if not chat.isSent:
+                        chat.isSent = True
+                        chat.save()
+                        url = change_occurences(question['url'], pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                        type_url = question['type_url']
+                        headers = {
+                                'Content-Type': 'application/json',
+                            }
+                        
+                        if type_url == 'post':
+                            data = question['body']
+                            for key, value in data.items():
+                                print(str(type(value)))
+                                if isinstance(value, (int, float)):
+                                    print('tlksjdlkfjsldfjasldfjlajl')
+                                    continue
+                                data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                            response = requests.post(url , headers=headers, json=data)
+                        else:
+                            response = requests.get(url , headers=headers)
+                        result = response.json()
+                        if question['wait_for_response']:
+                            for option in choices_with_next:
+                                for state in option:
+                                    
+                                    if str(response.status_code) == str(state):
+                                        chat.update_state(question['id'])
+                                        send_message(message_content=message,
+                                            choices = next(iter(result.values())),
+                                            type='interactive',
+                                            interaction_type='button',
+                                            to=chat.conversation_id,
+                                            bearer_token=client.token,
+                                            wa_id=client.wa_id,
+                                            chat_id=chat.id,
+                                            platform=platform,
+                                            question=question
+                                        )
+                                        return Response({"Message" : "BOT has interacted successfully."},
+                                                                status=status.HTTP_200_OK)
+                        else:
+                            for option in choices_with_next:
+                                for state in option:
+                                    if str(response.status_code) == str(state):
+                                        next_question_id = option[2]
+                    else:
+                        user_reply = request.data['content']
+                        attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id)
+                        attr.value = user_reply
+                        attr.save()
+                        print(choices_with_next)
+                        next_question_id = choices_with_next[1][2]
+                        chat.isSent = False
+                        chat.save()
                 
                 elif r_type == 'name' or \
                     r_type == 'phone' or \
@@ -417,7 +472,7 @@ class BotAPI(APIView):
                                     )
                 
                 chat.update_state(next_question_id)
-                
+                print('=================================================')
                 if not next_question_id or next_question_id == 'end':
                 
                     return Response(
@@ -531,12 +586,12 @@ class GetHoursFree(GenericAPIView):
 
     def get(self, request):
         days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-        info = request.data
+        # info = request.data
         free_hours = []
-        day_number = days.index(get_day_name(info['date']))
+        day_number = days.index(get_day_name(request.GET.get('date')))
         if day_number == 0:
             day_number +=1
-        calendar = Calendar.objects.filter(key=info['key']).first()
+        calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
         working_time = calendar.working_time.get(day=day_number)
         start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
         start_work_pm = convert_time_to_timedelta(working_time.starting_time_pm)
@@ -545,7 +600,7 @@ class GetHoursFree(GenericAPIView):
         duration = calendar.duration.duration
         time_slots = []
 
-        user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=info['date'])).order_by('day', 'hour')
+        user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=request.GET.get('date'))).order_by('day', 'hour')
         if not user_book_an_appointment:
             free_hours.append((convert_timedelta_to_time(start_work_am), convert_timedelta_to_time(end_work_am)))
             free_hours.append((convert_timedelta_to_time(start_work_pm), convert_timedelta_to_time(end_work_pm)))
@@ -591,13 +646,13 @@ class GetFirstTenDays(APIView):
     def get(self, request):
         days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
         
-        info = request.data
+        # info = request.data
         free_hours = []
         free_days = []
-        if info['date'] == '':
+        if request.GET.get('date') == '':
             day = timezone.now().date()
         else:
-            day = datetime.datetime.strptime(info['date'], '%Y-%m-%d').date()
+            day = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
         next_days = []
         for d in range(10):
             next_days.append(day + timedelta(days=d))
@@ -607,15 +662,16 @@ class GetFirstTenDays(APIView):
                 day_number +=1
             if day_number == 6 or day_number == 5:
                 continue
-            calendar = Calendar.objects.filter(key=info['key']).first()
+            calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
             working_time = calendar.working_time.get(day=day_number)
+            print(working_time.starting_time_am)
             start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
             end_work_am = convert_time_to_timedelta(working_time.end_time_am)
             end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
             duration = calendar.duration.duration
             user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=next_day)).order_by('day', 'hour')
             if not user_book_an_appointment:
-                free_days.append((get_day_name(next_day), next_day))
+                free_days.append( next_day)
                 continue
             starting_appointment = []
             end_appointment = []
@@ -634,12 +690,12 @@ class GetFirstTenDays(APIView):
                 except:
                     next_appointment = starting_appointment[item]
                 if next_appointment-end_appointment[item] >= duration:
-                    free_days.append((get_day_name(next_day), next_day))
+                    free_days.append(next_day)
                     continue
 
             for free in free_hours:
                 if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
-                    free_days.append((get_day_name(next_day), next_day))
+                    free_days.append(next_day)
                     continue
    
             print(free_days)
@@ -656,9 +712,10 @@ class GetDoctorsView(APIView):
     
 class GetDoctorsCalanderView(APIView):
     def get(self, request, doctor_id):
-        user = CustomUser.objects.filter(id=doctor_id)
+        user = CustomUser.objects.get(id=doctor_id)
         calander = user.calendar_set.all()
-        serializer_user = CalenderSerializer(calander, many=True)
-        data = serializer_user.data
+        durations = []
+        for cal in calander:
+            durations.append(convert_timedelta_to_time(cal.duration.duration))
 
-        return Response({'username':data['duration']}, status=status.HTTP_200_OK)
+        return Response({'duration':durations}, status=status.HTTP_200_OK)

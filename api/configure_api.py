@@ -1,7 +1,12 @@
 import requests
+from rest_framework.response import Response
+from rest_framework import status
 from datetime import time, timedelta, datetime
-def handle_api(question, choices_with_next):
+
+def handle_api(question, choices_with_next, chat):
+
     url = question['url']
+    type_url = question['type_url']
     headers = {
             'Content-Type': 'application/json',
         }
@@ -13,13 +18,33 @@ def handle_api(question, choices_with_next):
         "nationality": "الهند",
         "labore_id":"24"
         }
-    response = requests.post(url , headers=headers, json=data)
-    for option in choices_with_next:
-        for state in option:
-            if str(response.status_code) == str(state):
-                next_question_id = option[2]
+    if type_url == 'post':
+        response = requests.post(url , headers=headers, json=data)
+    else:
+        response = requests.get(url , headers=headers)
+    print(response.status_code)
+    if str(question['wait_for_response']) == "true":
+        if not chat.isSent:
+            chat.isSent = True
+            chat.save()
+            print(choices_with_next)
 
-    return next_question_id
+        for option in choices_with_next:
+            for state in option:
+                if str(response.status_code) == str(state):
+                    print('hello')
+                    chat.update_state(option[2])
+                    return Response({"Message" : "BOT has interacted successfully."},
+                                            status=status.HTTP_200_OK)
+    else:
+        print('hello hello hello')
+        for option in choices_with_next:
+            for state in option:
+                if str(response.status_code) == str(state):
+                    next_question_id = option[2]
+                    print(next_question_id)
+
+        return next_question_id
     
 
 def convert_timedelta_to_time(tim):

@@ -647,7 +647,7 @@ class GetFirstTenDays(APIView):
         
         # info = request.data
         free_hours = []
-        free_days = []
+        free_days = set()
         if request.GET.get('date') == '':
             day = timezone.now().date()
         else:
@@ -663,14 +663,13 @@ class GetFirstTenDays(APIView):
                 continue
             calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
             working_time = calendar.working_time.get(day=day_number)
-            print(working_time.starting_time_am)
             start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
             end_work_am = convert_time_to_timedelta(working_time.end_time_am)
             end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
             duration = calendar.duration.duration
             user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=next_day)).order_by('day', 'hour')
             if not user_book_an_appointment:
-                free_days.append( next_day)
+                free_days.add( next_day)
                 continue
             starting_appointment = []
             end_appointment = []
@@ -689,16 +688,16 @@ class GetFirstTenDays(APIView):
                 except:
                     next_appointment = starting_appointment[item]
                 if next_appointment-end_appointment[item] >= duration:
-                    free_days.append(next_day)
+                    print(next_day)
+                    free_days.add(next_day)
                     continue
 
             for free in free_hours:
                 if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
-                    free_days.append(next_day)
+                    free_days.add(next_day)
                     continue
    
-            print(free_days)
-        return Response({'free_days':free_days},status=status.HTTP_200_OK)
+        return Response({'free_days':sorted(list(free_days))},status=status.HTTP_200_OK)
 
 
 class GetDoctorsView(APIView):

@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import  *
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
-
+from .handel_time import get_day_name
 
 
 class CustomUserAdmin(UserAdmin):
@@ -60,14 +60,24 @@ class ClientAdmin(admin.ModelAdmin):
             return ['id', 'client_endpoint']
         else:
             return []
-        
+
+class BookAnAppointmentAdmin(admin.ModelAdmin):
+    list_display = ['doctor','days', 'duration', 'hour', 'patient']
+    search_fields = ['doctor', 'patient']
+
+    list_filter = ['is_proccessed']
+    def doctor(self, obj):
+        return obj.user.username
+    def days(self, obj):
+        return get_day_name(obj.day)
+    
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
 admin.site.register(Attribute)
 admin.site.register(Duration)
 admin.site.register(Calendar)
-admin.site.register(BookAnAppointment)
+admin.site.register(BookAnAppointment, BookAnAppointmentAdmin)
 admin.site.register(WorkingTime)
 
 

@@ -50,6 +50,9 @@ def show_response(question, questions):
             # print(choices_with_next)
             choices = [c[0] for c in choices_with_next]
             # print(choices)
+        elif question['type'] == 'calendar':
+            choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
+            choices = [c[0] for c in choices_with_next]
     else:
         next_id = ''
         next_question_id = question['next']['target']

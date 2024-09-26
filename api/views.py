@@ -225,7 +225,95 @@ class BotAPI(APIView):
                             chat.update_state(next_question_id)
                             chat.isSent = False
                             chat.save()
-                
+                # for handel component calender
+                    
+                elif question['type'] == 'calendar':
+                    headers = {
+                            'Content-Type': 'application/json',
+                        }
+                    day = Attribute.objects.filter(key='day', chat=chat.id).first()
+                    hour = Attribute.objects.filter(key='hour', chat=chat.id).first()
+                    if not day or day == None:
+                        print('iam here')
+                        if not chat.isSent:
+                            print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
+                            chat.isSent = True
+                            chat.save()
+                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
+                            response = requests.get(url , headers=headers)
+                            result = response.json()
+                            chat.update_state(question['id'])
+                            send_message(message_content=question['day-message'],
+                                    choices = next(iter(result.values())),
+                                    type='interactive',
+                                    interaction_type='button',
+                                    to=chat.conversation_id,
+                                    bearer_token=client.token,
+                                    wa_id=client.wa_id,
+                                    chat_id=chat.id,
+                                    platform=platform,
+                                    question=question
+                                )
+                            return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
+                        else:
+                            user_reply = request.data['content']
+                            attr, created = Attribute.objects.get_or_create(key='day', chat_id=chat.id)
+                            attr.value = user_reply
+                            attr.save()
+                            next_question_id = question['id']
+                            chat.isSent = False
+                            chat.save()
+                    elif not hour or hour == None:
+                        if not chat.isSent:
+                            chat.isSent = True
+                            chat.save()
+                            url = f'http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}'
+                            response = requests.get(url , headers=headers)
+                            result = response.json()
+                            chat.update_state(question['id'])
+                            send_message(message_content=question['appointment-message'],
+                                    choices = next(iter(result.values())),
+                                    type='interactive',
+                                    interaction_type='button',
+                                    to=chat.conversation_id,
+                                    bearer_token=client.token,
+                                    wa_id=client.wa_id,
+                                    chat_id=chat.id,
+                                    platform=platform,
+                                    question=question
+                                )
+                            return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
+                        else:
+                            user_reply = request.data['content']
+                            attr, created = Attribute.objects.get_or_create(key='hour', chat_id=chat.id)
+                            attr.value = user_reply
+                            attr.save()
+                            next_question_id = question['id']
+                            chat.isSent = False
+                            chat.save()
+                    else:
+                        calendar = Calendar.objects.get(key=question['key'])
+                        duration = calendar.duration
+                        user = calendar.user
+                        print(user.id)
+                        data = {
+                            "user":user.id,
+                            "day":day.value,
+                            "duration":f"{duration}",
+                            "hour":f"{hour.value}",
+                            "details":f"{question['parameters'][1]['value']}",
+                            "patientName":f"{question['parameters'][0]['value']}"
+                        } 
+                        url = 'http://127.0.0.1:8000/create-book-an-appointment/'
+                        response = requests.post(url , headers=headers, json=data)
+
+                        for option in choices_with_next:
+                            print(option)
+                            for state in option:
+                                if str(response.status_code) == str(state):
+                                    next_question_id = option[1]
+                        day.delete()
+                        hour.delete()
                 # for handle api in flow
                 elif r_type == 'api':
                     if not chat.isSent:

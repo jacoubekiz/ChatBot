@@ -63,8 +63,8 @@ class Calendar(models.Model):
 
 class BookAnAppointment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    description = models.CharField(max_length=300, null=True, blank=True)
-    patient = models.CharField(max_length=50, default='ali')
+    details = models.CharField(max_length=300, null=True, blank=True)
+    patientName = models.CharField(max_length=50, default='ali')
     day =  models.DateField()
     hour = models.TimeField()
     duration = models.DurationField()

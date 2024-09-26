@@ -62,8 +62,8 @@ class ClientAdmin(admin.ModelAdmin):
             return []
 
 class BookAnAppointmentAdmin(admin.ModelAdmin):
-    list_display = ['doctor','days', 'duration', 'hour', 'patient']
-    search_fields = ['doctor', 'patient']
+    list_display = ['doctor','days', 'duration', 'hour', 'patientName']
+    search_fields = ['doctor', 'patientName']
 
     list_filter = ['is_proccessed']
     def doctor(self, obj):

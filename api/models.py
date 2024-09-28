@@ -64,7 +64,7 @@ class Calendar(models.Model):
 class BookAnAppointment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     details = models.CharField(max_length=300, null=True, blank=True)
-    patientName = models.CharField(max_length=50, default='ali')
+    patientName = models.CharField(max_length=50)
     day =  models.DateField()
     hour = models.TimeField()
     duration = models.DurationField()
@@ -83,17 +83,17 @@ class Trigger(models.Model):
 
     def __str__(self) -> str:
         return self.trigger
-    
+        
 class Flow(models.Model):
     flow = models.FileField(upload_to='flows/')
-    trigger = models.ManyToManyField(Trigger)
+    trigger = models.ManyToManyField(Trigger, null=True, blank=True)
+    is_default = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f'{self.flow}-{self.trigger}'
 # ------------------------------------------------------------------
 class Client(models.Model):
     name = models.CharField(max_length=255, null=True)
-    # flow = models.FileField(upload_to='flows/', null=True)
     flow = models.ManyToManyField(Flow)
     resetting_minutes = models.PositiveIntegerField(null=True, default = 60)
     wa_id = models.CharField(max_length=700, null=True)
@@ -122,7 +122,7 @@ class RestartKeyword(models.Model):
     
 class Chat(models.Model):
     client = models.ForeignKey(Client, null=True, blank=True, on_delete=models.CASCADE)
-    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, default=1)
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE)
     state = models.CharField(max_length=255, blank=True, null=True, default='start')
     conversation_id = models.CharField(max_length=255, blank=True, null=True)
     isSent = models.BooleanField(default=False, null=True, blank=True)

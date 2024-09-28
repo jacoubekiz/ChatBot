@@ -44,10 +44,8 @@ def show_response(question, questions):
             choices = [c[0] for c in choices_with_next]
             # new
         elif question['type'] == 'api':
-            # options = list(itertools.chain(*[section['options'] for section in question]))
             choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
             next_id = [next_question['next']['target'] for next_question in question['options']]
-            # print(choices_with_next)
             choices = [c[0] for c in choices_with_next]
             # print(choices)
         elif question['type'] == 'calendar':

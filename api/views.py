@@ -39,19 +39,40 @@ class BotAPI(APIView):
             client = Client.objects.get(Q(id = client_id))
         except:
             pass
+        reset_flow = False
+        restart_keyword = RestartKeyword.objects.filter(client=client.id)
+        for rest in restart_keyword:
+            if rest.keyword == request.data['content']:
+                reset_flow = True
+                flows = rest.client.flow.all()
+                for flow in flows:
+                    print(flow)
+                    ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & Q(flow=flow)).first()
+                    if ch :
+                        ch.update_state('end')
+                        ch.isSent = False
+                        ch.save()
+                    continue
+                break
 
+        
         try:
             flow = client.flow.get(trigger__trigger=request.data['content'])
             chats = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(flow = flow))
             for c in chats:
+                print(c)
                 c.update_state('end')
                 c.isSent = False
                 c.save()
         except:
-            ch = Chat.objects.get(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(state = 'end'))
-            flow = ch.flow
+            ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(state = 'end')).first()
+            if ch:
+                flow = ch.flow
+            else:
+                flow = None
             
-        
+        if not flow:
+            flow = client.flow.get(is_default = True)
         file_path = default_storage.path(flow.flow.name)
         chat_flow = read_json(file_path)
         if chat_flow and source_id:
@@ -62,19 +83,22 @@ class BotAPI(APIView):
             while True:
                 next_question_id = None
                 if chat.state == 'start':
-                    lang = langid.classify(request.data['content'])
-                    language = lang[0]
-                    # print(language)
-                    for ques in questions:
-                        try:
-                            print(ques['type_language'])
-                            ques_lang_type = ques['type_language']
-                        except:
-                            ques_lang_type = ''
-                        if ques_lang_type  == language:
-                                print('hello')
-                                question = ques
-                                break
+                    if reset_flow:
+                        question = questions[0]
+                    else:
+                        lang = langid.classify(request.data['content'])
+                        language = lang[0]
+                        # print(language)
+                        for ques in questions:
+                            try:
+                                print(ques['type_language'])
+                                ques_lang_type = ques['type_language']
+                            except:
+                                ques_lang_type = ''
+                            if ques_lang_type  == language:
+                                    print('hello')
+                                    question = ques
+                                    break
                 else:
                     for item in questions:
                         if item['id'] == chat.state:
@@ -123,22 +147,12 @@ class BotAPI(APIView):
                         try:
                             user_reply = request.data['content'] #If this raises an error then it means that the response has come from Beam not Whatsapp
                         except:
+                            user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
                             
-                            try: #If this raises an error then this means that it is a beam user reply not normal beam text message reply
-                                user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
+                            # except:
+                            #     user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                             
-                            except:
-                                user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
-
-                        restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(client_id = client.id)]
-                        
-                        if user_reply in restart_keywords:
-                            chat.isSent = False
-                            chat.save()
-                            chat.update_state('start')
-                            continue
-                            
-                        elif user_reply not in choices or user_reply == '':
+                        if user_reply not in choices or user_reply == '':
                             error_message = question['message']['error']
                             
                             send_message(message_content=error_message,
@@ -188,43 +202,27 @@ class BotAPI(APIView):
                             except:
                                 user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                                 
-                        restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(client_id = client.id)]
                         
-                        # attr, created = Attribute.objects.get_or_create(key=attribute_name, chat=chat)
                         attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id)
                         attr.value = user_reply
                         attr.save()
-                        if user_reply in restart_keywords:
-                            chat.isSent = False
-                            chat.save()
-                            chat.update_state('start')
-                            continue
-                        #Smart Question user reply validation:
-                        #elif user_reply not in choices or user_reply == '':
-                        #    error_message = question['message']['error']
-                        #    send_message(message_content=error_message, to=chat.conversation_id, bearer_token=client.token)
-                        #    return Response(
-                        #        {"Message" : "BOT has interacted successfully."},
-                        #        status=status.HTTP_200_OK
-                        #    )
-                        else:
                         
-                            for option in choices_with_next:
-                                matchingType = option[3]
-                                if matchingType == 'CONTAIN':
-                        
-                                    if any(string in user_reply for string in option[4]):
-                                        next_question_id = option[2]
-                                        break
-                        
-                                elif matchingType == 'EXACT':
-                                    if any(string == user_reply for string in option[4]):
-                                        next_question_id = option[2]
-                                        break
-                        
-                            chat.update_state(next_question_id)
-                            chat.isSent = False
-                            chat.save()
+                        for option in choices_with_next:
+                            matchingType = option[3]
+                            if matchingType == 'CONTAIN':
+                    
+                                if any(string in user_reply for string in option[4]):
+                                    next_question_id = option[2]
+                                    break
+                    
+                            elif matchingType == 'EXACT':
+                                if any(string == user_reply for string in option[4]):
+                                    next_question_id = option[2]
+                                    break
+                    
+                        chat.update_state(next_question_id)
+                        chat.isSent = False
+                        chat.save()
                 # for handel component calender
                     
                 elif question['type'] == 'calendar':
@@ -234,12 +232,10 @@ class BotAPI(APIView):
                     day = Attribute.objects.filter(key='day', chat=chat.id).first()
                     hour = Attribute.objects.filter(key='hour', chat=chat.id).first()
                     if not day or day == None:
-                        print('iam here')
                         if not chat.isSent:
-                            print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
                             chat.isSent = True
                             chat.save()
-                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
+                            url = f"https://chatbot.icsl.me/get-first-ten-days/?date=&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             chat.update_state(question['id'])
@@ -267,7 +263,7 @@ class BotAPI(APIView):
                         if not chat.isSent:
                             chat.isSent = True
                             chat.save()
-                            url = f'http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}'
+                            url = f'https://chatbot.icsl.me/get-hours-free/?date={day.value}&key={question['key']}'
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             chat.update_state(question['id'])
@@ -304,7 +300,7 @@ class BotAPI(APIView):
                             "details":f"{question['parameters'][1]['value']}",
                             "patientName":f"{question['parameters'][0]['value']}"
                         } 
-                        url = 'http://127.0.0.1:8000/create-book-an-appointment/'
+                        url = 'https://chatbot.icsl.me/create-book-an-appointment/'
                         response = requests.post(url , headers=headers, json=data)
 
                         for option in choices_with_next:
@@ -316,59 +312,22 @@ class BotAPI(APIView):
                         hour.delete()
                 # for handle api in flow
                 elif r_type == 'api':
-                    if not chat.isSent:
-                        chat.isSent = True
-                        chat.save()
-                        url = change_occurences(question['url'], pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-                        type_url = question['type_url']
+                        url = question['url']
                         headers = {
                                 'Content-Type': 'application/json',
                             }
                         
-                        if type_url == 'post':
-                            data = question['body']
-                            for key, value in data.items():
-                                if isinstance(value, (int, float)):
-                                    continue
-                                data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-                            response = requests.post(url , headers=headers, json=data)
-                        else:
-                            response = requests.get(url , headers=headers)
-                        result = response.json()
-                        if question['wait_for_response']:
-                            for option in choices_with_next:
-                                for state in option:
-                                    
-                                    if str(response.status_code) == str(state):
-                                        chat.update_state(question['id'])
-                                        send_message(message_content=message,
-                                            choices = next(iter(result.values())),
-                                            type='interactive',
-                                            interaction_type='button',
-                                            to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
-                                            chat_id=chat.id,
-                                            platform=platform,
-                                            question=question
-                                        )
-                                        return Response({"Message" : "BOT has interacted successfully."},
-                                                                status=status.HTTP_200_OK)
-                        else:
-                            chat.isSent = False
-                            chat.save()
-                            for option in choices_with_next:
-                                for state in option:
-                                    if str(response.status_code) == str(state):
-                                        next_question_id = option[2]
-                    else:
-                        user_reply = request.data['content']
-                        attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id)
-                        attr.value = user_reply
-                        attr.save()
-                        next_question_id = choices_with_next[1][2]
-                        chat.isSent = False
-                        chat.save()
+                        data = question['body']
+                        for key, value in data.items():
+                            if isinstance(value, (int, float)):
+                                continue
+                            data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+
+                        response = requests.post(url , headers=headers, json=data)
+                        for option in choices_with_next:
+                            for state in option:
+                                if str(response.status_code) == str(state):
+                                    next_question_id = option[2]
                 
                 elif r_type == 'name' or \
                     r_type == 'phone' or \
@@ -559,7 +518,6 @@ class BotAPI(APIView):
                                     )
                 
                 chat.update_state(next_question_id)
-                print('=================================================')
                 if not next_question_id or next_question_id == 'end':
                 
                     return Response(

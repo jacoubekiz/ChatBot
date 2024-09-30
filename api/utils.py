@@ -40,16 +40,19 @@ def show_response(question, questions):
         
 
         elif question['type'] == 'list':
-            # options = list(itertools.chain(*[section['options'] for section in question['sections']]))
             choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
-            # new
+            
         elif question['type'] == 'api':
             choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
             next_id = [next_question['next']['target'] for next_question in question['options']]
             choices = [c[0] for c in choices_with_next]
-            # print(choices)
+            
         elif question['type'] == 'calendar':
+            choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
+            choices = [c[0] for c in choices_with_next]
+
+        elif question['type'] == 'detect_language':
             choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
     else:
@@ -58,14 +61,10 @@ def show_response(question, questions):
 
     r_type = question['type']
     try:
-
         question_attribute = question['attribute_name']
     except:
         question_attribute = ''
-    # print(choices_with_next)
     if current_response:
-        # print(question_attribute)
-        # return current_response, next_question_id, choices_with_next, choices, r_type
         return current_response, next_question_id, choices_with_next, choices, r_type, question_attribute
     else:
         return 'Chat Ended'

@@ -17,6 +17,7 @@ global client
 from langdetect import detect
 import langid
 import datetime
+import os
 
 class ClientsViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
@@ -32,7 +33,6 @@ class BotAPI(APIView):
         except:
             source_id = request.data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
             platform = 'beam'
-            
         client_id_hashed = request.GET.get('client')
         client_id = [c.id for c in Client.objects.all() if client_id_hashed == hashlib.sha256(str(c.id).encode()).hexdigest()][0]
         try:
@@ -46,7 +46,6 @@ class BotAPI(APIView):
                 reset_flow = True
                 flows = rest.client.flow.all()
                 for flow in flows:
-                    print(flow)
                     ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & Q(flow=flow)).first()
                     if ch :
                         ch.update_state('end')
@@ -60,7 +59,6 @@ class BotAPI(APIView):
             flow = client.flow.get(trigger__trigger=request.data['content'])
             chats = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(flow = flow))
             for c in chats:
-                print(c)
                 c.update_state('end')
                 c.isSent = False
                 c.save()
@@ -85,20 +83,25 @@ class BotAPI(APIView):
                 if chat.state == 'start':
                     if reset_flow:
                         question = questions[0]
+                        if question['type'] == 'detect_language':
+                            print(questions.index(questions[0]))
+                            question = questions[int(questions.index(questions[0]) + 1)]
+
                     else:
-                        lang = langid.classify(request.data['content'])
-                        language = lang[0]
-                        # print(language)
-                        for ques in questions:
-                            try:
-                                print(ques['type_language'])
-                                ques_lang_type = ques['type_language']
-                            except:
-                                ques_lang_type = ''
-                            if ques_lang_type  == language:
-                                    print('hello')
-                                    question = ques
-                                    break
+                        question = questions[0]
+                #         lang = langid.classify(request.data['content'])
+                #         language = lang[0]
+                #         # print(language)
+                #         for ques in questions:
+                #             try:
+                #                 print(ques['type_language'])
+                #                 ques_lang_type = ques['type_language']
+                #             except:
+                #                 ques_lang_type = ''
+                #             if ques_lang_type  == language:
+                #                     print('hello')
+                #                     question = ques
+                #                     break
                 else:
                     for item in questions:
                         if item['id'] == chat.state:
@@ -106,6 +109,20 @@ class BotAPI(APIView):
                             break
                         
                 message, next_question_id, choices_with_next, choices, r_type, attribute_name = show_response(question, questions)
+
+                if r_type == 'detect_language':
+                    lang = langid.classify(request.data['content'])
+                    language = lang[0]
+                    next_options = [(option['value'], option['next']['target']) for option in question['options']]
+                    detect = False
+                    for options in next_options:
+                        for opt in options:
+                            if opt == language:
+                                detect = True
+                                next_question_id = options[1]
+                                break
+                    if not detect:
+                        next_question_id = next_options[-1][1]
                 if r_type == 'button' or r_type == 'list':
                     
                     if not chat.isSent:
@@ -304,7 +321,6 @@ class BotAPI(APIView):
                         response = requests.post(url , headers=headers, json=data)
 
                         for option in choices_with_next:
-                            print(option)
                             for state in option:
                                 if str(response.status_code) == str(state):
                                     next_question_id = option[1]
@@ -504,7 +520,8 @@ class BotAPI(APIView):
                     
                     if not next_question_id in [c[3] for c in choices_with_next]: #This means if the next question wasn't changed with any conditions then it'll take the default value
                         next_question_id = default_state
-                        
+                elif r_type == 'detect_language':
+                    pass    
                 else:
                     # if chat.state == 'start':
                     #     print(detect(request.data['content']))

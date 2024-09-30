@@ -6,6 +6,7 @@ from .models import Attribute
 from django.db import connection
 from urllib.parse import urlparse
 import os
+from .models import Chat
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
 def read_json(file_path, encoding='utf-8'):
@@ -86,7 +87,9 @@ def change_occurences(content, pattern, chat_id, sql=False):
             content = content.replace(f'{{{{{match}}}}}', replacement_word)
         except:
             if sql:
-                content = content.replace(f'{{{{{match}}}}}', "Null")
+                if match == "phone":
+                    chat = Chat.objects.get(id=chat_id)
+                    content = content.replace(f'{{{{{match}}}}}', chat.conversation_id)
     return content
         
 

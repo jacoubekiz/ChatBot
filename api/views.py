@@ -25,6 +25,8 @@ class ClientsViewSet(viewsets.ModelViewSet):
 
 class BotAPI(APIView):
     def post(self, request, *args, **kwargs):
+        # f = open('log.txt', 'a')
+        # f.write(str(request.data) + '\n')
         try:
             conversation = request.data['conversation']
             source_id = conversation['contact_inbox']['source_id']
@@ -252,7 +254,7 @@ class BotAPI(APIView):
                         if not chat.isSent:
                             chat.isSent = True
                             chat.save()
-                            url = f"https://chatbot.icsl.me/get-first-ten-days/?date=&key={question['key']}"
+                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             chat.update_state(question['id'])
@@ -269,7 +271,24 @@ class BotAPI(APIView):
                                 )
                             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
                         else:
+                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
+                            response = requests.get(url , headers=headers)
+                            result = response.json()
+                            choices = next(iter(result.values()))
                             user_reply = request.data['content']
+                            if user_reply not in choices:
+                                error_message = question['error-Message']
+                                send_message(message_content=error_message,
+                                                to=chat.conversation_id,
+                                                bearer_token=client.token,
+                                                wa_id=client.wa_id,
+                                                chat_id=chat.id,
+                                                platform=platform,
+                                                question=question)
+                                return Response(
+                                    {"Message" : "BOT has interacted successfully."},
+                                    status=status.HTTP_200_OK
+                                )
                             attr, created = Attribute.objects.get_or_create(key='day', chat_id=chat.id)
                             attr.value = user_reply
                             attr.save()
@@ -280,7 +299,7 @@ class BotAPI(APIView):
                         if not chat.isSent:
                             chat.isSent = True
                             chat.save()
-                            url = f'https://chatbot.icsl.me/get-hours-free/?date={day.value}&key={question['key']}'
+                            url = f"http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             chat.update_state(question['id'])
@@ -297,6 +316,24 @@ class BotAPI(APIView):
                                 )
                             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
                         else:
+                            url = f"http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}"
+                            response = requests.get(url , headers=headers)
+                            result = response.json()
+                            choices = next(iter(result.values()))
+                            user_reply = request.data['content']
+                            if user_reply not in choices:
+                                error_message = question['error-Message']
+                                send_message(message_content=error_message,
+                                                to=chat.conversation_id,
+                                                bearer_token=client.token,
+                                                wa_id=client.wa_id,
+                                                chat_id=chat.id,
+                                                platform=platform,
+                                                question=question)
+                                return Response(
+                                    {"Message" : "BOT has interacted successfully."},
+                                    status=status.HTTP_200_OK
+                                )
                             user_reply = request.data['content']
                             attr, created = Attribute.objects.get_or_create(key='hour', chat_id=chat.id)
                             attr.value = user_reply
@@ -317,7 +354,7 @@ class BotAPI(APIView):
                             "details":f"{question['parameters'][1]['value']}",
                             "patientName":f"{question['parameters'][0]['value']}"
                         } 
-                        url = 'https://chatbot.icsl.me/create-book-an-appointment/'
+                        url = "http://127.0.0.1:8000/create-book-an-appointment/"
                         response = requests.post(url , headers=headers, json=data)
 
                         for option in choices_with_next:

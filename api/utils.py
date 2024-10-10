@@ -27,37 +27,42 @@ def show_response(question, questions):
     r_type = None
     current_response += question['label'] + '\n'
     import itertools
-    if question['options'] :
-        if question['type'] == 'smart_question':
-            choices_with_next = [(option['value'], option['id'], option['next']['target'], option['keywordType'], option['smartKeywords']) for option in question['options']]
-        
-        elif question['type'] == 'condition' or question['type'] == 'Condition':
-            choices_with_next = [(option['ConditionValue'], option['value'], option['id'], option['next']['target']) for option in question['options']]
+    try:
+        if question['options'] :
 
-        elif question['type'] == 'button':
-            choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
-            choices = [c[0] for c in choices_with_next]
-        
-
-        elif question['type'] == 'list':
-            choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
-            choices = [c[0] for c in choices_with_next]
+            if question['type'] == 'smart_question':
+                choices_with_next = [(option['value'], option['id'], option['next']['target'], option['keywordType'], option['smartKeywords']) for option in question['options']]
             
-        elif question['type'] == 'api':
-            choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
-            next_id = [next_question['next']['target'] for next_question in question['options']]
-            choices = [c[0] for c in choices_with_next]
-            
-        elif question['type'] == 'calendar':
-            choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
-            choices = [c[0] for c in choices_with_next]
+            elif question['type'] == 'condition' or question['type'] == 'Condition':
+                choices_with_next = [(option['ConditionValue'], option['value'], option['id'], option['next']['target']) for option in question['options']]
 
-        elif question['type'] == 'detect_language':
-            choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
-            choices = [c[0] for c in choices_with_next]
-    else:
+            elif question['type'] == 'button':
+                choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
+                choices = [c[0] for c in choices_with_next]
+            
+
+            elif question['type'] == 'list':
+                choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
+                choices = [c[0] for c in choices_with_next]
+                
+            elif question['type'] == 'api':
+                choices_with_next = [(option['value'], option['id'], option['next']['target']) for option in question['options']]
+                next_id = [next_question['next']['target'] for next_question in question['options']]
+                choices = [c[0] for c in choices_with_next]
+                
+            elif question['type'] == 'calendar':
+                choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
+                choices = [c[0] for c in choices_with_next]
+
+            elif question['type'] == 'detect_language':
+                choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
+                choices = [c[0] for c in choices_with_next]
+    except:
+        print('jdkjfsdjfksdflksdflksjdflkjsdklfjsdkfjsldjflsdjflsdjflksd')
         next_id = ''
         next_question_id = question['next']['target']
+    # except:
+    #     pass
 
     r_type = question['type']
     try:

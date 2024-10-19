@@ -180,7 +180,6 @@ def send_message(version = '18.0',
                         rows.append(row)
                         if index == 9:
                             break
-                    print(rows)
                     sections = [{"title":title, "rows":rows}]
                     
                     payload = json.dumps(

@@ -254,12 +254,15 @@ class BotAPI(APIView):
                         if not chat.isSent:
                             chat.isSent = True
                             chat.save()
-                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
+                            url = f"https://chatbot.ics.me/get-first-ten-days/?date=&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
+                            choice = next(iter(result.values()))
+                            choice.append('next')
+                            NextTenDay.objects.create(chat=chat, day=choice[0], day_end=choice[-2])
                             chat.update_state(question['id'])
                             send_message(message_content=question['day-message'],
-                                    choices = next(iter(result.values())),
+                                    choices = choice,
                                     type='interactive',
                                     interaction_type='button',
                                     to=chat.conversation_id,
@@ -271,10 +274,19 @@ class BotAPI(APIView):
                                 )
                             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
                         else:
-                            url = f"http://127.0.0.1:8000/get-first-ten-days/?date=&key={question['key']}"
+                            day = NextTenDay.objects.filter(chat=chat.id).first()
+                            url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day}&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             choices = next(iter(result.values()))
+                            print(len(choices))
+                            # if len(choices) > 9:
+                            choices.append('next')
+                            # else:
+                            #     print('I am her')
+                            #     day.day = choices[-1]
+                            #     day.save()
+                            # print(choices)
                             user_reply = request.data['content']
                             if user_reply not in choices:
                                 error_message = question['error-Message']
@@ -289,6 +301,36 @@ class BotAPI(APIView):
                                     {"Message" : "BOT has interacted successfully."},
                                     status=status.HTTP_200_OK
                                 )
+                            # print(user_reply)
+                            
+                            if user_reply == "next" and chat.isSent:
+                                # day = NextTenDay.objects.filter(chat=chat.id).first()
+                                chat.isSent = True
+                                chat.save()
+                                url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day_end}&key={question['key']}"
+                                response = requests.get(url , headers=headers)
+                                result = response.json()
+                                chat.update_state(question['id'])
+                                ch = next(iter(result.values()))
+                                if len(ch) >= 9:
+                                    ch.append('next')
+                                    day.day_end = ch[-2]
+                                day.day = ch[0]
+                                day.save()
+                                send_message(message_content=question['day-message'],
+                                        choices = ch,
+                                        type='interactive',
+                                        interaction_type='button',
+                                        to=chat.conversation_id,
+                                        bearer_token=client.token,
+                                        wa_id=client.wa_id,
+                                        chat_id=chat.id,
+                                        platform=platform,
+                                        question=question
+                                    )
+                                return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)                            
+
+                            
                             attr, created = Attribute.objects.get_or_create(key='day', chat_id=chat.id)
                             attr.value = user_reply
                             attr.save()
@@ -299,12 +341,19 @@ class BotAPI(APIView):
                         if not chat.isSent:
                             chat.isSent = True
                             chat.save()
-                            url = f"http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}"
+                            url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             chat.update_state(question['id'])
+                            choices = next(iter(result.values()))
+                            try:
+                                ch = choices[:9]
+                                ch.append('next')
+                                NextTime.objects.create(chat=chat, time=ch[-2])
+                            except:
+                                ch=choices
                             send_message(message_content=question['appointment-message'],
-                                    choices = next(iter(result.values())),
+                                    choices = ch,
                                     type='interactive',
                                     interaction_type='button',
                                     to=chat.conversation_id,
@@ -316,10 +365,12 @@ class BotAPI(APIView):
                                 )
                             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
                         else:
-                            url = f"http://127.0.0.1:8000/get-hours-free/?date={day.value}&key={question['key']}"
+                            time_day = NextTime.objects.filter(chat=chat.id).first()
+                            url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
                             response = requests.get(url , headers=headers)
                             result = response.json()
                             choices = next(iter(result.values()))
+                            choices.append('next')
                             user_reply = request.data['content']
                             if user_reply not in choices:
                                 error_message = question['error-Message']
@@ -334,6 +385,35 @@ class BotAPI(APIView):
                                     {"Message" : "BOT has interacted successfully."},
                                     status=status.HTTP_200_OK
                                 )
+                            if user_reply == "next" and chat.isSent:
+                                chat.isSent = True
+                                chat.save()
+                                url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
+                                response = requests.get(url , headers=headers)
+                                result = response.json()
+                                chat.update_state(question['id'])
+                                choices = next(iter(result.values()))
+                                try:
+                                    print(str(time_day.time)[:-3])
+                                    index_time = choices.index(str(time_day.time)[:-3])
+                                    print(index_time)
+                                    ch = choices[index_time:index_time+9]
+                                    time_day.time = ch[-2]
+                                    time_day.save()
+                                except:
+                                    ch = choices
+                                send_message(message_content=question['appointment-message'],
+                                        choices = ch,
+                                        type='interactive',
+                                        interaction_type='button',
+                                        to=chat.conversation_id,
+                                        bearer_token=client.token,
+                                        wa_id=client.wa_id,
+                                        chat_id=chat.id,
+                                        platform=platform,
+                                        question=question
+                                    )
+                                return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK) 
                             user_reply = request.data['content']
                             attr, created = Attribute.objects.get_or_create(key='hour', chat_id=chat.id)
                             attr.value = user_reply
@@ -354,7 +434,7 @@ class BotAPI(APIView):
                             "details":f"{question['parameters'][1]['value']}",
                             "patientName":f"{question['parameters'][0]['value']}"
                         } 
-                        url = "http://127.0.0.1:8000/create-book-an-appointment/"
+                        url = "https://chatbot.ics.me/create-book-an-appointment/"
                         response = requests.post(url , headers=headers, json=data)
 
                         for option in choices_with_next:
@@ -363,6 +443,8 @@ class BotAPI(APIView):
                                     next_question_id = option[1]
                         day.delete()
                         hour.delete()
+                        NextTenDay.objects.get(chat=chat).delete()
+                        NextTime.objects.get(chat=chat).delete()
                 # for handle api in flow
                 elif r_type == 'api':
                         url = question['url']
@@ -746,22 +828,28 @@ class GetFirstTenDays(APIView):
         days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
         
         # info = request.data
+        calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
         free_hours = []
         free_days = set()
+        next_days = []
         if request.GET.get('date') == '':
-            day = timezone.now().date()
+            day = calendar.start_appointment
         else:
             day = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
-        next_days = []
-        for d in range(10):
-            next_days.append(day + timedelta(days=d))
+        # while len(free_days) <= 10
+        
+        for d in range(15):
+            if day + timedelta(days=d) <= calendar.end_appointment :
+                next_days.append(day + timedelta(days=d))
         for next_day in next_days:
+            if len(free_days) == 9:
+                break
             day_number = days.index(get_day_name(next_day))
             if day_number == 0:
                 day_number +=1
             if day_number == 6 or day_number == 5:
                 continue
-            calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
+            
             working_time = calendar.working_time.get(day=day_number)
             start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
             end_work_am = convert_time_to_timedelta(working_time.end_time_am)

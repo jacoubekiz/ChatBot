@@ -48,6 +48,8 @@ class Calendar(models.Model):
     working_time = models.ManyToManyField(WorkingTime)
     key = models.CharField(max_length=255, unique=True)
     duration = models.ForeignKey(Duration, on_delete=models.CASCADE)
+    start_appointment = models.DateField(default='2024-11-10')
+    end_appointment = models.DateField(default='2024-11-10')
 
     def save(self, *args, **kwargs):
         if not self.key:
@@ -151,11 +153,20 @@ class Attribute(models.Model):
     
 
 
+class NextTenDay(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    day = models.DateField()
+    day_end = models.DateField(default='2024-05-5')
 
 
+class NextTime(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    time = models.TimeField()
+    # end_time = models.TimeField()
+    
 
-
-
+# class Testing(models.Model):
+#     test = models.CharField(max_length=30)
 
 # class BusyTime(models.Model):
 #     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

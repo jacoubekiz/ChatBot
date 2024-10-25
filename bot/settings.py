@@ -19,6 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'api',
+    'channels',
 ]
 AUTH_USER_MODEL = "api.CustomUser"
 
@@ -81,7 +83,17 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'bot.asgi.application'
 WSGI_APPLICATION = 'bot.wsgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']
 # Database

@@ -165,6 +165,11 @@ class NextTime(models.Model):
     # end_time = models.TimeField()
     
 
+class Message(models.Model):
+    message = models.CharField(max_length=100)
+
+    def __str__(self) -> str:
+        return self.message
 # class Testing(models.Model):
 #     test = models.CharField(max_length=30)
 

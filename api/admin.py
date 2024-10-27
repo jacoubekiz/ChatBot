@@ -81,6 +81,7 @@ admin.site.register(BookAnAppointment, BookAnAppointmentAdmin)
 admin.site.register(WorkingTime)
 admin.site.register(NextTenDay)
 admin.site.register(NextTime)
+admin.site.register(MessageChat)
 
 admin.site.register(Trigger)
 admin.site.register(Flow)

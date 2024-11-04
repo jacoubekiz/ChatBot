@@ -23,5 +23,9 @@ urlpatterns = [
     path('get-doctors/', GetDoctorsView.as_view(), name='get-doctors'),
 
     path('get-doctors-calander/<str:doctor_id>/', GetDoctorsCalanderView.as_view(), name='get-doctors-calander'),
+    
+    path('webhook/', WebhookView.as_view(), name='webhook'),
+    path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
+
 ]
 

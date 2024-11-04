@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'api',
+    'django_redis',
     
 ]
 AUTH_USER_MODEL = "api.CustomUser"
@@ -94,6 +95,17 @@ CHANNEL_LAYERS = {
             "hosts": [('127.0.0.1', 6379)],
         },
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        # "KEY_PREFIX": "example"
+    }
 }
 
 CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']

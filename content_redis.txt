@@ -1,1 +1,3 @@
 b'{"room_name": "jacoub", "message": "hello my name is jacoub"}'
+<QueryDict: {'room_name': ['jacoub'], 'message': ['hello my name is jacoub']}>
+<QueryDict: {'room_name': ['jacoub'], 'message': ['hello my name is jacoub']}>

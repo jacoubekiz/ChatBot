@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'django_redis',
+    'webhook',
     
 ]
 AUTH_USER_MODEL = "api.CustomUser"
@@ -88,6 +89,7 @@ TEMPLATES = [
 ASGI_APPLICATION = 'bot.asgi.application'
 WSGI_APPLICATION = 'bot.wsgi.application'
 
+REDIS_PATH = os.environ.get('REDIS_PATH', '/usr/bin/redis-server')
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -120,6 +122,15 @@ DATABASES = {
         'PASSWORD': env('PASSWORD'),
         'HOST': env('HOST'),
         'PORT': env('PORT'),
+    },
+
+    'webhook_db': {
+        'ENGINE': env('ENGINE_WEBHOOK'),
+        'NAME': env('NAME_WEBHOOK'),
+        'USER': env('USER_WEBHOOK'),
+        'PASSWORD': env('PASSWORD_WEBHOOK'),
+        'HOST': env('HOST_WEBHOOK'),
+        'PORT': env('PORT_WEBHOOK'),
     }
 }
 
@@ -164,6 +175,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+DATABASE_ROUTERS = ["routers.routers_db.DefaultRouter", "routers.routers_db.WebhookRouter",]
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)

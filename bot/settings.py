@@ -45,7 +45,11 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
+
 }
+
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -53,8 +57,9 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    'api.backend.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
+    'api.backend.CustomAuthBackend',
+    # 'webhook.backend.CustomAuthBackend',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +78,7 @@ ROOT_URLCONF = 'bot.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,8 +133,8 @@ DATABASES = {
         'ENGINE': env('ENGINE_WEBHOOK'),
         'NAME': env('NAME_WEBHOOK'),
         'USER': env('USER_WEBHOOK'),
-        'PASSWORD': env('PASSWORD_WEBHOOK'),
-        'HOST': env('HOST_WEBHOOK'),
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
         'PORT': env('PORT_WEBHOOK'),
     }
 }
@@ -161,6 +166,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = env('EMAIL')
+EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')  
 
 # Static files (CSS, JavaScript, Images)
 

@@ -4,6 +4,12 @@ from .forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
 from .handel_time import get_day_name
 
+@admin.register(CustomUser1)
+class CustomUser1Admin(admin.ModelAdmin):
+    list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
+    search_fields = ('email', 'username', 'first_name', 'last_name')
+    ordering = ('email',)
+
 
 class CustomUserAdmin(UserAdmin):
 
@@ -29,7 +35,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {'classes':('wide',),
             'fields':(
-                'email', 'phonenumber', 'username', 'password1', 'password2',
+                'email', 'username', 'password1', 'password2',
             )}
             ),
         )
@@ -70,7 +76,9 @@ class BookAnAppointmentAdmin(admin.ModelAdmin):
         return obj.user.username
     def days(self, obj):
         return get_day_name(obj.day)
-    
+
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
@@ -87,3 +95,16 @@ admin.site.register(Trigger)
 admin.site.register(Flow)
 admin.site.site_title = "ICSL Bot Creator"
 admin.site.site_header = "ICSL Bot Creator"
+
+
+
+
+
+
+admin.site.register(Contact)
+admin.site.register(Conversation)
+admin.site.register(Team)
+# admin.site.register(Account)
+admin.site.register(ChatMessage)
+admin.site.register(Account)
+admin.site.register(Channle)

@@ -17,10 +17,10 @@ Days = (
 )
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=40, unique=True)
-    phonenumber = models.BigIntegerField(unique=True)
+    # phonenumber = models.BigIntegerField(default=352353525)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username','phonenumber']
+    REQUIRED_FIELDS = ['username',]
 
     def __str__(self) -> str:
         return self.username
@@ -198,3 +198,241 @@ class MessageChat(models.Model):
 
     # def __str__(self) -> str:
     #     return f"from {str(self.starting_time)} to {str(self.expire_time)}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TestWebhook(models.Model):
+    test_text = models.CharField(max_length=50)
+    name = models.CharField(max_length=20)
+
+    def __str__(self) -> str:
+        return self.test_text
+
+
+# models.py
+
+
+ROLE = (
+    ('admin', 'admin'),
+    ('agent', 'agent')
+)
+
+TYPE_CHANNLE = (
+    ('WhatsApp', 'WhatsApp'),
+)
+
+STATUS = (
+    ('open', 'open'),
+    ('closed', 'closed'),
+    ('pending', 'pending')
+)
+
+CONTENT_TYPE = (
+    ('text', 'text'),
+    ('image', 'imgage'),
+    ('video', 'video'),
+    ('document', 'document'),
+    ('audio', 'audio')
+)
+
+STATUS_MESSAGE = (
+    ('sent', 'sent'),
+    ('delivered', 'delivered'),
+    ('read', 'read'),
+    ('failed', 'failed'),
+    ('pending', 'pending')
+)
+
+STATUS_MESSAGE_STATUS = (
+    ('sent', 'sent'),
+    ('delivered', 'delivered'),
+    ('read', 'read')
+)
+
+STATUS_CAMPAIGN = (
+    ('active', 'active'),
+    ('inactive', 'inactive'),
+    ('complated', 'complated')
+)
+
+TYPE_SETTTING = (
+    ('business_hours', 'business_hours'),
+    ('integrations', 'integrations'),
+    ('labels', 'labels'),
+    ('quick_replies', 'quick_replies')
+)
+
+class Account(models.Model):
+    account_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+    
+class Team(models.Model):
+    team_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+    
+class CustomUser1(CustomUser):
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    role = models.CharField(choices=ROLE, max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.username
+    
+class Contact(models.Model):
+    contact_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=50)
+    phone_number = models.BigIntegerField()
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+    
+class Channle(models.Model):
+    channle_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    type_channle = models.CharField(choices=TYPE_CHANNLE, max_length=25)
+    name = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+    
+class Conversation(models.Model):
+    conversation_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    channle_id = models.ForeignKey(Channle, on_delete=models.CASCADE, null=True, blank=True)
+    contact_id = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(choices=STATUS, max_length=20, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'conversation for contact {self.contact_id.name}'
+    
+    # @property
+    # def last_message(self):
+    #     message = self.chatmessage_set.filter().first().order_by('-created_at')
+    #     return message.content
+    
+class ChatMessage(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    conversation_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE)
+    content_type = models.CharField(choices=CONTENT_TYPE, max_length=20)
+    content = models.TextField(max_length=1000)
+    wamid = models.CharField(max_length=500)
+    status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20)
+    status_updated_at = models.DateTimeField(auto_now_add=True)
+    media_url = models.URLField(null=True, blank=True)
+    media_mime_type = models.CharField(max_length=50, null=True, blank=True)
+    media_sha256_hash = models.CharField(max_length=256, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'message {self.message_id}'
+    
+class MessageStatus(models.Model):
+    status_id = models.AutoField(primary_key=True)
+    message_id = models.ForeignKey(ChatMessage, on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUS_MESSAGE_STATUS, max_length=25)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'message id {self.message_id.message_id} status is {self.status}'
+
+class MediaManagement(models.Model):
+    media_id = models.AutoField(primary_key=True)
+    message_id = models.ForeignKey(ChatMessage, on_delete=models.CASCADE)
+    media_url = models.URLField(null=True, blank=True)
+    file_type = models.CharField(choices=CONTENT_TYPE, max_length=25, null=True, blank=True)
+    mime_type = models.CharField(max_length=50, null=True, blank=True)
+    size = models.BigIntegerField(null=True, blank=True)
+    hash256_sha = models.CharField(max_length=256, null=True, blank=True)
+    uploded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'media management for message id {self.message_id.message_id}'
+    
+class Campaign(models.Model):
+    campaign_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'campaign for account {self.account_id.name}'
+    
+class InternalChat(models.Model):
+    caht_id = models.AutoField(primary_key=True)
+    team_id = models.ForeignKey(Team, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE)
+    content = models.TextField(null=True, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'internal caht for team {self.team_id.name}'
+    
+class Report(models.Model):
+    report_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    data = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'report for account {self.account_id.name}'
+    
+class ChatbotBuilder(models.Model):
+    bot_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    configuration = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f' chat bot builder {self.name} for account {self.account_id.name}'
+    
+class Setting(models.Model):
+    setting_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    type_setting = models.CharField(choices=TYPE_SETTTING, max_length=50, null=True, blank=True)
+    config_data = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'setting for account {self.account_id.name}'
+    

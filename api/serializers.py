@@ -12,37 +12,8 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SerializerSignUp(serializers.ModelSerializer):
+# class SerializerSignUp(serializers.ModelSerializer):
 
-    class Meta:
-        model = CustomUser
-        fields = ['email', 'phonenumber', 'username', 'password']
-        extra_kwargs = {
-            'password':{'write_only':True},
-        }
-        
-        def validate(self, attrs):
-            password = attrs.get('password')
-            validate_password(password)
-            return attrs
-    
-        
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only = True)
-
-    def validate(self, data):
-        username = data.get('username')
-        password = data.get('password')
-        print(username + ' ' + password)
-        user = authenticate(request=self.context.get('request'), username=username, password=password)
-        if not user:
-            raise serializers.ValidationError({"error":"لا يوجد مستخدم بهذه المعلومات"})
-        if not user.is_active:
-            raise serializers.ValidationError({"error":"هذا الحساب غير مفعل"})
-
-        data['user'] = user
-        return data
 
 
 class DurationSerializer(serializers.ModelSerializer):
@@ -129,3 +100,114 @@ class BookAnAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookAnAppointment
         fields = '__all__'
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+
+class AddUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser1
+        fields  = ['id', 'username', 'email', 'password', 'role']
+        extra_kwargs = {
+            'password':{'write_only':True},
+        }
+        
+    def validate(self, attrs):
+        password = attrs.get('password')
+        validate_password(password)
+        return attrs
+    
+    def create(self, validated_data):
+        password = self.validated_data.pop('password')
+        user = CustomUser1.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+    
+    
+        
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    password = serializers.CharField(write_only = True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        print(email, password)
+        user = authenticate(request=self.context.get('request'), username=email, password=password)
+        if not user:
+            raise serializers.ValidationError({"error":"لا يوجد مستخدم بهذه المعلومات"})
+        if not user.is_active:
+            raise serializers.ValidationError({"error":"هذا الحساب غير مفعل"})
+
+        data['user'] = user
+        return data
+    
+class LogoutSerializer(serializers.Serializer):
+
+    refresh = serializers.CharField()
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')
+
+
+class TeamAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fiedls = ['account_id', 'name']
+
+class TeamSerializer(serializers.ModelSerializer):
+    members = TeamAccountSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Team
+        fields = ['id', 'name', 'members']
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['contact_id', 'name', 'phone_number']
+
+class ConversationContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['name', 'phone_number']
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ['message_id', 'content', 'content_type', 'created_at']
+
+class ConversationSerializer(serializers.ModelSerializer):
+    contact_id = ConversationContactSerializer(read_only=True)
+    last_message = serializers.SerializerMethodField(read_only=True)
+    # last_message = ChatMessageSerializer(read_only=True)
+    
+    class Meta:
+        model = Conversation
+        fields = ['conversation_id', 'contact_id', 'status', 'last_message']
+
+    def get_last_message(self, obj):
+            last_message = obj.chatmessage_set.order_by('-created_at').first()
+            return ChatMessageSerializer(last_message).data if last_message else None
+
+class ConverstionSerializerCreate(serializers.ModelSerializer):
+    class Meta:
+        model = Conversation
+        fields = ['contact_id', 'channel_id', 'status']
+
+        extra_kwargs = {
+            'status':{'read_only': True}
+        }

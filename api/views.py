@@ -672,38 +672,7 @@ class BotAPI(APIView):
             )
     
 
-class ViewSignUp(GenericAPIView):
-    # serializer_class = SerializerSignUp
 
-    def post(self, request):
-        data = request.data
-        serializer = SerializerSignUp(data = data, many=False)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user_information = serializer.data
-        email = user_information['email']
-        user = CustomUser.objects.get(email=email)
-        token = RefreshToken.for_user(user)
-        user_token = {
-            'refresh':str(token),
-            'access':str(token.access_token),
-        }
-        
-        user_information['tokens'] = user_token
-        return Response(user_information, status=status.HTTP_201_CREATED)
-    
-class ViewLogin(GenericAPIView):
-
-    def post(self, request):
-        data = request.data
-        serializer = LoginSerializer(data = data, many=False)
-        serializer.is_valid(raise_exception=True)
-        user_informatin = serializer.data
-        email = user_informatin['username']
-        user = CustomUser.objects.get(email=email)
-        token = RefreshToken.for_user(user)
-        user_informatin['tokens'] = {'refresh':str(token), 'access':str(token.access_token)}
-        return Response(user_informatin, status=status.HTTP_200_OK)
     
 
 class CreateCalenderView(GenericAPIView):
@@ -893,13 +862,13 @@ class GetFirstTenDays(APIView):
         return Response({'free_days':sorted(list(free_days))},status=status.HTTP_200_OK)
 
 
-class GetDoctorsView(APIView):
-    def get(self, request):
-        user = CustomUser.objects.all()
-        serializer_user = SerializerSignUp(user, many=True)
-        data = serializer_user.data
+# class GetDoctorsView(APIView):
+#     def get(self, request):
+#         user = CustomUser.objects.all()
+#         serializer_user = SerializerSignUp(user, many=True)
+#         data = serializer_user.data
 
-        return Response({'username':data['username']}, status=status.HTTP_200_OK)
+#         return Response({'username':data['username']}, status=status.HTTP_200_OK)
     
 class GetDoctorsCalanderView(APIView):
     def get(self, request, doctor_id):
@@ -912,4 +881,77 @@ class GetDoctorsCalanderView(APIView):
         return Response({'duration':durations}, status=status.HTTP_200_OK)
     
 
+from .send_email import *
+
+class SendEmailView(APIView):
+    def post(self, request):
+        data= {'to_email':request.data['email'], 'email_subject':'','message': request.data['message']}
+        Utlil.send_email(data)
+        return Response(status=status.HTTP_200_OK)
+# --------------------------------------------------------------------------------------------------------------
+from .permissions import UserIsAdmin
+from rest_framework.generics import ListAPIView
+
+class ListCreateUserView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated, UserIsAdmin]
+    queryset = CustomUser1.objects.all()
+    serializer_class = AddUserSerializer
+    
+class ViewLogin(GenericAPIView):
+
+    def post(self, request):
+        data_request = request.data
+        serializer = LoginSerializer(data = data_request, many=False)
+        serializer.is_valid(raise_exception=True)
+        email = data_request['email']
+        user = CustomUser1.objects.get(email=email)
+        token = RefreshToken.for_user(user)
+        tokens = {'refresh':str(token), 'access':str(token.access_token)}
+        data = {
+            'tokens':tokens,
+            'user': {
+                'id':user.id,
+                'name':user.username,
+                'role':user.role
+            }
+        }
+        return Response(data, status=status.HTTP_200_OK)
+    
+# End Points for Logout User
+class LogoutAPIView(APIView):
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated,]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": 'logout true'})
+    
+# End Points for GET all teams
+class GetTeamView(ListAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    permission_classes = [IsAuthenticated]
+
+class ListContactView(ListAPIView):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+
+class ListConversationView(GenericAPIView):
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        conversation = Conversation.objects.all()
+        serializer = self.get_serializer(conversation, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        conversation = ConverstionSerializerCreate(data=data, many=True)
+        conversation.is_valid(raise_exception=True)
+        conversation.save()
+        return Response(conversation.data)
 

@@ -206,8 +206,11 @@ class ConversationSerializer(serializers.ModelSerializer):
 class ConverstionSerializerCreate(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fields = ['contact_id', 'channel_id', 'status']
+        fields = ['conversation_id', 'contact_id', 'channle_id', 'status']
 
         extra_kwargs = {
-            'status':{'read_only': True}
+            'status':{'read_only': True},
+            'conversation_id':{'read_only': True},
+            'contact_id':{'write_only':True},
+            'channle_id':{'write_only':True}
         }

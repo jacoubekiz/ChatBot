@@ -31,6 +31,7 @@ urlpatterns = [
     path('auth/logout/', LogoutAPIView.as_view()),
 
     path('teams/', GetTeamView.as_view(), name='teams'),
+    path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/', ListConversationView.as_view(), name='conversations')
 ]
 

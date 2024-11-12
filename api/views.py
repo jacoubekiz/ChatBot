@@ -950,8 +950,13 @@ class ListConversationView(GenericAPIView):
     
     def post(self, request):
         data = request.data
-        conversation = ConverstionSerializerCreate(data=data, many=True)
-        conversation.is_valid(raise_exception=True)
-        conversation.save()
-        return Response(conversation.data)
+        channel = Channle.objects.filter(channle_id = data['channel_id']).first()
+        contact = Contact.objects.filter(contact_id = data['contact_id']).first()
+        conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
+        conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
+
+            # conversation_serializer = ConverstionSerializerCreate(conversation, many=True)
+        # conversation_serializer.is_valid(raise_exception=True)
+        # conversation_serializer.save()
+        return Response(conversation_serializer.data)
 

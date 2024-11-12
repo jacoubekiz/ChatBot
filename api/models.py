@@ -297,7 +297,7 @@ class Team(models.Model):
 class CustomUser1(CustomUser):
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    role = models.CharField(choices=ROLE, max_length=20)
+    role = models.CharField(choices=ROLE, max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

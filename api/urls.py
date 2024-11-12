@@ -26,7 +26,7 @@ urlpatterns = [
     path('send-email/', SendEmailView.as_view(), name='send-email'),
 
 # add new api
-    path('add-user/', ListCreateUserView.as_view(), name='add-user'),
+    path('users/', ListCreateUserView.as_view(), name='users'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
 

@@ -14,7 +14,7 @@ from rest_framework import viewsets
 import hashlib
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
-from .utils import read_json, show_response, send_message, validate_email, validate_phone_number, change_occurences, check_sql_condition
+from .utils import *
 global client
 from langdetect import detect
 import langid
@@ -31,7 +31,7 @@ class ClientsViewSet(viewsets.ModelViewSet):
 class BotAPI(APIView):
     def post(self, request, *args, **kwargs):
         # f = open('log.txt', 'a')
-        # f.write(str(request.data) + '\n')
+        # f.write(str(request.data) + 'n')
         try:
             conversation = request.data['conversation']
             source_id = conversation['contact_inbox']['source_id']
@@ -890,12 +890,21 @@ class SendEmailView(APIView):
         return Response(status=status.HTTP_200_OK)
 # --------------------------------------------------------------------------------------------------------------
 from .permissions import UserIsAdmin
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from django_redis import get_redis_connection
+from django.utils.decorators import method_decorator
+
 
 class ListCreateUserView(ListCreateAPIView):
     permission_classes = [IsAuthenticated, UserIsAdmin]
     queryset = CustomUser1.objects.all()
     serializer_class = AddUserSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+        
     
 class ViewLogin(GenericAPIView):
 
@@ -960,3 +969,149 @@ class ListConversationView(GenericAPIView):
         # conversation_serializer.save()
         return Response(conversation_serializer.data)
 
+
+class CreateListCampaignsView(GenericAPIView):
+    serializer_class = CampaignsSerilizer
+    pagination_class = [IsAuthenticated]
+
+    def get(self, request):
+        campaigns = Campaign.objects.all()
+        serializer_campaigns = self.get_serializer(campaigns, many=True)
+        data = serializer_campaigns.data
+
+        return Response(data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        data = request.data
+        campaigs = self.get_serializer(data=data, many=False)
+        campaigs.is_valid(raise_exception=True)
+        campaigs.save()
+
+        return Response(campaigs.data, status=status.HTTP_201_CREATED)
+    
+class ListReportView(ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ListReportView(RetrieveAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class WebhookView(APIView):
+    # @csrf_exempt
+    def post(self, request):
+        try:
+            data = request.data
+            redis_client = get_redis_connection()
+            redis_client.rpush('data_queue', json.dumps(data))
+            f = open('content_redis.txt', 'a')
+            f.write(str(data) + '\n')
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error processign webhok: {str(e)}")
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetDataFromRedis(APIView):
+
+    def get(self, request):
+        redis_client = get_redis_connection()
+        raw_data = redis_client.lpop('data_queue')
+        # print(raw_data)
+        # raw = '''
+        # {"event": 
+        #     {"value": {
+        #         "messaging_product": 
+        #             "whatsapp", 
+        #             "metadata": {
+        #                 "display_phone_number": "966920025589",
+        #                 "phone_number_id": "157289147477280"
+        #             },
+        #         "contacts": [
+        #             {
+        #                 "profile": {
+        #                 "name": "عبدالرحمن"
+        #             }, 
+        #             "wa_id": "966582752803"}
+        #         ], 
+        #         "messages": [
+        #             {
+        #                 "from": "966582752803",
+        #                 "id": "wamid.HBgMOTY2NTgyNzUyODAzFQIAEhgUM0FDOEEyQzA2MkM2NTU1NzA5MDMA",
+        #                 "timestamp": "1730742922",
+        #                 "text": {
+        #                     "body":
+        #                     "Abdulrhamn.1.8@gmail.com"
+        #                     }, 
+        #                 "type": "text"
+        #             }
+        #         ]
+        #         }, 
+        #         "field": "messages"
+        #     }
+        # }'''
+        # raw = '''{
+        #     "event": {
+        #         "mid": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
+        #         "status": "read",
+        #         "payload": {
+        #             "id": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
+        #             "status": "read",
+        #             "timestamp": "1730735977",
+        #             "recipient_id": "966567864267"
+        #             },
+        #         "event": {
+        #             "value": {
+        #                 "messaging_product": "whatsapp",
+        #                 "metadata": {
+        #                     "display_phone_number": "966920025589",
+        #                     "phone_number_id": "157289147477280"
+        #                 }, 
+        #             "statuses": [
+        #                 {
+        #                     "id": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
+        #                     "status": "read",
+        #                     "timestamp": "1730735977",
+        #                     "recipient_id": "966567864267"
+        #                 }
+        #             ]}, 
+        #             "field": "messages"}}}'''
+        log_entry = json.loads(raw_data)
+        # value = log_entry.get('event', '').get('value', '')
+        # if value:
+        #     print('hello')
+        #     content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+        #     wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+        #     content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+        #     from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from ', '')
+        #     timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+        #     messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+        #     display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+        #     phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+        #     contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+        #     if contacts:
+        #         name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+        #         wa_id = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('wa_id', '')
+        #         contact, created = Contact.objects.get_or_create(name=name, phone_number=wa_id)
+        #         print(contact, wa_id)
+        #         conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id)
+        #         print(conversation, conversation.account_id.name)
+                # chat_message = ChatMessage.objects.create(
+                #     conversation_id=conversation,
+                #     content_type=content_type,
+                #     content=content,
+                #     wamid=wamid,
+                # )
+                # url = 'http://127.0.0.1:8000/ws/chat/jacoub/'
+                # ws = upgrade_to_websocket(url)
+                # # Now you can use the ws object to send and receive messages
+                # ws.send("Hello, server!")
+                # print(ws.recv())
+                # ws.close()
+        return Response({'message':log_entry}, status=status.HTTP_200_OK)

@@ -500,3 +500,28 @@ def validate_phone_number(phone_number):
         return True
     else:
         return False
+    
+
+# import websocket
+# # import json
+
+# # def on_open(ws):
+# #     print('Connected to websocket')
+
+# #     ws.send(json.dumps(
+# #         {"type": "subscribe", "channel": "ypur_channel"}
+# #     ))
+
+# def upgrade_to_websocket(url):
+#     response = requests.get(url, stream=True)
+#     print('hello')
+#     headers = response.headers
+#     cookies = response.cookies
+    
+#     # Extract the WebSocket URL from the headers
+#     websocket_url = headers.get('Sec-WebSocket-Location')
+    
+#     # Create a WebSocket connection
+#     ws = websocket.create_connection(websocket_url, cookie=cookies)
+    
+#     return ws

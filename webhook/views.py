@@ -1,18 +1,45 @@
 # from datetime import datetime
 # from django.views.decorators.csrf import csrf_exempt
-# from rest_framework.views import APIView
+from rest_framework.views import APIView
 # from rest_framework.generics import GenericAPIView
 # from rest_framework.generics import ListAPIView, ListCreateAPIView
-# from rest_framework.response import Response
-# from rest_framework import status
+from rest_framework.response import Response
+from rest_framework import status
 # from rest_framework.permissions import IsAuthenticated
 # from django_redis import get_redis_connection
 # from django.utils.decorators import method_decorator
 # from .permissions import UserIsAdmin
 # from .serializers import *
-# from .models import *
-# import json
+from .models import *
 
+from django.core.files.base import ContentFile
+
+class uploadfile(APIView):
+    def post(self, request):
+        file_name = request.data['name']+'test.txt'
+        print(file_name)
+        with open(f'media/files/{file_name}', 'a') as f:
+            f.write(f'''
+اسم المستخدم: {request.data['name']}
+
+رقم هاتف المستخدم: {request.data['phonenumber']}
+
+بناء القائد في تجربتك, هل تنصح الآخرين بالتعامل معنا؟ {request.data['deal_with_us']}
+
+هل سيتم إعادة الشراء من متجر سندس؟ {request.data['re_purchase']}
+
+هل لديك اقتراحات أو تعليقات توجه إلى تجربتنا؟ {request.data['suggestion']}
+
+ما أكثر خدمة الاستقبال الخاصة بك في تجربتك معنا؟ {request.data['reception_service']}
+
+ما مدى رضاك العام عن خدماتنا ومنتجاتنا؟ {request.data['evaluation']}
+''')
+        file = open(f'media/files/{file_name}', 'rb')
+        file_content = file.read()
+        print(file_content)
+        file_obj = ContentFile(file_content, name='test.txt')
+        map_ = MapFile.objects.create(map_name='test', map_data=file_obj)
+        return Response({'messa':"true"})
 # @method_decorator(csrf_exempt, name='dispatch')
 # class WebhookView(APIView):
 #     # @csrf_exempt

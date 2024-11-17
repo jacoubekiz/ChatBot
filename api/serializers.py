@@ -124,6 +124,9 @@ class AddUserSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
+        request = self.context.get('request')
+        user_ = CustomUser1.objects.get(id=request.user.id)
+        validated_data['account_id'] = user_.account_id
         password = self.validated_data.pop('password')
         user = CustomUser1.objects.create(**validated_data)
         user.set_password(password)
@@ -214,3 +217,22 @@ class ConverstionSerializerCreate(serializers.ModelSerializer):
             'contact_id':{'write_only':True},
             'channle_id':{'write_only':True}
         }
+
+class CampaignsSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ['campaign_id', 'name', 'status', 'start_date', 'end_date']
+
+        extra_kwargs = {
+            'status':{'read_only':True},
+            'start_date':{'write_only': True},
+            'end_date': {'write_only': True}
+        }
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ['report_id', 'name', 'data']
+
+    

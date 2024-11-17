@@ -34,8 +34,10 @@ INSTALLED_APPS = [
     'api',
     'django_redis',
     'webhook',
-    
+    'gdstorage',
 ]
+
+GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = 'sound-folder-441907-g6-14f5ad8dc314.json'
 AUTH_USER_MODEL = "api.CustomUser"
 
 

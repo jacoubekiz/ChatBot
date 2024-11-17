@@ -284,32 +284,34 @@ class Account(models.Model):
     def __str__(self) -> str:
         return self.name
     
-class Team(models.Model):
-    team_id = models.AutoField(primary_key=True)
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self) -> str:
-        return self.name
     
 class CustomUser1(CustomUser):
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
-    team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    # team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
     role = models.CharField(choices=ROLE, max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.username
-    
+
+class Team(models.Model):
+    team_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    user_id = models.ManyToManyField(CustomUser1)
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+  
 class Contact(models.Model):
     contact_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=50)
     phone_number = models.BigIntegerField()
-    email = models.EmailField()
+    email = models.EmailField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -351,7 +353,7 @@ class ChatMessage(models.Model):
     content_type = models.CharField(choices=CONTENT_TYPE, max_length=20)
     content = models.TextField(max_length=1000)
     wamid = models.CharField(max_length=500)
-    status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20)
+    status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20, default='sent')
     status_updated_at = models.DateTimeField(auto_now_add=True)
     media_url = models.URLField(null=True, blank=True)
     media_mime_type = models.CharField(max_length=50, null=True, blank=True)
@@ -386,9 +388,11 @@ class MediaManagement(models.Model):
     
 class Campaign(models.Model):
     campaign_id = models.AutoField(primary_key=True)
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50, null=True, blank=True)
-    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20)
+    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20, default='active')
+    start_date = models.DateField(auto_now_add=False)   
+    end_date = models.DateField(auto_now_add=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -407,9 +411,9 @@ class InternalChat(models.Model):
     
 class Report(models.Model):
     report_id = models.AutoField(primary_key=True)
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=50, null=True, blank=True)
-    data = models.TextField(null=True, blank=True)
+    data = models.FileField(upload_to='Reposts', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

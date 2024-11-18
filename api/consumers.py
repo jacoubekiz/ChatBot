@@ -81,10 +81,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json["conversation_id"]
         content = text_data_json["content"]
-        media_url = text_data_json["media_url"]
+        # media_url = text_data_json["media_url"]
         content_type = text_data_json["content_type"]
 
-        await self.get_conversation_id(conversation_id)
+        # await self.get_conversation_id(conversation_id)
 
         # Send message to room group
         await self.channel_layer.group_send(
@@ -92,7 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "chat_message", 
                 "conversation_id": conversation_id,
                 "content": content,
-                "media_url": media_url,
+                # "media_url": media_url,
                 "content_type": content_type
                 }
         )
@@ -101,22 +101,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         conversation_id = event["conversation_id"]
         content = event["content"]
-        media_url = event["media_url"]
+        # media_url = event["media_url"]
         content_type = event["content_type"]
         
         await self.send(text_data=json.dumps({
                 "conversation_id": conversation_id,
                 "content": content,
-                "media_url": media_url,
+                # "media_url": media_url,
                 "content_type": content_type
             }))
 
-    @database_sync_to_async
-    def create_message(self, message):
-        ms = MessageChat.objects.create(message=message)
+    # @database_sync_to_async
+    # def create_message(self, message):
+    #     ms = MessageChat.objects.create(message=message)
 
-    @database_sync_to_async
-    def get_conversation_id(self, conversation_id):
-        conversation_id = Conversation.objects.get(conversation_id=conversation_id)
-        return conversation_id.conversation_id
+    # @database_sync_to_async
+    # def get_conversation_id(self, conversation_id):
+    #     conversation_id = Conversation.objects.get(conversation_id=conversation_id)
+    #     return conversation_id.conversation_id
     

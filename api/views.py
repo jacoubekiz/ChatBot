@@ -1083,6 +1083,16 @@ class GetDataFromRedis(APIView):
         #             ]}, 
         #             "field": "messages"}}}'''
         log_entry = json.loads(raw_data)
+
+        mid = log_entry.get('event', '').get('mid', '')
+        contact = log_entry.get('event', '').get('payload', '').get('recipient_id', '')
+        contact_id = Contact.objects.filter(phone_number=contact_id).first()
+        conversation = Conversation.objects.get()
+        message = ChatMessage.objects.get_or_create()
+
+
+
+        
         # value = log_entry.get('event', '').get('value', '')
         # if value:
         #     print('hello')
@@ -1114,4 +1124,4 @@ class GetDataFromRedis(APIView):
                 # ws.send("Hello, server!")
                 # print(ws.recv())
                 # ws.close()
-        return Response({'message':log_entry}, status=status.HTTP_200_OK)
+        return Response({'message':raw_data}, status=status.HTTP_200_OK)

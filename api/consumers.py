@@ -83,7 +83,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = text_data_json["content"]
         # media_url = text_data_json["media_url"]
         content_type = text_data_json["content_type"]
-
+        with open('test_chat.txt', 'a') as test:
+            test.write(f'''{conversation_id}---{content}---{content_type}''')
         # await self.get_conversation_id(conversation_id)
 
         # Send message to room group

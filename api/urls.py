@@ -34,7 +34,7 @@ urlpatterns = [
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/', ListConversationView.as_view(), name='conversations'),
 
-    # path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
-    # path('test-webhook/', WebhookView.as_view(), name='test-webhook'),
+    path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
+    path('test-webhook/', WebhookView.as_view(), name='test-webhook'),
 ]
 

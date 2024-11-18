@@ -21,17 +21,17 @@ class uploadfile(APIView):
         with open(f'media/files/{file_name}', 'a') as f:
             f.write(f'''
 اسم المستخدم: {request.data['name']}
-
+------------------------------------
 رقم هاتف المستخدم: {request.data['phonenumber']}
-
+------------------------------------
 بناء القائد في تجربتك, هل تنصح الآخرين بالتعامل معنا؟ {request.data['deal_with_us']}
-
+------------------------------------
 هل سيتم إعادة الشراء من متجر سندس؟ {request.data['re_purchase']}
-
+------------------------------------
 هل لديك اقتراحات أو تعليقات توجه إلى تجربتنا؟ {request.data['suggestion']}
-
+------------------------------------
 ما أكثر خدمة الاستقبال الخاصة بك في تجربتك معنا؟ {request.data['reception_service']}
-
+------------------------------------
 ما مدى رضاك العام عن خدماتنا ومنتجاتنا؟ {request.data['evaluation']}
 ''')
         file = open(f'media/files/{file_name}', 'rb')

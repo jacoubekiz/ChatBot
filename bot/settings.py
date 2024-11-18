@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'gdstorage',
 ]
 
-GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = 'sound-folder-441907-g6-14f5ad8dc314.json'
+GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = 'sound-folder-441907-g6-42c246a1319f.json'
 AUTH_USER_MODEL = "api.CustomUser"
 
 

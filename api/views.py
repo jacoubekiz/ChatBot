@@ -1125,3 +1125,17 @@ class GetDataFromRedis(APIView):
                 # print(ws.recv())
                 # ws.close()
         return Response({'message':raw_data}, status=status.HTTP_200_OK)
+    
+
+import base64
+from django.http import JsonResponse
+class ImageToBase64View(APIView):
+    def get(self, request):
+        image = request.data['image']
+        img_data = image.read()
+        encoded_img = base64.b64encode(img_data).decode('utf-8')
+
+        return JsonResponse({
+            "success": True,
+            "base64_image": f"data:image/{image.content_type};base64,{encoded_img}"
+        })

@@ -322,10 +322,10 @@ class Channle(models.Model):
     channle_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     type_channle = models.CharField(choices=TYPE_CHANNLE, max_length=25)
-    tocken = models.TextField()
-    phone_number = models.PositiveBigIntegerField()
-    phone_number_id = models.PositiveBigIntegerField()
-    organization_id = models.PositiveBigIntegerField()
+    # tocken = models.TextField()
+    # phone_number = models.PositiveBigIntegerField()
+    # phone_number_id = models.PositiveBigIntegerField()
+    # organization_id = models.PositiveBigIntegerField()
     name = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -444,3 +444,7 @@ class Setting(models.Model):
     def __str__(self) -> str:
         return f'setting for account {self.account_id.name}'
     
+
+
+class UploadImage(models.Model):
+    image_file = models.FileField(upload_to='chat_message/')

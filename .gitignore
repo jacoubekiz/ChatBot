@@ -1,3 +1,7 @@
 media/flows/
+media/files/
+media/chat_message/
 __pycache__/
 .env
+sound-folder-441907-g6-42c246a1319f.json
+test_chat.txt

@@ -36,5 +36,7 @@ urlpatterns = [
 
     path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
     path('test-webhook/', WebhookView.as_view(), name='test-webhook'),
+
+    path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),
 ]
 

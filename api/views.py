@@ -1136,6 +1136,9 @@ class ImageToBase64View(APIView):
         encoded_img = base64.b64encode(img_data).decode('utf-8')
 
         return JsonResponse({
-            "success": True,
-            "base64_image": f"data:image/{image.content_type};base64,{encoded_img}"
+            # "success": True,
+            "base64_image": encoded_img
         })
+    
+
+

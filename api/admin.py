@@ -99,7 +99,7 @@ admin.site.site_header = "ICSL Bot Creator"
 
 
 
-
+admin.site.register(UploadImage)
 
 admin.site.register(Contact)
 admin.site.register(Conversation)

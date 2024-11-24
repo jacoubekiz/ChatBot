@@ -83,50 +83,75 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json["conversation_id"]
         content = text_data_json["content"]
-        # media_url = text_data_json["media_url"]
         content_type = text_data_json["content_type"]
 
-        image_data = text_data_json['image']
-
-        # decode base64 string to bytes
-        decoded_image = base64.b64decode(image_data)
-
-        # Create ContentFile object with the decoded image data
-
-        with open('test_chat.txt', 'a') as test:
-            test.write(f'''{conversation_id}---{content}---{content_type}''')
-        # await self.get_conversation_id(conversation_id)
+        # handel receive image
+        if content.startswith('image:'):
+            decoded_image = base64.b64decode(content[6:])
+            image_file = ContentFile(decoded_image, name='received_image.jpg')
+            await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
+        # Send image to room group
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "chat_message", 
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": content_type,
+                }
+            )
+        
+        # handel receive video
+        elif content.startswith('video:'):
+            decoded_video = base64.b64decode(content[6:])
+            image_file = ContentFile(decoded_video, name='video_received.mp4')
+            await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
+        # Send video to room group
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "chat_message", 
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": content_type,
+                }
+            )
 
         # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name, {
-                "type": "chat_message", 
-                "conversation_id": conversation_id,
-                "content": content,
-                # "media_url": media_url,
-                "content_type": content_type,
-                "decoded_image":decoded_image
+        else:
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "chat_message", 
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": content_type,
                 }
-        )
-
+            )
     # Receive message from room group
     async def chat_message(self, event):
         conversation_id = event["conversation_id"]
         content = event["content"]
-        # media_url = event["media_url"]
         content_type = event["content_type"]
-        decoded_image = event["decoded_image"]
-        dat = "hello"
-        image_file = ContentFile(decoded_image, name='received_image.jpg')
-        await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
 
-        await self.send(text_data=json.dumps({
-                "conversation_id": conversation_id,
-                "content": content,
-                # "media_url": media_url,
-                "content_type": content_type,
-            }))
-
+        # handel image
+        if content.startswith('image:'):
+            await self.send(text_data=json.dumps({
+                    "conversation_id": conversation_id,
+                    "content": content[6:],
+                    "content_type": content_type,
+                }))
+        # handle video
+        elif content.startswith('video:'):
+            await self.send(text_data=json.dumps({
+                    "conversation_id": conversation_id,
+                    "content": content[6:],
+                    "content_type": content_type,
+                }))
+        # handel message  
+        else:
+            await self.send(text_data=json.dumps({
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": content_type,
+                }))
     # @database_sync_to_async
     # def create_message(self, message):
     #     ms = MessageChat.objects.create(message=message)

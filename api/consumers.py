@@ -1,62 +1,3 @@
-# import json
-# from .models import *
-# from channels.generic.websocket import AsyncWebsocketConsumer
-# from channels.db import database_sync_to_async
-# from django.core.files.storage import default_storage
-# from django.core.files.base import ContentFile
-# import base64
-
-# class ChatConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-#         self.room_group_name = "chat_%s" % self.room_name
-
-#         # Join room group
-#         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-
-#         await self.accept()
-#         # for message in messages:
-#         #     await self.send(text_data=json.dupms(messages))
-
-#     async def disconnect(self, close_code):
-#         # Leave room group
-#         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
-#     # Receive message from WebSocket
-#     async def receive(self, text_data):
-#         text_data_json = json.loads(text_data)
-#         # message = text_data_json["message"]
-#         if text_data.startswith('image:'):
-#            image_data = text_data[:6]
-#            image_bytes = base64.b64decode(image_data)
-#            filename = 'received_image.png'
-#            path = default_storage.save(filename, ContentFile(image_bytes))
-#            await self.send(text_data=f"image received and save")
-#         # Send message to room group
-#         # await self.channel_layer.group_send(
-#         #     self.room_group_name, {"type": "chat_message", "message": message}
-#         # )
-
-#     # Receive message from room group
-#     # async def chat_message(self, event):
-#     #     # message = event["message"]
-
-#     #     # Send message to WebSocket
-#     #     await self.create_message(message)
-#     #     await self.send(text_data=json.dumps({"message": message}))
-
-#     @database_sync_to_async
-#     def create_message(self, message):
-#         ms = MessageChat.objects.create(message=message)
-
-#     # @database_sync_to_async
-#     # def get_msgs_chat(self):
-#     #     messages = MessageChat.objects.all()
-#     #     serializer = MessageChatSerializer(messages, many=True)
-#     #     return serializer.data
-
-
-
 import json
 from .models import *
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -69,11 +10,11 @@ import os
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.user = self.scope['user']
         self.room_group_name = "chat_%s" % self.room_name
 
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -86,10 +27,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
+        type_content_receive = text_data_json["type_content_receive"]
 
         # handel receive voice message
         if content_type == 'voice':
-            await database_sync_to_async(UploadImage.objects.create)(image_file=content)
+            decoded_voice = base64.b64decode(content)
+            voice_file = ContentFile(decoded_voice, name=f'received_voice.{type_content_receive}')
+            await database_sync_to_async(UploadImage.objects.create)(image_file=voice_file)
         # Send image to room group
             await self.channel_layer.group_send(
                     self.room_group_name, {
@@ -100,15 +44,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 )
 
-            # print(dir_path)
-            # with open(dir_path+'\\hussam.mp3', 'r', encoding='utf-8') as voice:
-            #     voice.read()
-            # print(voice)
 
         # handel receive image
-        if content.startswith('image:'):
-            decoded_image = base64.b64decode(content[6:])
-            image_file = ContentFile(decoded_image, name='received_image.jpg')
+        elif content_type == 'image':
+            decoded_image = base64.b64decode(content)
+            image_file = ContentFile(decoded_image, name=f'received_image.{type_content_receive}')
             await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
         # Send image to room group
             await self.channel_layer.group_send(
@@ -121,10 +61,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         
         # handel receive video
-        elif content.startswith('video:'):
-            decoded_video = base64.b64decode(content[6:])
-            image_file = ContentFile(decoded_video, name='video_received.mp4')
-            await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
+        elif content_type == 'video':
+            decoded_video = base64.b64decode(content)
+            video_file = ContentFile(decoded_video, name=f'received_video.{type_content_receive}')
+            await database_sync_to_async(UploadImage.objects.create)(image_file=video_file)
         # Send video to room group
             await self.channel_layer.group_send(
                 self.room_group_name, {
@@ -135,8 +75,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+        # Send document to room group
+        elif content_type == 'document':
+            decoded_document = base64.b64decode(content)
+            document_file = ContentFile(decoded_document, name=f'document_received.{type_content_receive}')
+            await database_sync_to_async(UploadImage.objects.create)(image_file=document_file)
+        # Send document to room group
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "chat_message", 
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": content_type,
+                }
+            )
         # Send message to room group
-        else:
+        elif content_type == 'text':
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message", 
@@ -158,22 +112,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "content_type": content_type,
                 }))
 
-        # handel image
-        if content.startswith('image:'):
+        elif content_type == 'document':
             await self.send(text_data=json.dumps({
                     "conversation_id": conversation_id,
-                    "content": content[6:],
+                    "content": content,
+                    "content_type": content_type,
+                }))
+
+
+        # handel image
+        elif content_type == 'image':
+            await self.send(text_data=json.dumps({
+                    "conversation_id": conversation_id,
+                    "content": content,
                     "content_type": content_type,
                 }))
         # handle video
-        elif content.startswith('video:'):
+        elif content_type == 'video':
             await self.send(text_data=json.dumps({
                     "conversation_id": conversation_id,
-                    "content": content[6:],
+                    "content": content,
                     "content_type": content_type,
                 }))
         # handel message  
-        else:
+        elif content_type == 'text':
             await self.send(text_data=json.dumps({
                     "conversation_id": conversation_id,
                     "content": content,

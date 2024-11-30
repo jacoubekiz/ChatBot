@@ -1,5 +1,4 @@
 media/flows/
-media/files/
 media/chat_message/
 __pycache__/
 .env

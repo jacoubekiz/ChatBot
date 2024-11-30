@@ -8,13 +8,17 @@ application = get_asgi_application()
 # Channels routing
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.security.websocket import AllowedHostsOriginValidator
 import api.routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            api.routing.websocket_urlpatterns
-        )
-    ),
+    "websocket": 
+    # AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
+            URLRouter(
+                api.routing.websocket_urlpatterns
+            )
+        ),
+    # )
 })

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django_redis',
     'webhook',
     'gdstorage',
+    
 ]
 
 GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = 'sound-folder-441907-g6-42c246a1319f.json'

@@ -28,6 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
         media_name = text_data_json["media_name"]
+        type_content_receive = text_data_json["type_content_receive"]
 
         # handel receive voice message
         if content_type == 'voice':
@@ -87,6 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    "type_content_receive":type_content_receive,
                 }
             )
         # Send message to room group
@@ -104,6 +106,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = event["conversation_id"]
         content = event["content"]
         content_type = event["content_type"]
+        type_content_receive = event["type_content_receive"]
 
         #handel voice
         if content_type == 'voice':
@@ -119,6 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    "type_content_receive":type_content_receive
                 }))
 
 

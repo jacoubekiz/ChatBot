@@ -27,11 +27,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
-        media_name = text_data_json["media_name"]
-        type_content_receive = text_data_json["type_content_receive"]
+        
+        
 
         # handel receive voice message
         if content_type == 'voice':
+            media_name = text_data_json["media_name"]
             decoded_voice = base64.b64decode(content)
             voice_file = ContentFile(decoded_voice, name=media_name)
             await database_sync_to_async(UploadImage.objects.create)(image_file=voice_file)
@@ -48,6 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # handel receive image
         elif content_type == 'image':
+            media_name = text_data_json["media_name"]
             decoded_image = base64.b64decode(content)
             image_file = ContentFile(decoded_image, name=media_name)
             await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
@@ -63,6 +65,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # handel receive video
         elif content_type == 'video':
+            media_name = text_data_json["media_name"]
             decoded_video = base64.b64decode(content)
             video_file = ContentFile(decoded_video, name=media_name)
             await database_sync_to_async(UploadImage.objects.create)(image_file=video_file)
@@ -78,6 +81,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Send document to room group
         elif content_type == 'document':
+            media_name = text_data_json["media_name"]
+            type_content_receive = text_data_json["type_content_receive"]
             decoded_document = base64.b64decode(content)
             document_file = ContentFile(decoded_document, name=media_name)
             await database_sync_to_async(UploadImage.objects.create)(image_file=document_file)
@@ -106,7 +111,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = event["conversation_id"]
         content = event["content"]
         content_type = event["content_type"]
-        type_content_receive = event["type_content_receive"]
+        
 
         #handel voice
         if content_type == 'voice':
@@ -118,6 +123,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         #handel document
         elif content_type == 'document':
+            type_content_receive = event["type_content_receive"]
             await self.send(text_data=json.dumps({
                     "conversation_id": conversation_id,
                     "content": content,

@@ -328,7 +328,7 @@ class Channle(models.Model):
     # organization_id = models.PositiveBigIntegerField()
     name = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name
@@ -340,7 +340,7 @@ class Conversation(models.Model):
     contact_id = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(choices=STATUS, max_length=20, default='open')
     created_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return f'conversation for contact {self.contact_id.name}'

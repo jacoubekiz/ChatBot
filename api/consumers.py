@@ -1,21 +1,29 @@
 import json
 from .models import *
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.core.files.base import ContentFile
+from .serializers import ChatMessageSerializer
 import base64
-import os
+
 # from pydub import AudioSegment
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
         self.user = self.scope['user']
-        self.room_group_name = "chat_%s" % self.room_name
+        if self.user.is_authenticated:
+            self.room_group_name = "chat_%s" % self.conversation_id
+            # Join room group
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            await self.accept()
+            messages = await self.get_messages(self.conversation_id)
+            for message in messages:
+                await self.send(text_data=json.dumps(message))
+        else:
+            await self.close()
 
-        # Join room group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -24,7 +32,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        conversation_id = text_data_json["conversation_id"]
+        conversation_id = self.conversation_id
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
         
@@ -119,6 +127,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    # "sender":self.user
                 }))
 
         #handel document
@@ -128,7 +137,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
-                    "type_content_receive":type_content_receive
+                    "type_content_receive":type_content_receive,
+                    # "sender":self.user
                 }))
 
 
@@ -138,6 +148,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content":content,
                     "content_type": content_type,
+                    # "sender":self.user
                 }))
             
         # handle video
@@ -146,6 +157,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    # "sender":self.user
                 }))
             
         # handel message  
@@ -154,7 +166,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    "sender":self.user.email
                 }))
+            await self.create_chat_message(conversation_id, content_type, content)
+            
+    @database_sync_to_async
+    def create_chat_message(self, conversation_id, content_type, content):
+        conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()
+        print(conversation_id)
+        chat_message = ChatMessage.objects.create(
+            conversation_id = conversation_id,
+            user_id = CustomUser1.objects.filter(id=self.user.id).first(),
+            content_type = content_type,
+            content = content,
+            wamid ="1241412523423412"
+        )
+    @database_sync_to_async
+    def get_messages(self, conversation_id):
+        conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first(order_by)
+        messages = conversation_id.chatmessage_set.all()
+        serializer_messages = ChatMessageSerializer(messages, many=True)
+        return serializer_messages.data
+
 
 
 class DocumentConsumers(AsyncWebsocketConsumer):

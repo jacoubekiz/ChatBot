@@ -915,18 +915,28 @@ class ViewLogin(GenericAPIView):
         email = data_request['email']
         try:
             user = CustomUser1.objects.get(email=email)
+            token = RefreshToken.for_user(user)
+            tokens = {'refresh':str(token), 'access':str(token.access_token)}
+            data = {
+                'tokens':tokens,
+                'user': {
+                    'id':user.id,
+                    'name':user.username,
+                    'role':user.role
+                }
+            }
         except:
             user = CustomUser.objects.get(email=email)
-        token = RefreshToken.for_user(user)
-        tokens = {'refresh':str(token), 'access':str(token.access_token)}
-        data = {
-            'tokens':tokens,
-            'user': {
-                'id':user.id,
-                'name':user.username,
-                'role':user.role
+            token = RefreshToken.for_user(user)
+            tokens = {'refresh':str(token), 'access':str(token.access_token)}
+            data = {
+                'tokens':tokens,
+                'user': {
+                    'id':user.id,
+                    'name':user.username,
+                    # 'role':user.role
+                }
             }
-        }
         return Response(data, status=status.HTTP_200_OK)
     
 # End Points for Logout User

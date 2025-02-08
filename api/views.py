@@ -913,7 +913,10 @@ class ViewLogin(GenericAPIView):
         serializer = LoginSerializer(data = data_request, many=False)
         serializer.is_valid(raise_exception=True)
         email = data_request['email']
-        user = CustomUser1.objects.get(email=email)
+        try:
+            user = CustomUser1.objects.get(email=email)
+        except:
+            user = CustomUser.objects.get(email=email)
         token = RefreshToken.for_user(user)
         tokens = {'refresh':str(token), 'access':str(token.access_token)}
         data = {

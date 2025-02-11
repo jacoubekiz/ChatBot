@@ -354,7 +354,7 @@ def send_message(version = '18.0',
 
             payload = json.dumps({
             "messaging_product": f"{messaging_product}",
-            "preview_url": question.get('previewUrl'),
+            # "preview_url": question.get('previewUrl'),
             "recipient_type": "individual",
             "to": f"{to}",
             "type": f"{type}",
@@ -369,7 +369,7 @@ def send_message(version = '18.0',
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        # print(response.content)
+        print(response.status_code)
     elif platform == 'beam':
         url = f'https://offapi-sccc-test.rongcloud.net/v1/{wa_id}/message'
         if type == 'interactive':
@@ -525,3 +525,16 @@ def validate_phone_number(phone_number):
 #     ws = websocket.create_connection(websocket_url, cookie=cookies)
     
 #     return ws
+
+
+
+import hashlib
+
+def generate_message_key(message_id, wamid):
+    # Combine message_id and wamid with a separator
+    combined = f"{message_id}_{wamid}"
+    
+    # Optionally, hash the combined string for a fixed-length key
+    key = hashlib.sha256(combined.encode()).hexdigest()
+    
+    return str(key)

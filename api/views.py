@@ -965,15 +965,15 @@ class ListConversationView(GenericAPIView):
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        conversation = Conversation.objects.all()
+    def get(self, request, channel_id):
+        conversation = Conversation.objects.filter(channle_id=channel_id)
         serializer = self.get_serializer(conversation, many=True)
         return Response(serializer.data)
     
-    def post(self, request):
+    def post(self, request, channel_id):
         data = request.data
-        channel = Channle.objects.filter(channle_id = data['channel_id']).first()
-        contact = Contact.objects.filter(contact_id = data['contact_id']).first()
+        channel = Channle.objects.filter(channle_id = channel_id).first()
+        contact = Contact.objects.filter(contact_id = channel_id).first()
         conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
 
@@ -1037,106 +1037,76 @@ class GetDataFromRedis(APIView):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
         # print(raw_data)
-        # raw = '''
-        # {"event": 
-        #     {"value": {
-        #         "messaging_product": 
-        #             "whatsapp", 
-        #             "metadata": {
-        #                 "display_phone_number": "966920025589",
-        #                 "phone_number_id": "157289147477280"
-        #             },
-        #         "contacts": [
-        #             {
-        #                 "profile": {
-        #                 "name": "عبدالرحمن"
-        #             }, 
-        #             "wa_id": "966582752803"}
-        #         ], 
-        #         "messages": [
-        #             {
-        #                 "from": "966582752803",
-        #                 "id": "wamid.HBgMOTY2NTgyNzUyODAzFQIAEhgUM0FDOEEyQzA2MkM2NTU1NzA5MDMA",
-        #                 "timestamp": "1730742922",
-        #                 "text": {
-        #                     "body":
-        #                     "Abdulrhamn.1.8@gmail.com"
-        #                     }, 
-        #                 "type": "text"
-        #             }
-        #         ]
-        #         }, 
-        #         "field": "messages"
-        #     }
-        # }'''
-        # raw = '''{
-        #     "event": {
-        #         "mid": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
-        #         "status": "read",
-        #         "payload": {
-        #             "id": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
-        #             "status": "read",
-        #             "timestamp": "1730735977",
-        #             "recipient_id": "966567864267"
-        #             },
-        #         "event": {
-        #             "value": {
-        #                 "messaging_product": "whatsapp",
-        #                 "metadata": {
-        #                     "display_phone_number": "966920025589",
-        #                     "phone_number_id": "157289147477280"
-        #                 }, 
-        #             "statuses": [
-        #                 {
-        #                     "id": "wamid.HBgMOTY2NTY3ODY0MjY3FQIAERgSMkI5MzJFRjVDMENDRTU4NjRDAA==",
-        #                     "status": "read",
-        #                     "timestamp": "1730735977",
-        #                     "recipient_id": "966567864267"
-        #                 }
-        #             ]}, 
-        #             "field": "messages"}}}'''
+#         raw = '''
+#             {"event": {
+#             "value": {
+#                 "messaging_product": "whatsapp",
+#                 "metadata": {
+#                     "display_phone_number": "966920025589",
+#                     "phone_number_id": "157289147477280"
+#                 },
+#                 "contacts": [
+#                     {
+#                         "profile": {
+#                             "name": "Jacoub"
+#                         },
+#                         "wa_id": "966114886645"
+#                     }
+#                 ],
+#                 "messages": [
+#                     {
+#                         "from": "966114886645",
+#                         "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzlEQzRCRjY5N0YwMTA4MjJBREJEQTE0MDAwMjgyOUIA",
+#                         "timestamp": "1739256157",
+#                         "text": {
+#                             "body": "Restart"
+#                         },
+#                         "type": "text"
+#                     }
+#                 ]
+#             },
+#             "field": "messages"
+#         }
+#         }
+# '''
         log_entry = json.loads(raw_data)
-
-        mid = log_entry.get('event', '').get('mid', '')
-        contact = log_entry.get('event', '').get('payload', '').get('recipient_id', '')
-        contact_id = Contact.objects.filter(phone_number=contact_id).first()
-        conversation = Conversation.objects.get()
-        message = ChatMessage.objects.get_or_create()
-
-
-
-        
-        # value = log_entry.get('event', '').get('value', '')
-        # if value:
-        #     print('hello')
-        #     content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
-        #     wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
-        #     content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-        #     from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from ', '')
-        #     timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
-        #     messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
-        #     display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
-        #     phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
-        #     contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
-        #     if contacts:
-        #         name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
-        #         wa_id = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('wa_id', '')
-        #         contact, created = Contact.objects.get_or_create(name=name, phone_number=wa_id)
-        #         print(contact, wa_id)
-        #         conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id)
-        #         print(conversation, conversation.account_id.name)
-                # chat_message = ChatMessage.objects.create(
-                #     conversation_id=conversation,
-                #     content_type=content_type,
-                #     content=content,
-                #     wamid=wamid,
-                # )
-                # url = 'http://127.0.0.1:8000/ws/chat/jacoub/'
-                # ws = upgrade_to_websocket(url)
-                # # Now you can use the ws object to send and receive messages
-                # ws.send("Hello, server!")
-                # print(ws.recv())
-                # ws.close()
+        value = log_entry.get('event', '').get('value', '')
+        if value:
+            print('hello')
+            content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+            wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+            content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+            from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+            timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+            messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+            display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+            phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+            contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+            if contacts:
+                name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+                contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
+                channel = Channle.objects.filter(phone_number=display_phone_number).first()
+                conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
+                chat_message = ChatMessage.objects.create(
+                    conversation_id=conversation,
+                    content_type=content_type,
+                    content=content,
+                    wamid=wamid,
+                    user_id= CustomUser1.objects.get(id=15)
+                )
+                # message_key = generate_message_key(chat_message.message_id, wamid)
+                # print(message_key)
+                # chat_message.message_key=str(message_key)
+                # chat_message.save()
+                # print(generate_message_key(chat_message.message_id, wamid))
+        else:
+            mid = log_entry.get('event', {}).get('mid', ' ')
+            status_messaage = log_entry.get('event', {}).get('status', ' ')
+            status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
+            message = ChatMessage.objects.get(wamid=mid)
+            message.status_message = status_messaage
+            message.status_updated_at = status_updated_at
+            message.save()
         return Response({'message':raw_data}, status=status.HTTP_200_OK)
     
 

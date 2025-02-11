@@ -32,10 +32,10 @@ urlpatterns = [
 
     path('teams/', GetTeamView.as_view(), name='teams'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
-    path('conversations/', ListConversationView.as_view(), name='conversations'),
+    path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
 
     path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
-    path('test-webhook/', WebhookView.as_view(), name='test-webhook'),
+    path('webhook/', WebhookView.as_view(), name='webhook'),
 
     path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),
 ]

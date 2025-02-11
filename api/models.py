@@ -323,8 +323,8 @@ class Channle(models.Model):
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     type_channle = models.CharField(choices=TYPE_CHANNLE, max_length=25)
     # tocken = models.TextField()
-    # phone_number = models.PositiveBigIntegerField()
-    # phone_number_id = models.PositiveBigIntegerField()
+    phone_number = models.PositiveBigIntegerField(default=1)
+    phone_number_id = models.PositiveBigIntegerField(default=1)
     # organization_id = models.PositiveBigIntegerField()
     name = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -352,6 +352,7 @@ class Conversation(models.Model):
     
 class ChatMessage(models.Model):
     message_id = models.AutoField(primary_key=True)
+    message_key = wamid = models.CharField(max_length=500, default='123')
     conversation_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE)
     content_type = models.CharField(choices=CONTENT_TYPE, max_length=20)

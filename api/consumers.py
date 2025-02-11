@@ -6,6 +6,7 @@ from channels.db import database_sync_to_async
 from django.core.files.base import ContentFile
 from .serializers import ChatMessageSerializer
 import base64
+from .utils import *
 
 # from pydub import AudioSegment
 
@@ -168,6 +169,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "content_type": content_type,
                     "sender":self.user.email
                 }))
+            # send_message(
+            #     message_content=content,
+            #     to='966114886645',
+            #     wa_id=157289147477280,
+            #     bearer_token="Bearer EAACWgHBBCVEBO7y3ZBHRrZBTQXgDbWxK7V4ZCenf5AbYvFjqyZCkj6fTERoeesFmnMumd0ZC3w8iZC7v00ORU3BIoTX9JA9EV61C4j5q10dFdZBN71oaezUIicCbWidggZCg0Bkof2Ent36Ng5QxZAAoTZBAQdhOAOZBKHmeMFINLhDf4WXKbzxC1vNJ0pG041VsGTr",
+            #     chat_id=conversation_id,
+            #     platform="whatsapp",
+            #     # question="statement"
+            # )
             await self.create_chat_message(conversation_id, content_type, content)
             
     @database_sync_to_async

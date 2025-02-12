@@ -1030,19 +1030,17 @@ class WebhookView(APIView):
             print(f"Error processign webhok: {str(e)}")
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@method_decorator(csrf_exempt, name='dispatch')
-class GetDataFromRedis(APIView):
 
+@method_decorator(csrf_exempt, name='dispatch')
+class GetData(APIView):
     def get(self, request):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
-        f = open('get_from_redis.txt', 'a')
+        f = open('data_redis.txt', 'a')
         f.write(str(raw_data) + '\n')
         if raw_data == None:
             return Response({'message':raw_data}, status=status.HTTP_200_OK)
         else:
-            f = open('get_from_redis.txt', 'a')
-            f.write(str(raw_data) + '\n')
             log_entry = json.loads(raw_data)
             value = log_entry.get('event', '').get('value', '')
             if value:
@@ -1067,11 +1065,6 @@ class GetDataFromRedis(APIView):
                         wamid=wamid,
                         user_id= CustomUser1.objects.get(id=15)
                     )
-                    # message_key = generate_message_key(chat_message.message_id, wamid)
-                    # print(message_key)
-                    # chat_message.message_key=str(message_key)
-                    # chat_message.save()
-                    # print(generate_message_key(chat_message.message_id, wamid))
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -1081,6 +1074,57 @@ class GetDataFromRedis(APIView):
                 message.status_updated_at = status_updated_at
                 message.save()
             return Response({'message':raw_data}, status=status.HTTP_200_OK)
+# @method_decorator(csrf_exempt, name='dispatch')
+# class GetDataFromRedis(APIView):
+
+#     def get(self, request):
+#         redis_client = get_redis_connection()
+#         raw_data = redis_client.lpop('data_queue')
+#         #f = open('get_from_redis.txt', 'a')
+#         #f.write(str(raw_data) + '\n')
+#         if raw_data == None:
+#             return Response({'message':raw_data}, status=status.HTTP_200_OK)
+#         else:
+#             f = open('get_from_redis.txt', 'a')
+#             f.write(str(raw_data) + '\n')
+#             log_entry = json.loads(raw_data)
+#             value = log_entry.get('event', '').get('value', '')
+#             if value:
+#                 content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+#                 wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+#                 content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+#                 from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+#                 timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+#                 messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+#                 display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+#                 phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+#                 contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+#                 if contacts:
+#                     name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+#                     contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
+#                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
+#                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
+#                     chat_message = ChatMessage.objects.create(
+#                         conversation_id=conversation,
+#                         content_type=content_type,
+#                         content=content,
+#                         wamid=wamid,
+#                         user_id= CustomUser1.objects.get(id=15)
+#                     )
+#                     # message_key = generate_message_key(chat_message.message_id, wamid)
+#                     # print(message_key)
+#                     # chat_message.message_key=str(message_key)
+#                     # chat_message.save()
+#                     # print(generate_message_key(chat_message.message_id, wamid))
+#             else:
+#                 mid = log_entry.get('event', {}).get('mid', ' ')
+#                 status_messaage = log_entry.get('event', {}).get('status', ' ')
+#                 status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
+#                 message = ChatMessage.objects.get(wamid=mid)
+#                 message.status_message = status_messaage
+#                 message.status_updated_at = status_updated_at
+#                 message.save()
+#             return Response({'message':raw_data}, status=status.HTTP_200_OK)
     
 
 import base64

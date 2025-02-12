@@ -10,6 +10,7 @@ urlpatterns = [
     path('bot-api/', BotAPI.as_view(), name = 'bot_api'),
     path('', include(router.urls)),
 
+    path('get-redis/', GetData.as_view()),
 
     path('create-calander/', CreateCalenderView.as_view(), name='create-calander'),
     path('get-calander/<str:user_id>/', GetCalenderView.as_view(), name='get-calander'),
@@ -34,7 +35,7 @@ urlpatterns = [
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
 
-    path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
+    # path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
     path('webhook/', WebhookView.as_view(), name='webhook'),
 
     path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),

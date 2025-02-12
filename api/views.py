@@ -1037,10 +1037,9 @@ class GetDataFromRedis(APIView):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
         print(raw_data)
-        try:
+        if raw_data != None:
             f = open('2025-2-12.txt', 'a')
             f.write(str(raw_data) + 'n')
-            # print(raw_data)
     #         raw = '''
     #             {"event": {
     #             "value": {
@@ -1112,7 +1111,7 @@ class GetDataFromRedis(APIView):
                 message.status_updated_at = status_updated_at
                 message.save()
                 return Response({'message':raw_data}, status=status.HTTP_200_OK)
-        except:
+        else:
             return Response({'message':raw_data}, status=status.HTTP_200_OK)
     
 

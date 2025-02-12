@@ -1036,46 +1036,12 @@ class GetDataFromRedis(APIView):
     def get(self, request):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
-        print(raw_data)
         if raw_data != None:
             f = open('2025-2-12.txt', 'a')
-            f.write(str(raw_data) + 'n')
-    #         raw = '''
-    #             {"event": {
-    #             "value": {
-    #                 "messaging_product": "whatsapp",
-    #                 "metadata": {
-    #                     "display_phone_number": "966920025589",
-    #                     "phone_number_id": "157289147477280"
-    #                 },
-    #                 "contacts": [
-    #                     {
-    #                         "profile": {
-    #                             "name": "Jacoub"
-    #                         },
-    #                         "wa_id": "966114886645"
-    #                     }
-    #                 ],
-    #                 "messages": [
-    #                     {
-    #                         "from": "966114886645",
-    #                         "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzlEQzRCRjY5N0YwMTA4MjJBREJEQTE0MDAwMjgyOUIA",
-    #                         "timestamp": "1739256157",
-    #                         "text": {
-    #                             "body": "Restart"
-    #                         },
-    #                         "type": "text"
-    #                     }
-    #                 ]
-    #             },
-    #             "field": "messages"
-    #         }
-    #         }
-    # '''
+            f.write(str(raw_data) + '\n')
             log_entry = json.loads(raw_data)
             value = log_entry.get('event', '').get('value', '')
             if value:
-                print('hello')
                 content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
                 wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
                 content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')

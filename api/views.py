@@ -1036,8 +1036,12 @@ class GetDataFromRedis(APIView):
     def get(self, request):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
-        if raw_data != None:
-            f = open('2025-2-12.txt', 'a')
+        f = open('get_from_redis.txt', 'a')
+        f.write(str(raw_data) + '\n')
+        if raw_data == None:
+            return Response({'message':raw_data}, status=status.HTTP_200_OK)
+        else:
+            f = open('get_from_redis.txt', 'a')
             f.write(str(raw_data) + '\n')
             log_entry = json.loads(raw_data)
             value = log_entry.get('event', '').get('value', '')
@@ -1076,8 +1080,6 @@ class GetDataFromRedis(APIView):
                 message.status_message = status_messaage
                 message.status_updated_at = status_updated_at
                 message.save()
-                return Response({'message':raw_data}, status=status.HTTP_200_OK)
-        else:
             return Response({'message':raw_data}, status=status.HTTP_200_OK)
     
 

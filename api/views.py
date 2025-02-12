@@ -1036,6 +1036,8 @@ class GetDataFromRedis(APIView):
     def get(self, request):
         redis_client = get_redis_connection()
         raw_data = redis_client.lpop('data_queue')
+        f = open('2025-2-12.txt', 'a')
+        f.write(str(raw_data) + 'n')
         # print(raw_data)
 #         raw = '''
 #             {"event": {

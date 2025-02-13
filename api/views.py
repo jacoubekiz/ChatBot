@@ -893,6 +893,7 @@ from .permissions import UserIsAdmin
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django_redis import get_redis_connection
 from django.utils.decorators import method_decorator
+import threading
 
 
 class ListCreateUserView(ListCreateAPIView):
@@ -1014,57 +1015,62 @@ class ListReportView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
+import asyncio
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):
 
     def post(self, request):
         try:
             data = request.data
-            redis_client = get_redis_connection()
-            redis_client.rpush('data_queue', json.dumps(data))
-            f = open('content_redis.txt', 'a')
-            f.write("recive redis: " + str(data) + '\n')
-            raw_data = redis_client.lpop('data_queue')
-            f.write("from redis: " + str(raw_data) + '\n')
-            if raw_data == None:
-                return Response({'message':data}, status=status.HTTP_200_OK)
-            else:
-                log_entry = json.loads(raw_data)
-                value = log_entry.get('event', '').get('value', '')
-                if value:
-                    content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
-                    wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
-                    content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-                    from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
-                    timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
-                    messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
-                    display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
-                    phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
-                    contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
-                    if contacts:
-                        name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
-                        contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
-                        channel = Channle.objects.filter(phone_number=display_phone_number).first()
-                        conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
-                        chat_message = ChatMessage.objects.create(
-                            conversation_id=conversation,
-                            content_type=content_type,
-                            content=content,
-                            wamid=wamid,
-                            user_id= CustomUser1.objects.get(id=15)
-                        )
-                else:
-                    mid = log_entry.get('event', {}).get('mid', ' ')
-                    status_messaage = log_entry.get('event', {}).get('status', ' ')
-                    status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
-                    message = ChatMessage.objects.get(wamid=mid)
-                    message.status_message = status_messaage
-                    message.status_updated_at = status_updated_at
-                    message.save()
-            return Response({'message':raw_data}, status=status.HTTP_200_OK)
+            thread = threading.Thread(target=handel_request_redis(data))
+            thread.start()
+            # asyncio.create_task(handel_request_redis(data))
+            # data = request.data
+            # redis_client = get_redis_connection()
+            # redis_client.rpush('data_queue', json.dumps(data))
+            # f = open('content_redis.txt', 'a')
+            # f.write("recive redis: " + str(data) + '\n')
+            # raw_data = redis_client.lpop('data_queue')
+            # f.write("from redis: " + str(raw_data) + '\n')
+            # if raw_data == '': 
+            #     return Response({'message':data}, status=status.HTTP_200_OK)
+            # else:
+            #     log_entry = json.loads(raw_data)
+            #     value = log_entry.get('event', '').get('value', '')
+            #     if value:
+            #         content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+            #         wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+            #         content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+            #         from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+            #         timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+            #         messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+            #         display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+            #         phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+            #         contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+            #         if contacts:
+            #             name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+            #             contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
+            #             channel = Channle.objects.filter(phone_number=display_phone_number).first()
+            #             conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
+            #             chat_message = ChatMessage.objects.create(
+            #                 conversation_id=conversation,
+            #                 content_type=content_type,
+            #                 content=content,
+            #                 wamid=wamid,
+            #                 user_id= CustomUser1.objects.get(id=15)
+            #             )
+            #     else:
+            #         mid = log_entry.get('event', {}).get('mid', ' ')
+            #         status_messaage = log_entry.get('event', {}).get('status', ' ')
+            #         status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
+            #         message = ChatMessage.objects.get(wamid=mid)
+            #         message.status_message = status_messaage
+            #         message.status_updated_at = status_updated_at
+            #         message.save()
+            return Response(status=status.HTTP_200_OK)
         except Exception as e:
-            print(f"Error processign webhok: {str(e)}")
+            f = open('redis_error.txt', 'a')
+            f.write(f"Error processign webhok: {str(e)}", '\n')
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

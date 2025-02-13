@@ -1024,8 +1024,9 @@ class WebhookView(APIView):
             redis_client = get_redis_connection()
             redis_client.rpush('data_queue', json.dumps(data))
             f = open('content_redis.txt', 'a')
-            f.write(str(data) + '\n')
+            f.write("recive redis: " + str(data) + '\n')
             raw_data = redis_client.lpop('data_queue')
+            f.write("from redis: " + str(raw_data) + '\n')
             if raw_data == None:
                 return Response({'message':data}, status=status.HTTP_200_OK)
             else:

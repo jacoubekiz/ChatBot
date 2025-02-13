@@ -536,12 +536,13 @@ def handel_request_redis(data):
         # print(data)
         print(data)
         redis_client = get_redis_connection()
-        redis_client.rpush('data_queue', json.dumps(data))
+        redis_client.lpush('data_queue', json.dumps(data))
         f = open('content_redis.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
-        raw_data = redis_client.lpop('data_queue')
-        f.write("from redis: " + str(raw_data) + '\n')
-        if raw_data == '': 
+        raw_data = redis_client.rpop('data_queue')
+        test_data = json.loads(raw_data)
+        f.write("from redis: " + str(test_data) + '\n')
+        if raw_data == None:
             return Response({'message':data}, status=status.HTTP_200_OK)
         else:
             log_entry = json.loads(raw_data)
@@ -563,10 +564,11 @@ def handel_request_redis(data):
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
                     chat_message = ChatMessage.objects.create(
                         conversation_id=conversation,
+                        from_message = conversation.contact_id.name,
                         content_type=content_type,
                         content=content,
                         wamid=wamid,
-                        user_id= CustomUser1.objects.get(id=15)
+                        user_id= CustomUser1.objects.get(id=6)
                     )
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')

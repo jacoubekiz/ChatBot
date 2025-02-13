@@ -125,49 +125,54 @@ class ChatConsumer(AsyncWebsocketConsumer):
         #handel voice
         if content_type == 'voice':
             await self.send(text_data=json.dumps({
-                    "conversation_id": self.conversation_id,
-                    "content": content,
-                    "content_type": content_type,
+                    # "conversation_id": self.conversation_id,
+                    # "content": content,
+                    # "content_type": content_type,
                     # "sender":self.user
+                    "message":"voice sent successfully"
                 }))
 
         #handel document
         elif content_type == 'document':
             type_content_receive = event["type_content_receive"]
             await self.send(text_data=json.dumps({
-                    "conversation_id": self.conversation_id,
-                    "content": content,
-                    "content_type": content_type,
-                    "type_content_receive":type_content_receive,
+                    # "conversation_id": self.conversation_id,
+                    # "content": content,
+                    # "content_type": content_type,
+                    # "type_content_receive":type_content_receive,
                     # "sender":self.user
+                    "message":"document sent successfully"
                 }))
 
 
         # handel image
         elif content_type == 'image':
             await self.send(text_data=json.dumps({
-                    "conversation_id": self.conversation_id,
-                    "content":content,
-                    "content_type": content_type,
+                    # "conversation_id": self.conversation_id,
+                    # "content":content,
+                    # "content_type": content_type,
                     # "sender":self.user
+                    "message":"image sent successfully"
                 }))
             
         # handle video
         elif content_type == 'video':
             await self.send(text_data=json.dumps({
-                    "conversation_id": self.conversation_id,
-                    "content": content,
-                    "content_type": content_type,
+                    # "conversation_id": self.conversation_id,
+                    # "content": content,
+                    # "content_type": content_type,
                     # "sender":self.user
+                    "message":"video sent successfully"
                 }))
             
         # handel message  
         elif content_type == 'text':
             await self.send(text_data=json.dumps({
-                    "conversation_id": self.conversation_id,
-                    "content": content,
-                    "content_type": content_type,
-                    "sender":self.user.email
+                    # "conversation_id": self.conversation_id,
+                    # "content": content,
+                    # "content_type": content_type,
+                    # "sender":self.user.email
+                    "message":"message sent successfully"
                 }))
             send_message(
                 message_content=content,
@@ -195,7 +200,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_messages(self, conversation_id):
         conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()
-        messages = conversation_id.chatmessage_set.all().order_by("-created_at")
+        messages = conversation_id.chatmessage_set.all().order_by("created_at")
         serializer_messages = ChatMessageSerializer(messages, many=True)
         return serializer_messages.data
     

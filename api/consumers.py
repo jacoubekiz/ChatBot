@@ -33,7 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        conversation_id = self.conversation_id
+        # conversation_id = self.conversation_id
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
         
@@ -49,7 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "chat_message", 
-                        "conversation_id": conversation_id,
+                        "conversation_id": self.conversation_id,
                         "content": content,
                         "content_type": content_type,
                     }
@@ -66,7 +66,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message", 
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                 }
@@ -82,7 +82,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message", 
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                 }
@@ -99,7 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message", 
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                     "type_content_receive":type_content_receive,
@@ -110,14 +110,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message", 
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                 }
             )
     # Receive message from room group
     async def chat_message(self, event):
-        conversation_id = event["conversation_id"]
+        # conversation_id = event["conversation_id"]
         content = event["content"]
         content_type = event["content_type"]
         
@@ -125,7 +125,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         #handel voice
         if content_type == 'voice':
             await self.send(text_data=json.dumps({
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                     # "sender":self.user
@@ -135,7 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif content_type == 'document':
             type_content_receive = event["type_content_receive"]
             await self.send(text_data=json.dumps({
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                     "type_content_receive":type_content_receive,
@@ -146,7 +146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # handel image
         elif content_type == 'image':
             await self.send(text_data=json.dumps({
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content":content,
                     "content_type": content_type,
                     # "sender":self.user
@@ -155,7 +155,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # handle video
         elif content_type == 'video':
             await self.send(text_data=json.dumps({
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                     # "sender":self.user
@@ -164,21 +164,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # handel message  
         elif content_type == 'text':
             await self.send(text_data=json.dumps({
-                    "conversation_id": conversation_id,
+                    "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
                     "sender":self.user.email
                 }))
-            # send_message(
-            #     message_content=content,
-            #     to='966114886645',
-            #     wa_id=157289147477280,
-            #     bearer_token="Bearer EAACWgHBBCVEBO7y3ZBHRrZBTQXgDbWxK7V4ZCenf5AbYvFjqyZCkj6fTERoeesFmnMumd0ZC3w8iZC7v00ORU3BIoTX9JA9EV61C4j5q10dFdZBN71oaezUIicCbWidggZCg0Bkof2Ent36Ng5QxZAAoTZBAQdhOAOZBKHmeMFINLhDf4WXKbzxC1vNJ0pG041VsGTr",
-            #     chat_id=conversation_id,
-            #     platform="whatsapp",
-            #     # question="statement"
-            # )
-            await self.create_chat_message(conversation_id, content_type, content)
+            send_message(
+                message_content=content,
+                to= await self.get_phonenumber(self.conversation_id),
+                wa_id= await self.get_waid(self.conversation_id),
+                bearer_token= await self.get_token(self.conversation_id),
+                chat_id=self.conversation_id,
+                platform="whatsapp",
+                # type="TEXT",
+                question='statment'
+            )
+            await self.create_chat_message(self.conversation_id, content_type, content)
             
     @database_sync_to_async
     def create_chat_message(self, conversation_id, content_type, content):
@@ -197,6 +198,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
         messages = conversation_id.chatmessage_set.all().order_by("-created_at")
         serializer_messages = ChatMessageSerializer(messages, many=True)
         return serializer_messages.data
+    
+    @database_sync_to_async
+    def get_phonenumber(self, conversation_id):
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        phonenumber = conversation.contact_id.phone_number
+        return phonenumber
+    
+    @database_sync_to_async
+    def get_waid(self, conversation_id):
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        waid = conversation.channle_id.phone_number_id
+        return waid
+    
+    @database_sync_to_async
+    def get_token(self, conversation_id):
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        tocken = conversation.channle_id.tocken
+        return tocken
 
 
 

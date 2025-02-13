@@ -528,13 +528,4 @@ def validate_phone_number(phone_number):
 
 
 
-import hashlib
-
-def generate_message_key(message_id, wamid):
-    # Combine message_id and wamid with a separator
-    combined = f"{message_id}_{wamid}"
-    
-    # Optionally, hash the combined string for a fixed-length key
-    key = hashlib.sha256(combined.encode()).hexdigest()
-    
-    return str(key)
+# import hashlib

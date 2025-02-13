@@ -10,7 +10,7 @@ urlpatterns = [
     path('bot-api/', BotAPI.as_view(), name = 'bot_api'),
     path('', include(router.urls)),
 
-    path('get-redis/', GetData.as_view()),
+    # path('get-redis/', GetData.as_view()),
 
     path('create-calander/', CreateCalenderView.as_view(), name='create-calander'),
     path('get-calander/<str:user_id>/', GetCalenderView.as_view(), name='get-calander'),

@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import os
 from .models import *
 from django_redis import get_redis_connection
-import websockets
+import websocket
 import asyncio
 
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
@@ -568,7 +568,7 @@ def handel_request_redis(data):
                     #     wamid=wamid,
                     #     user_id= CustomUser1.objects.get(id=15)
                     # )
-                    asyncio.run(sent_message(conversation.conversation_id, content, content_type))
+                    sent_message(conversation.conversation_id, content, content_type)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -578,16 +578,20 @@ def handel_request_redis(data):
                 message.status_updated_at = status_updated_at
                 message.save()
 
-async def sent_message(conversation_id, content, content_type):
-    url_ws = f"ws://chatbot.icsl.me/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
-    async with websockets.connect(url_ws) as websocket:
-        data = {
-            "content":content,
-            "content_type":content_type,
-            "from_bot":"False"
-        }
-        await websocket.send(
-            json.dumps(data)
-        )
-        response = await websocket.recv()
-        websocket.close()
+def sent_message(conversation_id, content, content_type):
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "content":content,
+        "content_type":content_type,
+        "from_bot":"False"
+    }
+    try:
+        ws.send(json.dumps(data))
+        
+    except Exception as e:
+        print(f'error: {e}')
+
+    finally:
+        ws.close

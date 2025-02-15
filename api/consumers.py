@@ -175,23 +175,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot)
             if from_bot == "False":
                 await self.send(text_data=json.dumps({
-                    # "conversation_id": self.conversation_id,
-                    # "content": content,
-                    # "content_type": content_type,
-                    # "sender":self.user.email
                     "message_id":message_id,
                     "content":content,
+                    "content_type":content_type,
+                    # "created_at":message_id.created_at,
+                    "conversation_id":self.conversation_id,
                     "is_successfully":"true"
                 }))
-            await self.send(text_data=json.dumps({
-                    # "conversation_id": self.conversation_id,
-                    # "content": content,
-                    # "content_type": content_type,
-                    # "sender":self.user.email
-                    "message_id":message_id,
-                    "is_successfully":"true"
-                }))
-            if from_bot == "True":
+            else:
+                await self.send(text_data=json.dumps({
+                        "message_id":message_id,
+                        "is_successfully":"true"
+                    }))
                 send_message(
                     message_content=content,
                     to= await self.get_phonenumber(self.conversation_id),
@@ -219,7 +214,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             wamid ="1241412523423412"
         )
         return chat_message.message_id
-
+    
     @database_sync_to_async
     def get_messages(self, conversation_id):
         conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()

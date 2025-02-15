@@ -211,10 +211,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             wamid ="1241412523423412"
         )
         return chat_message.message_id
+    
     @database_sync_to_async
     def get_messages(self, conversation_id):
         conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()
-        messages = conversation_id.chatmessage_set.all().order_by("created_at")
+        messages = conversation_id.chatmessage_set.all().order_by("created_at")[:10]
         serializer_messages = ChatMessageSerializer(messages, many=True)
         return serializer_messages.data
     

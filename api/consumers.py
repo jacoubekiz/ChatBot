@@ -37,6 +37,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
+        wamid = text_data_json["wamid"]
+        message_id = text_data_json["message_id"]
+        created_at = text_data_json['created_at']
 
 
 
@@ -113,7 +116,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
-                    "from_bot":from_bot
+                    "from_bot":from_bot,
+                    "wamid":wamid,
+                    "message_id":message_id,
+                    "created_at": created_at
                 }
             )
     # Receive message from room group
@@ -122,6 +128,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = event["content"]
         content_type = event["content_type"]
         from_bot = event["from_bot"]
+        wamid = event['wamid']
+        message_id_ = event["message_id"]
+        created_at = event["created_at"]
 
 
         #handel voice
@@ -174,16 +183,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif content_type == 'text':
             if from_bot == "False":
                 await self.send(text_data=json.dumps({
-                    # "message_id":,
+                    "message_id": message_id_,
                     "content":content,
                     "content_type":content_type,
                     "conversation_id":self.conversation_id,
+                    "wamid":wamid,
+                    "created_at":created_at,
                     "is_successfully":"true"
                 }))
             else:
-                message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot)
+                message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot, wamid)
                 await self.send(text_data=json.dumps({
                         "message_id":message_id,
+                        "wamid":wamid,
                         "is_successfully":"true"
                     }))
                 send_message(
@@ -193,13 +205,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     bearer_token= await self.get_token(self.conversation_id),
                     chat_id=self.conversation_id,
                     platform="whatsapp",
-                    # type="TEXT",
                     question='statment'
                 )
                 
            
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, content_type, content, from_bot):
+    def create_chat_message(self, conversation_id, content_type, content, from_bot, wamid):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
@@ -207,7 +218,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             # from_message = bot,
-            wamid ="1241412523423412"
+            wamid = wamid
         )
         return chat_message.message_id
     

@@ -532,10 +532,8 @@ def validate_phone_number(phone_number):
 
 
 def handel_request_redis(data):
-        # print(data)
         redis_client = get_redis_connection()
         redis_client.lpush('data_queue', json.dumps(data))
-        # print(da)
         f = open('content_redis.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
         raw_data = redis_client.rpop('data_queue')
@@ -563,13 +561,13 @@ def handel_request_redis(data):
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
                     chat_message = ChatMessage.objects.create(
                         conversation_id = conversation,
-                        user_id = CustomUser1.objects.filter(id=15).first(),
+                        user_id = CustomUser1.objects.filter(id=7).first(),
                         content_type = content_type,
                         content = content,
                         from_message = conversation.contact_id.name,
                         wamid = wamid
                     )
-                    sent_message(conversation.conversation_id, content, content_type)
+                    sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -578,16 +576,19 @@ def handel_request_redis(data):
                 message.status_message = status_messaage
                 message.status_updated_at = status_updated_at
                 message.save()
-        # return raw_data
 
-def sent_message(conversation_id, content, content_type):
+
+def sent_message(conversation_id, content, content_type, wamid, message_id, created_at):
     url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
         "content":content,
         "content_type":content_type,
-        "from_bot":"False"
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "created_at": f"{created_at}"
     }
     try:
         ws.send(json.dumps(data))
@@ -595,7 +596,7 @@ def sent_message(conversation_id, content, content_type):
         # ws.close()
         
     except Exception as e:
-        print(f'error: {e}')
+        pass
 
     finally:
         ws.close

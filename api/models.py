@@ -292,8 +292,11 @@ class CustomUser1(CustomUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self) -> str:
         return self.username
+    class Meta:
+        verbose_name_plural = "Custom Usre"
 
 class Team(models.Model):
     team_id = models.AutoField(primary_key=True)

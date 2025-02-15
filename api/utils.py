@@ -568,7 +568,7 @@ def handel_request_redis(data):
                     #     wamid=wamid,
                     #     user_id= CustomUser1.objects.get(id=15)
                     # )
-                    asyncio.run(sent_message(conversation.conversation_id, content, content_type, wamid))
+                    asyncio.run(sent_message(conversation.conversation_id, content, content_type))
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -579,7 +579,7 @@ def handel_request_redis(data):
                 message.save()
 
 async def sent_message(conversation_id, content, content_type):
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
+    url_ws = f"ws://chatbot.icsl.me/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
     async with websockets.connect(url_ws) as websocket:
         data = {
             "content":content,

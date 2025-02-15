@@ -172,17 +172,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # handel message
         elif content_type == 'text':
-            message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot)
             if from_bot == "False":
                 await self.send(text_data=json.dumps({
-                    "message_id":message_id,
+                    # "message_id":,
                     "content":content,
                     "content_type":content_type,
-                    # "created_at":message_id.created_at,
                     "conversation_id":self.conversation_id,
                     "is_successfully":"true"
                 }))
             else:
+                message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot)
                 await self.send(text_data=json.dumps({
                         "message_id":message_id,
                         "is_successfully":"true"
@@ -197,20 +196,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # type="TEXT",
                     question='statment'
                 )
+                
            
     @database_sync_to_async
     def create_chat_message(self, conversation_id, content_type, content, from_bot):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
-        if from_bot == "True":
-            from_message = 'bot'
-        else:
-            from_message = conversation.contact_id.name
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             user_id = CustomUser1.objects.filter(id=self.user.id).first(),
             content_type = content_type,
             content = content,
-            from_message = from_message,
+            # from_message = bot,
             wamid ="1241412523423412"
         )
         return chat_message.message_id

@@ -77,7 +77,8 @@ class BookAnAppointmentAdmin(admin.ModelAdmin):
     def days(self, obj):
         return get_day_name(obj.day)
 
-
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = ['message_id', 'content', 'content_type', 'from_message']
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Client, ClientAdmin)
@@ -105,6 +106,6 @@ admin.site.register(Contact)
 admin.site.register(Conversation)
 admin.site.register(Team)
 # admin.site.register(Account)
-admin.site.register(ChatMessage)
+admin.site.register(ChatMessage, ChatMessageAdmin)
 admin.site.register(Account)
 admin.site.register(Channle)

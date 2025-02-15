@@ -36,6 +36,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # conversation_id = self.conversation_id
         content = text_data_json["content"]
         content_type = text_data_json["content_type"]
+        from_bot = text_data_json['from_bot']
         
         
 
@@ -113,6 +114,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    "from_bot":from_bot
                 }
             )
     # Receive message from room group
@@ -120,6 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # conversation_id = event["conversation_id"]
         content = event["content"]
         content_type = event["content_type"]
+        from_bot = event["from_bot"]
         
 
         #handel voice
@@ -130,7 +133,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # "content_type": content_type,
                     # "sender":self.user
                     "message_id":message_id,
-                    "is_successfully":"tre"
+                    "is_successfully":"true"
                 }))
 
         #handel document
@@ -143,7 +146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # "type_content_receive":type_content_receive,
                     # "sender":self.user
                     "message_id":message_id,
-                    "is_successfully":"tre"
+                    "is_successfully":"true"
                 }))
 
 
@@ -155,7 +158,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # "content_type": content_type,
                     # "sender":self.user
                     "message_id":message_id,
-                    "is_successfully":"tre"
+                    "is_successfully":"true"
                 }))
             
         # handle video
@@ -166,41 +169,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # "content_type": content_type,
                     # "sender":self.user
                     "message_id":message_id,
-                    "is_successfully":"tre"
+                    "is_successfully":"true"
                 }))
             
         # handel message  
         elif content_type == 'text':
-            message_id = await self.create_chat_message(self.conversation_id, content_type, content)
+            message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot)
             await self.send(text_data=json.dumps({
                     # "conversation_id": self.conversation_id,
                     # "content": content,
                     # "content_type": content_type,
                     # "sender":self.user.email
                     "message_id":message_id,
-                    "is_successfully":"tre"
+                    "is_successfully":"true"
                 }))
-            send_message(
-                message_content=content,
-                to= await self.get_phonenumber(self.conversation_id),
-                wa_id= await self.get_waid(self.conversation_id),
-                bearer_token= await self.get_token(self.conversation_id),
-                chat_id=self.conversation_id,
-                platform="whatsapp",
-                # type="TEXT",
-                question='statment'
-            )
-            # await self.create_chat_message(self.conversation_id, content_type, content)
+            if from_bot == "True":
+                send_message(
+                    message_content=content,
+                    to= await self.get_phonenumber(self.conversation_id),
+                    wa_id= await self.get_waid(self.conversation_id),
+                    bearer_token= await self.get_token(self.conversation_id),
+                    chat_id=self.conversation_id,
+                    platform="whatsapp",
+                    # type="TEXT",
+                    question='statment'
+                )
             
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, content_type, content):
-        conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()
-        print(conversation_id)
+    def create_chat_message(self, conversation_id, content_type, content, from_bot):
+        conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
+        if from_bot == "True":
+            from_message = 'bot'
+        else:
+            from_message = conversation.contact_id.name
         chat_message = ChatMessage.objects.create(
-            conversation_id = conversation_id,
+            conversation_id = conversation,
             user_id = CustomUser1.objects.filter(id=self.user.id).first(),
             content_type = content_type,
             content = content,
+            from_message = from_message,
             wamid ="1241412523423412"
         )
         return chat_message.message_id
@@ -220,6 +227,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_waid(self, conversation_id):
         conversation = Conversation.objects.get(conversation_id=conversation_id)
+        print(conversation.channle_id)
         waid = conversation.channle_id.phone_number_id
         return waid
     

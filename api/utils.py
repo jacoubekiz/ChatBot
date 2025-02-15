@@ -6,7 +6,11 @@ from .models import Attribute
 from django.db import connection
 from urllib.parse import urlparse
 import os
-from .models import Chat
+from .models import *
+from django_redis import get_redis_connection
+import websockets
+import asyncio
+
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
 def read_json(file_path, encoding='utf-8'):
@@ -527,21 +531,15 @@ def validate_phone_number(phone_number):
 #     return ws
 
 
-
-# import hashlib
-import time
-from .models import *
-from django_redis import get_redis_connection
 def handel_request_redis(data):
         # print(data)
-        print(data)
         redis_client = get_redis_connection()
         redis_client.lpush('data_queue', json.dumps(data))
         f = open('content_redis.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
         raw_data = redis_client.rpop('data_queue')
         test_data = json.loads(raw_data)
-        f.write("from redis: " + str(test_data) + '\n')
+        f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
         if raw_data == None:
             return Response({'message':data}, status=status.HTTP_200_OK)
         else:
@@ -562,14 +560,15 @@ def handel_request_redis(data):
                     contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
-                    chat_message = ChatMessage.objects.create(
-                        conversation_id=conversation,
-                        from_message = conversation.contact_id.name,
-                        content_type=content_type,
-                        content=content,
-                        wamid=wamid,
-                        user_id= CustomUser1.objects.get(id=6)
-                    )
+                    # chat_message = ChatMessage.objects.create(
+                    #     conversation_id=conversation,
+                    #     from_message = conversation.contact_id.name,
+                    #     content_type=content_type,
+                    #     content=content,
+                    #     wamid=wamid,
+                    #     user_id= CustomUser1.objects.get(id=15)
+                    # )
+                    asyncio.run(sent_message(conversation.conversation_id, content, content_type, wamid))
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -578,3 +577,17 @@ def handel_request_redis(data):
                 message.status_message = status_messaage
                 message.status_updated_at = status_updated_at
                 message.save()
+
+async def sent_message(conversation_id, content, content_type):
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5Njk2OTI5LCJpYXQiOjE3Mzg4MzI5MjksImp0aSI6ImMxMTRhNDAxYTMxZDRiYTE4Y2RhODhiYWQzMjRmM2YxIiwidXNlcl9pZCI6MTV9.kBdlrOi97Hs57gdRDvye4tl7rMa4euToSW6U6z6Fb1w"
+    async with websockets.connect(url_ws) as websocket:
+        data = {
+            "content":content,
+            "content_type":content_type,
+            "from_bot":"False"
+        }
+        await websocket.send(
+            json.dumps(data)
+        )
+        response = await websocket.recv()
+        websocket.close()

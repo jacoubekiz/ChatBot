@@ -568,7 +568,7 @@ def handel_request_redis(data):
                             from_message = conversation.contact_id.name,
                             wamid = wamid
                         )
-                        sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact_name, contact_phonenumber)
+                        sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
                 else:
                     mid = log_entry.get('event', {}).get('mid', ' ')
                     status_messaage = log_entry.get('event', {}).get('status', ' ')

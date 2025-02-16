@@ -1,6 +1,5 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -19,10 +18,37 @@ global client
 from langdetect import detect
 import langid
 import datetime
-import os
-import redis
-import json
+from .permissions import UserIsAdmin
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from django_redis import get_redis_connection
+from django.utils.decorators import method_decorator
+import threading
+from .send_email import *
+import openpyxl
 
+def write_inside_excel(data):
+        response = data['response']
+        phonenumber = data['phonenumber']
+        try:
+            workbook =  openpyxl.load_workbook('media/cashif.xlsx')
+            
+        except FileNotFoundError:
+            workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet['A1'] = 'client name'
+        sheet['B1'] = 'phone number'
+        last_row = sheet.max_row
+        new_data = [response, phonenumber]
+        sheet.cell(row=last_row + 1, column=1, value=new_data[0])
+        sheet.cell(row=last_row + 1, column=2, value=new_data[1])
+        workbook.save('media/cashif.xlsx')
+
+class RegisterResponseClient(APIView):
+    def post(self, request):
+        data = request.data
+        thread = threading.Thread(target=write_inside_excel(data))
+        thread.start()
+        return Response(status=status.HTTP_200_OK)
 
 class ClientsViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
@@ -881,7 +907,7 @@ class GetDoctorsCalanderView(APIView):
         return Response({'duration':durations}, status=status.HTTP_200_OK)
     
 
-from .send_email import *
+
 
 class SendEmailView(APIView):
     def post(self, request):
@@ -889,11 +915,6 @@ class SendEmailView(APIView):
         Utlil.send_email(data)
         return Response(status=status.HTTP_200_OK)
 # --------------------------------------------------------------------------------------------------------------
-from .permissions import UserIsAdmin
-from rest_framework.generics import ListAPIView, RetrieveAPIView
-from django_redis import get_redis_connection
-from django.utils.decorators import method_decorator
-import threading
 
 
 class ListCreateUserView(ListCreateAPIView):
@@ -1015,7 +1036,6 @@ class ListReportView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
-import asyncio
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):
 

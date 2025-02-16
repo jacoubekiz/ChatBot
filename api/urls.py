@@ -39,5 +39,7 @@ urlpatterns = [
     path('webhook/', WebhookView.as_view(), name='webhook'),
 
     path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),
+
+    path('register-response-client/', RegisterResponseClient.as_view()),
 ]
 

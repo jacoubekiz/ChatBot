@@ -14,8 +14,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
         self.user = self.scope['user']
+        print(self.user.id)
         if self.user.is_authenticated:
-            self.room_group_name = "chat_%s" % self.conversation_id
+            self.room_group_name = "chat_%s" % self.user.id
             # Join room group
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()

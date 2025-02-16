@@ -532,50 +532,54 @@ def validate_phone_number(phone_number):
 
 
 def handel_request_redis(data):
-        redis_client = get_redis_connection()
-        redis_client.lpush('data_queue', json.dumps(data))
-        f = open('content_redis.txt', 'a')
-        f.write("recive redis: " + str(data) + '\n')
-        raw_data = redis_client.rpop('data_queue')
-        test_data = json.loads(raw_data)
-        f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
-        if raw_data == None:
-            return Response({'message':data}, status=status.HTTP_200_OK)
-        else:
-            log_entry = json.loads(raw_data)
-            value = log_entry.get('event', '').get('value', '')
-            if value:
-                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
-                wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
-                content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-                from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
-                timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
-                messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
-                display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
-                phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
-                contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
-                if contacts:
-                    name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
-                    contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
-                    channel = Channle.objects.filter(phone_number=display_phone_number).first()
-                    conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
-                    chat_message = ChatMessage.objects.create(
-                        conversation_id = conversation,
-                        user_id = CustomUser1.objects.filter(id=7).first(),
-                        content_type = content_type,
-                        content = content,
-                        from_message = conversation.contact_id.name,
-                        wamid = wamid
-                    )
-                    sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at)
+        try:
+            redis_client = get_redis_connection()
+            redis_client.lpush('data_queue', json.dumps(data))
+            f = open('content_redis.txt', 'a')
+            f.write("recive redis: " + str(data) + '\n')
+            raw_data = redis_client.rpop('data_queue')
+            test_data = json.loads(raw_data)
+            f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
+            if raw_data == None:
+                return Response({'message':data}, status=status.HTTP_200_OK)
             else:
-                mid = log_entry.get('event', {}).get('mid', ' ')
-                status_messaage = log_entry.get('event', {}).get('status', ' ')
-                status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
-                message = ChatMessage.objects.get(wamid=mid)
-                message.status_message = status_messaage
-                message.status_updated_at = status_updated_at
-                message.save()
+                log_entry = json.loads(raw_data)
+                value = log_entry.get('event', '').get('value', '')
+                if value:
+                    content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+                    wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+                    content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+                    from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+                    timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+                    messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+                    display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+                    phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+                    contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+                    if contacts:
+                        name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+                        contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
+                        channel = Channle.objects.filter(phone_number=display_phone_number).first()
+                        conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
+                        chat_message = ChatMessage.objects.create(
+                            conversation_id = conversation,
+                            user_id = CustomUser1.objects.filter(id=7).first(),
+                            content_type = content_type,
+                            content = content,
+                            from_message = conversation.contact_id.name,
+                            wamid = wamid
+                        )
+                        sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at)
+                else:
+                    mid = log_entry.get('event', {}).get('mid', ' ')
+                    status_messaage = log_entry.get('event', {}).get('status', ' ')
+                    status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
+                    message = ChatMessage.objects.get(wamid=mid)
+                    message.status_message = status_messaage
+                    message.status_updated_at = status_updated_at
+                    message.save()
+        except Exception as e:
+            error_redis = open('error_redis.txt', 'a')
+            error_redis.write("your get the error: {e}")
 
 
 def sent_message(conversation_id, content, content_type, wamid, message_id, created_at):

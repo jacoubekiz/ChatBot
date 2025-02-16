@@ -225,7 +225,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_messages(self, conversation_id):
         conversation_id = Conversation.objects.filter(conversation_id=conversation_id).first()
-        messages = conversation_id.chatmessage_set.all().order_by("created_at")[:10]
+        messages = conversation_id.chatmessage_set.all().order_by("created_at")
         serializer_messages = ChatMessageSerializer(messages, many=True)
         return serializer_messages.data
 

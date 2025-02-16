@@ -549,15 +549,15 @@ def handel_request_redis(data):
                     content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
                     wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
                     content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-                    from_user = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+                    contact_phonenumber = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
                     timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
                     messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
                     display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
                     phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
                     contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
                     if contacts:
-                        name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
-                        contact, created = Contact.objects.get_or_create(name=name, phone_number=from_user)
+                        contact_name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+                        contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber)
                         channel = Channle.objects.filter(phone_number=display_phone_number).first()
                         conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
                         chat_message = ChatMessage.objects.create(
@@ -568,7 +568,7 @@ def handel_request_redis(data):
                             from_message = conversation.contact_id.name,
                             wamid = wamid
                         )
-                        sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at)
+                        sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact_name, contact_phonenumber)
                 else:
                     mid = log_entry.get('event', {}).get('mid', ' ')
                     status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -582,8 +582,8 @@ def handel_request_redis(data):
             error_redis.write(f"your get the error: {e}")
 
 
-def sent_message(conversation_id, content, content_type, wamid, message_id, created_at):
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
+def sent_message(conversation_id, content, content_type, wamid, message_id, created_at, contact_name, contact_phonenumber):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_name}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

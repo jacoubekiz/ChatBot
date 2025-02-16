@@ -13,10 +13,12 @@ from .utils import *
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
+        self.contact_name = self.scope["url_route"]["kwargs"]["contact_name"]
+        self.contact_phonenumber = self.scope["url_route"]["kwargs"]["contact_phonenumber"]
         self.user = self.scope['user']
         print(self.user.id)
         if self.user.is_authenticated:
-            self.room_group_name = "chat_%s" % self.user.id
+            self.room_group_name = "chat_%s" % f"{self.contact_name}{self.contact_phonenumber}"
             # Join room group
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()

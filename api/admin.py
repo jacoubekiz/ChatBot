@@ -80,6 +80,9 @@ class BookAnAppointmentAdmin(admin.ModelAdmin):
 class ChatMessageAdmin(admin.ModelAdmin):
     list_display = ['message_id', 'content', 'content_type', 'from_message']
 
+class UploadImageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'image_file']
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
@@ -100,7 +103,7 @@ admin.site.site_header = "ICSL Bot Creator"
 
 
 
-admin.site.register(UploadImage)
+admin.site.register(UploadImage, UploadImageAdmin)
 
 admin.site.register(Contact)
 admin.site.register(Conversation)

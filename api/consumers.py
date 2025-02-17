@@ -40,8 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
         wamid = text_data_json["wamid"]
-        message_id = text_data_json["message_id"]
-        created_at = text_data_json['created_at']
+
 
 
 
@@ -66,7 +65,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             media_name = text_data_json["media_name"]
             decoded_image = base64.b64decode(content)
             image_file = ContentFile(decoded_image, name=media_name)
-            await database_sync_to_async(UploadImage.objects.create)(image_file=image_file)
+            image = await self.create_file(image_file)
+            # print(image)
         # Send image to room group
             await self.channel_layer.group_send(
                 self.room_group_name, {
@@ -74,9 +74,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": self.conversation_id,
                     "content": content,
                     "content_type": content_type,
+                    "from_bot": from_bot,
+                    "wamid": wamid,
                 }
             )
+            send_message(
+                message_content="image",
+                to= await self.get_phonenumber(self.conversation_id),
+                wa_id= await self.get_waid(self.conversation_id),
+                bearer_token= await self.get_token(self.conversation_id),
+                chat_id=self.conversation_id,
+                platform="whatsapp",
+                question='',
+                type="image",
+                source=f"https://chatbot.icsl.me/{image}",
 
+            )
+            print('sent image seccussfully')
         # handel receive video
         elif content_type == 'video':
             media_name = text_data_json["media_name"]
@@ -112,6 +126,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         # Send message to room group
         elif content_type == 'text':
+            message_id = text_data_json["message_id"]
+            created_at = text_data_json['created_at']
             await self.channel_layer.group_send(
                 self.room_group_name, {
                     "type": "chat_message",
@@ -131,8 +147,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content_type = event["content_type"]
         from_bot = event["from_bot"]
         wamid = event['wamid']
-        message_id_ = event["message_id"]
-        created_at = event["created_at"]
+
 
 
         #handel voice
@@ -166,7 +181,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # "content":content,
                     # "content_type": content_type,
                     # "sender":self.user
-                    "message_id":message_id,
+                    # "message_id":message_id,
                     "is_successfully":"true"
                 }))
 
@@ -183,6 +198,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # handel message
         elif content_type == 'text':
+            message_id_ = event["message_id"]
+            created_at = event["created_at"]
             if from_bot == "False":
                 await self.send(text_data=json.dumps({
                     "message_id": message_id_,
@@ -250,8 +267,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         tocken = conversation.channle_id.tocken
         return tocken
 
-
-
+    @database_sync_to_async
+    def create_file(self, file_name):
+        file = UploadImage.objects.create(image_file=file_name)
+        return file.get_absolute_url
+    
 class DocumentConsumers(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room']

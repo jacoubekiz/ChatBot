@@ -358,9 +358,9 @@ class ChatMessage(models.Model):
     # message_key = wamid = models.CharField(max_length=500, default='123')
     from_message = models.CharField(max_length=30, default='bot')
     conversation_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE, blank=True, null=True)
     content_type = models.CharField(choices=CONTENT_TYPE, max_length=20)
-    content = models.TextField(max_length=1000)
+    content = models.TextField(max_length=1000, blank=True, null=True)
     wamid = models.CharField(max_length=500)
     status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20, default='sent')
     status_updated_at = models.DateTimeField(auto_now_add=True)
@@ -453,3 +453,23 @@ class Setting(models.Model):
 
 class UploadImage(models.Model):
     image_file = models.FileField(upload_to='chat_message/')
+
+    @property
+    def get_absolute_url(self):
+        return f"{settings.MEDIA_URL}{self.image_file.name}"
+    
+
+
+# from django.http import HttpResponse
+# from .models import MediaFile
+
+# def serve_media(request, filename):
+#     media_file = MediaFile.objects.filter(file__name=filename).first()
+    
+#     if media_file:
+#         response = HttpResponse(media_file.file.read())
+#         response['Content-Type'] = media_file.content_type
+#         response['Content-Disposition'] = f'inline; filename="{filename}"'
+#         return response
+    
+#     return HttpResponse('File not found', status=404)

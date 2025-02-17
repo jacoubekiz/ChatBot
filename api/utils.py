@@ -9,7 +9,7 @@ import os
 from .models import *
 from django_redis import get_redis_connection
 import websocket
-import asyncio
+from django.core.files.base import ContentFile
 
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
@@ -506,67 +506,43 @@ def validate_phone_number(phone_number):
         return False
     
 
-# import websocket
-# # import json
-
-# # def on_open(ws):
-# #     print('Connected to websocket')
-
-# #     ws.send(json.dumps(
-# #         {"type": "subscribe", "channel": "ypur_channel"}
-# #     ))
-
-# def upgrade_to_websocket(url):
-#     response = requests.get(url, stream=True)
-#     print('hello')
-#     headers = response.headers
-#     cookies = response.cookies
-    
-#     # Extract the WebSocket URL from the headers
-#     websocket_url = headers.get('Sec-WebSocket-Location')
-    
-#     # Create a WebSocket connection
-#     ws = websocket.create_connection(websocket_url, cookie=cookies)
-    
-#     return ws
 
 
 def handel_request_redis(data):
-        
-    test = {
-    'event': {
-        'value': {
-            'messaging_product': 'whatsapp',
-            'metadata': {
-                'display_phone_number': '966920025589',
-                'phone_number_id': '157289147477280'
-            },
-            'contacts': [{
-                'profile': {
-                    'name': 'Jacoub'
-                },
-                'wa_id': '966114886645'
-            }], 
-            'messages': [{
-                'from': '966114886645',
-                'id': 'wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA',
-                'timestamp': '1739778473',
-                'type': 'image',
-                'image': {
-                    'mime_type': 'image/jpeg',
-                    'sha256': 't6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=',
-                    'id': '1274841703581495'
-                }
-            }]},
-            'field':'messages'
-            },
-            'medias': [{
-                'url': 'https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg',
-                'caption': '',
-                'type': 'image',
-                'file_name': '1739778476665_media-0.4923813022854102.jpeg'
-                }]
-        }
+    # {
+    # "event": {
+    #     "value": {
+    #         "messaging_product": "whatsapp",
+    #         "metadata": {
+    #             "display_phone_number": "966920025589",
+    #             "phone_number_id": "157289147477280"
+    #         },
+    #         "contacts": [{
+    #             "profile": {
+    #                 "name": "Jacoub"
+    #             },
+    #             "wa_id": "966114886645"
+    #         }], 
+    #         "messages": [{
+    #             "from": "966114886645",
+    #             "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA",
+    #             "timestamp": "1739778473",
+    #             "type": "image",
+    #             "image": {
+    #                 "mime_type": "image/jpeg",
+    #                 "sha256": "t6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=",
+    #                 "id": "1274841703581495"
+    #             }
+    #         }]},
+    #         "field":"messages"
+    #         },
+    #         "medias": [{
+    #             "url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg",
+    #             "caption": "",
+    #             "type": "image",
+    #             "file_name": "1739778476665_media-0.4923813022854102.jpeg"
+    #             }]
+    #     }
     try:
         redis_client = get_redis_connection()
         redis_client.lpush('data_queue', json.dumps(data))
@@ -578,10 +554,11 @@ def handel_request_redis(data):
         if raw_data == None:
             return Response({'message':data}, status=status.HTTP_200_OK)
         else:
+            
             log_entry = json.loads(raw_data)
             value = log_entry.get('event', '').get('value', '')
-            if value:
-                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+            
+            if value:   
                 wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
                 content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
                 contact_phonenumber = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
@@ -590,24 +567,47 @@ def handel_request_redis(data):
                 display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
                 phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
                 contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
-                if contacts:
+                if contacts:                   
                     contact_name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
                     contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber)
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=contact.account_id, channle_id=channel)
                     match content_type:
                         case "text":
+                            content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = conversation,
-                                user_id = CustomUser1.objects.filter(id=15).first(),
+                                # user_id = CustomUser1.objects.filter(id=15).first(),
                                 content_type = content_type,
                                 content = content,
                                 from_message = conversation.contact_id.name,
                                 wamid = wamid
                             )
-                            sent_message(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
+                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
                         case "image":
-                            pass
+                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
+                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('sha256', '')
+                            # medias = log_entry.get('medias', '')
+                            media_url = log_entry.get('medias', '')[0].get('url', '')
+                            file_name = log_entry.get('medias', '')[0].get('file_name', '')
+                            caption = log_entry.get('medias', '')[0].get('caption', '')
+                            response = requests.get(media_url)
+                            if response.status_code == 200:
+                                image = UploadImage.objects.create(
+                                    image_file= ContentFile(response.content, name=file_name)
+                                )
+                                chat_image = ChatMessage.objects.create(
+                                    conversation_id= conversation,
+                                    content_type= content_type,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid,
+                                    media_url = f"http://127.0.0.1:8000{image.get_absolute_url}",
+                                    media_sha256_hash = sha256,
+                                    media_mime_type = mime_type,
+                                    caption= caption
+                                )
+                                # sent_message_image()
+                                
 
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
@@ -619,10 +619,34 @@ def handel_request_redis(data):
                 message.save()
     except Exception as e:
         error_redis = open('error_redis.txt', 'a')
-        error_redis.write(f"your get the error: {e}")
+        error_redis.write(f"your get the error: {e}\n")
 
 
-def sent_message(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
+def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNjc3ODg4LCJpYXQiOjE3Mzk4MTM4ODgsImp0aSI6IjBjMmI2NzI3YTVlZjQ5OGI4NmVlNzkxMjRkNTdiMDQyIiwidXNlcl9pZCI6MTN9.YKdRFEHMobkluZMdwe2yIO5RRm3pBE5Q07Q45BQrLH8"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "content":content,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "created_at": f"{created_at}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+        
+    except Exception as e:
+        pass
+
+    # finally:
+    #     ws.close
+
+def sent_message_image(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
     # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     ws = websocket.WebSocket()
@@ -640,8 +664,8 @@ def sent_message(conversation_id, content, content_type, wamid, message_id, crea
         result = ws.recv()
         # ws.close()
         
-    except Exception as e:
-        pass
+    # except Exception as e:
+    #     pass
 
     finally:
         ws.close

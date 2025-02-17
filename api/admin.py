@@ -78,7 +78,7 @@ class BookAnAppointmentAdmin(admin.ModelAdmin):
         return get_day_name(obj.day)
 
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ['message_id', 'content', 'content_type', 'from_message']
+    list_display = ['message_id', 'content','caption' , 'content_type', 'from_message']
 
 class UploadImageAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_file']

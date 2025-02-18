@@ -21,9 +21,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Join room group
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
-            messages = await self.get_messages(self.conversation_id)
-            for message in messages:
-                await self.send(text_data=json.dumps(message))
+            # messages = await self.get_messages(self.conversation_id)
+            # for message in messages:
+            #     await self.send(text_data=json.dumps(message))
         else:
             await self.close()
 

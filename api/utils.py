@@ -564,16 +564,16 @@ def handel_request_redis(data):
                             caption = log_entry.get('medias', '')[0].get('caption', '')
                             response = requests.get(media_url)
                             if response.status_code == 200:
-                                url = download_and_save_image(media_url, 'media/chat_message')
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
+                                # url = download_and_save_image(media_url, 'media/chat_message')
+                                image = UploadImage.objects.create(
+                                    image_file= ContentFile(response.content, name=file_name)
+                                )
                                 chat_image = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"http://127.0.0.1:8000/{url}",
+                                    media_url = f"https://chatbot.icsl.me/{image.get_absolute_url}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption
@@ -588,16 +588,16 @@ def handel_request_redis(data):
                             caption = log_entry.get('medias', [])[0].get('caption', '')
                             response = requests.get(media_url)
                             if response.status_code == 200:
-                                url = download_and_save_image(media_url, 'media/chat_message')
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
+                                # url = download_and_save_image(media_url, 'media/chat_message')
+                                image = UploadImage.objects.create(
+                                    image_file= ContentFile(response.content, name=file_name)
+                                )
                                 chat_video = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"http://127.0.0.1:8000/{url}",
+                                    media_url = f"https://chatbot.icsl.me/{image.get_absolute_url}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption

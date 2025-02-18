@@ -1035,6 +1035,11 @@ class ListReportView(RetrieveAPIView):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 
+class ListMessgesForSpecificConversation(ListAPIView):
+    queryset = ChatMessage.objects.all().order_by('-created_at')
+    serializer_class = ChatMessageSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_url_kwarg = 'conversation_id'
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):

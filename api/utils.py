@@ -508,6 +508,9 @@ def validate_phone_number(phone_number):
 
 
 
+v_v = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQkUwNEU2ODg0MzI4MDZERTlCMDBGRDAzNkZFRTlDRUIA", "timestamp": "1739867538", "type": "video", "video": {"mime_type": "video/mp4", "sha256": "hekbZhF76pvXHZgbD7XwjeYgulKnS63Q1uNXyB0p7AM=", "id": "602300352596747"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739867541070_media-0.3026585401465338.mp4", "caption": "", "type": "video", "file_name": "1739867541070_media-0.3026585401465338.mp4"}]}'
+i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"display_phone_number": "966920025589","phone_number_id": "157289147477280"},"contacts": [{"profile": {"name": "Jacoub"},"wa_id": "966114886645"}], "messages": [{"from": "966114886645","id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA","timestamp": "1739778473","type": "image","image": {"mime_type": "image/jpeg","sha256": "t6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=","id": "1274841703581495"}}]},"field":"messages"},"medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg","caption": "فرع جده","type": "image","file_name": "1739778476665_media-0.4923813022854102.jpeg"}]}'
+
 def handel_request_redis(data):
 
     try:
@@ -551,6 +554,7 @@ def handel_request_redis(data):
                                 wamid = wamid
                             )
                             sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
+
                         case "image":
                             mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
                             sha256 = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('sha256', '')
@@ -560,22 +564,45 @@ def handel_request_redis(data):
                             caption = log_entry.get('medias', '')[0].get('caption', '')
                             response = requests.get(media_url)
                             if response.status_code == 200:
-
-                                image = UploadImage.objects.create(
-                                    image_file= ContentFile(response.content, name=file_name)
-                                )
+                                url = download_and_save_image(media_url, 'media/chat_message')
+                                # image = UploadImage.objects.create(
+                                #     image_file= ContentFile(response.content, name=file_name)
+                                # )
                                 chat_image = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me{image.get_absolute_url}",
+                                    media_url = f"http://127.0.0.1:8000/{url}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
                                 sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url)
                                 
+                        case "video":
+                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('video', {}).get('mime_type', '')
+                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('viedo', {}).get('sha256', '')
+                            media_url = log_entry.get('medias', [])[0].get('url', '')
+                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
+                            caption = log_entry.get('medias', [])[0].get('caption', '')
+                            response = requests.get(media_url)
+                            if response.status_code == 200:
+                                url = download_and_save_image(media_url, 'media/chat_message')
+                                # image = UploadImage.objects.create(
+                                #     image_file= ContentFile(response.content, name=file_name)
+                                # )
+                                chat_video = ChatMessage.objects.create(
+                                    conversation_id= conversation,
+                                    content_type= content_type,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid,
+                                    media_url = f"http://127.0.0.1:8000/{url}",
+                                    media_sha256_hash = sha256,
+                                    media_mime_type = mime_type,
+                                    caption= caption
+                                )
+                                sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -587,28 +614,6 @@ def handel_request_redis(data):
     except Exception as e:
         error_redis = open('error_redis.txt', 'a')
         error_redis.write(f"your get the error: {e}\n")
-
-# def save_image_to_directory(image_url, directory):
-#     # Ensure the directory exists
-#     if not os.path.exists(directory):
-#         os.makedirs(directory)  # Create the directory if it doesn't exist
-
-#     # Extract the image name from the URL
-#     image_name = os.path.basename(image_url)
-
-#     # Full path to save the image
-#     full_path = os.path.join(directory, image_name)
-
-#     # Download the image
-#     response = requests.get(image_url, stream=True)
-#     if response.status_code == 200:
-#         with open(full_path, 'wb') as file:
-#             for chunk in response.iter_content(1024):
-#                 file.write(chunk)
-#         print(f"Image saved to: {full_path}")
-#         return full_path
-#     else:
-#         raise Exception(f"Failed to download image. Status code: {response.status_code}")
     
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
@@ -631,12 +636,9 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
     except Exception as e:
         pass
 
-    # finally:
-    #     ws.close
-
 def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -655,3 +657,51 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
 
     except Exception as e:
         pass
+
+def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "caption":caption,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "media_url": f"{media_url}",
+        "created_at": f"{created_at}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
+
+def download_and_save_image(image_url, save_directory):
+    """
+    Downloads an image from a URL and saves it to a specified directory on the server.
+
+    :param image_url: URL of the image to download.
+    :param save_directory: Directory where the image will be saved.
+    :return: Full path to the saved image.
+    """
+    # Extract the image name from the URL
+    image_name = os.path.basename(image_url)
+
+    # Full path to save the image
+    full_path = os.path.join(save_directory, image_name)
+
+    # Download the image
+    response = requests.get(image_url, stream=True)
+    if response.status_code == 200:
+        with open(full_path, 'wb') as file:
+            for chunk in response.iter_content(1024):
+                file.write(chunk)
+        print(f"Image saved to: {full_path}")
+        return full_path
+    else:
+        raise Exception(f"Failed to download image. Status code: {response.status_code}")

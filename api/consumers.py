@@ -93,7 +93,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question='',
                         type="image",
-                        source="https://chatbot.icsl.me/media/chat_message/windows-11-dark_ijRxIso.jpg",
+                        source=f"http://127.0.0.1:8000{image}",
                     )
                 else:
                     media_url = text_data_json["media_url"]
@@ -114,21 +114,56 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
             # handel receive video
             case 'video':
-                content = text_data_json["content"]
-                media_name = text_data_json["media_name"]
-                decoded_video = base64.b64decode(content)
-                video_file = ContentFile(decoded_video, name=media_name)
-                await database_sync_to_async(UploadImage.objects.create)(image_file=video_file)
-            # Send video to room group
-                await self.channel_layer.group_send(
-                    self.room_group_name, {
-                        "type": "chat_message", 
-                        "conversation_id": self.conversation_id,
-                        "content": content,
-                        "content_type": content_type,
-                    }
-                )
-
+                caption = text_data_json["caption"]
+                if from_bot == "True":
+                    content = text_data_json["content"]
+                    media_name = text_data_json["media_name"]
+                    decoded_image = base64.b64decode(content)
+                    image_file = ContentFile(decoded_image, name=media_name)
+                    image = await self.create_file(image_file)
+                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me{image}")
+                    # Send image to room group
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message_video",
+                            "conversation_id": self.conversation_id,
+                            "content": content,
+                            "caption": caption,
+                            "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                        }
+                    )
+                    print("hello")
+                    send_message(
+                        message_content= '',
+                        to= await self.get_phonenumber(self.conversation_id),
+                        wa_id= await self.get_waid(self.conversation_id),
+                        bearer_token= await self.get_token(self.conversation_id),
+                        chat_id=self.conversation_id,
+                        platform="whatsapp",
+                        question={"label":caption},
+                        type="video",
+                        source="https://chatbot.icsl.me/media/chat_message/WhatsApp_Video_2025-02-04_at_08.43.04_df95132d.mp4",
+                    )
+                else:
+                    media_url = text_data_json["media_url"]
+                    created_at = text_data_json["created_at"]
+                    message_id = text_data_json["message_id"]
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message_image",
+                            "conversation_id": self.conversation_id,
+                            "caption": caption,
+                            "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                            "media_url" : media_url,
+                            "created_at": created_at
+                        }
+                    )
             # Send document to room group
             case 'document':
                 content = text_data_json["content"]
@@ -166,6 +201,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
 
     async def chat_message_image(self, event):
+        content_type = event["content_type"]
+        wamid = event["wamid"]
+        message_id = event["message_id"]
+        from_bot = event["from_bot"]
+        caption = event["caption"]
+
+        if from_bot == "False":
+            media_url = event["media_url"]
+            await self.send(text_data=json.dumps({
+                    "conversation_id": self.conversation_id,
+                    "media_url":media_url,
+                    "caption":caption,
+                    "content_type": content_type,
+                    "sender":f"{self.user}",
+                    "wamid": wamid,
+                    "message_id":message_id,
+                    "is_successfully":"true"
+                }))
+        else:
+            await self.send(text_data=json.dumps({
+                    "message_id":message_id,
+                    "wamid":wamid,
+                    "is_successfully":"true"
+                }))
+            
+    async def chat_message_video(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
         message_id = event["message_id"]

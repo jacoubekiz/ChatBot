@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.core.files.base import ContentFile
-from .serializers import ChatMessageSerializer
+from .serializers import *
 import base64
 from .utils import *
 
@@ -45,19 +45,54 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         match content_type:
             # handel receive voice message
-            case "voice":
-                content = text_data_json["content"]
-                media_name = text_data_json["media_name"]
-                decoded_voice = base64.b64decode(content)
-                voice_file = ContentFile(decoded_voice, name=media_name)
-                await database_sync_to_async(UploadImage.objects.create)(image_file=voice_file)
-            # Send image to room group
-                await self.channel_layer.group_send(
+            case "audio":
+                caption = text_data_json["caption"]
+                if from_bot == "True":
+                    content = text_data_json["content"]
+                    media_name = text_data_json["media_name"]
+                    decoded_image = base64.b64decode(content)
+                    image_file = ContentFile(decoded_image, name=media_name)
+                    image = await self.create_file(image_file)
+                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me{image}")
+                    # Send image to room group
+                    await self.channel_layer.group_send(
                         self.room_group_name, {
-                            "type": "chat_message",
+                            "type": "chat_message_audio",
                             "conversation_id": self.conversation_id,
                             "content": content,
+                            "caption": caption,
                             "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                        }
+                    )
+                    send_message(
+                        message_content= '',
+                        to= await self.get_phonenumber(self.conversation_id),
+                        wa_id= await self.get_waid(self.conversation_id),
+                        bearer_token= await self.get_token(self.conversation_id),
+                        chat_id=self.conversation_id,
+                        platform="whatsapp",
+                        question={"label":caption},
+                        type="image",
+                        source=f"https://chatbot.icsl.me{image}",
+                    )
+                else:
+                    media_url = text_data_json["media_url"]
+                    created_at = text_data_json["created_at"]
+                    message_id = text_data_json["message_id"]
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message_audio",
+                            "conversation_id": self.conversation_id,
+                            "caption": caption,
+                            "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                            "media_url" : media_url,
+                            "created_at": created_at
                         }
                     )
 
@@ -135,7 +170,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "message_id": message_id,
                         }
                     )
-                    print("hello")
                     send_message(
                         message_content= '',
                         to= await self.get_phonenumber(self.conversation_id),
@@ -251,6 +285,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid":wamid,
                     "is_successfully":"true"
                 }))
+    async def chat_message_audio(self, event):
+        content_type = event["content_type"]
+        wamid = event["wamid"]
+        message_id = event["message_id"]
+        from_bot = event["from_bot"]
+        caption = event["caption"]
+
+        if from_bot == "False":
+            media_url = event["media_url"]
+            await self.send(text_data=json.dumps({
+                    "conversation_id": self.conversation_id,
+                    "media_url":media_url,
+                    "caption":caption,
+                    "content_type": content_type,
+                    "sender":f"{self.user}",
+                    "wamid": wamid,
+                    "message_id":message_id,
+                    "is_successfully":"true"
+                }))
+        else:
+            await self.send(text_data=json.dumps({
+                    "message_id":message_id,
+                    "wamid":wamid,
+                    "is_successfully":"true"
+                }))          
+
     # Receive message from room group
     async def chat_message(self, event):
         # conversation_id = event["conversation_id"]
@@ -417,4 +477,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 # #     return [base64_string[i:i + chunk_size] for i in range(0, len(base64_string), chunk_size)]
 
 
-# class ListAllConversations(AsyncWebsocketConsumer)
+class ListAllConversations(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.channel_id = self.scope["url_route"]["kwargs"]["channel_id"]
+        await self.accept()
+        
+        conversations = await self.get_conversation(self.channel_id)
+        for conversation in conversations:
+            await self.send(text_data=json.dumps(conversation))
+        
+
+    @database_sync_to_async
+    def get_conversation(self, channel_id):
+        channel = Channle.objects.get(channle_id = channel_id)
+        conversation = channel.conversation_set.all()
+        serializer = ConversationSerializer(conversation, many=True)
+        return serializer.data

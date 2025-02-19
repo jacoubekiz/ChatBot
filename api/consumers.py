@@ -74,8 +74,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         bearer_token= await self.get_token(self.conversation_id),
                         chat_id=self.conversation_id,
                         platform="whatsapp",
-                        question={"label":caption},
-                        type="image",
+                        # question={"label":caption},
+                        type="audio",
                         source=f"https://chatbot.icsl.me{image}",
                     )
                 else:

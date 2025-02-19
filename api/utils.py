@@ -612,13 +612,12 @@ def handel_request_redis(data):
                             response = requests.get(media_url)
                             if response.status_code == 200:
                                 url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                f.write(f"https://chatbot.icsl.me/{url}" + '\n')
                                 chat_audio = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/{url}",
+                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption

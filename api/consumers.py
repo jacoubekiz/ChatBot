@@ -240,6 +240,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
+        created_at = event["created_at"]
 
         if from_bot == "False":
             media_url = event["media_url"]
@@ -251,6 +252,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "sender":f"{self.user}",
                     "wamid": wamid,
                     "message_id":message_id,
+                    "created_at":created_at,
                     "is_successfully":"true"
                 }))
         else:
@@ -266,6 +268,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
+        created_at = event["created_at"]
 
         if from_bot == "False":
             media_url = event["media_url"]
@@ -277,6 +280,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "sender":f"{self.user}",
                     "wamid": wamid,
                     "message_id":message_id,
+                    "created_at":created_at,
                     "is_successfully":"true"
                 }))
         else:
@@ -291,6 +295,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
+        created_at = event["created_at"]
 
         if from_bot == "False":
             media_url = event["media_url"]
@@ -302,6 +307,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "sender":f"{self.user}",
                     "wamid": wamid,
                     "message_id":message_id,
+                    "created_at":created_at,
                     "is_successfully":"true"
                 }))
         else:

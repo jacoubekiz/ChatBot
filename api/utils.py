@@ -510,7 +510,7 @@ def validate_phone_number(phone_number):
 
 v_v = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQkUwNEU2ODg0MzI4MDZERTlCMDBGRDAzNkZFRTlDRUIA", "timestamp": "1739867538", "type": "video", "video": {"mime_type": "video/mp4", "sha256": "hekbZhF76pvXHZgbD7XwjeYgulKnS63Q1uNXyB0p7AM=", "id": "602300352596747"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739867541070_media-0.3026585401465338.mp4", "caption": "", "type": "video", "file_name": "1739867541070_media-0.3026585401465338.mp4"}]}'
 i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"display_phone_number": "966920025589","phone_number_id": "157289147477280"},"contacts": [{"profile": {"name": "Jacoub"},"wa_id": "966114886645"}], "messages": [{"from": "966114886645","id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA","timestamp": "1739778473","type": "image","image": {"mime_type": "image/jpeg","sha256": "t6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=","id": "1274841703581495"}}]},"field":"messages"},"medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg","caption": "فرع جده","type": "image","file_name": "1739778476665_media-0.4923813022854102.jpeg"}]}'
-a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": True}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
+a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": "True"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
 def handel_request_redis(data):
 
     try:
@@ -565,15 +565,16 @@ def handel_request_redis(data):
                             response = requests.get(media_url)
                             if response.status_code == 200:
                                 # url = download_and_save_image(media_url, 'media/chat_message')
-                                image = UploadImage.objects.create(
-                                    image_file= ContentFile(response.content, name=file_name)
-                                )
+                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                # image = UploadImage.objects.create(
+                                #     image_file= ContentFile(response.content, name=file_name)
+                                # )
                                 chat_image = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/{image.get_absolute_url}",
+                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption
@@ -589,15 +590,16 @@ def handel_request_redis(data):
                             response = requests.get(media_url)
                             if response.status_code == 200:
                                 # url = download_and_save_image(media_url, 'media/chat_message')
-                                image = UploadImage.objects.create(
-                                    image_file= ContentFile(response.content, name=file_name)
-                                )
+                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                # image = UploadImage.objects.create(
+                                #     image_file= ContentFile(response.content, name=file_name)
+                                # )
                                 chat_video = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
                                     from_message = conversation.contact_id.name,
                                     wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/{image.get_absolute_url}",
+                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
                                     caption= caption
@@ -611,6 +613,7 @@ def handel_request_redis(data):
                             caption = log_entry.get('medias', [])[0].get('caption', '')
                             response = requests.get(media_url)
                             if response.status_code == 200:
+                                # url = download_and_save_image(media_url, 'media/chat_message')
                                 url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
                                 chat_audio = ChatMessage.objects.create(
                                     conversation_id= conversation,

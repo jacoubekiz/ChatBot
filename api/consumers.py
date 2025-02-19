@@ -171,7 +171,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     )
                     send_message(
-                        message_content= '',
+                        message_content= caption,
                         to= await self.get_phonenumber(self.conversation_id),
                         wa_id= await self.get_waid(self.conversation_id),
                         bearer_token= await self.get_token(self.conversation_id),
@@ -200,22 +200,55 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
             # Send document to room group
             case 'document':
-                content = text_data_json["content"]
-                media_name = text_data_json["media_name"]
-                type_content_receive = text_data_json["type_content_receive"]
-                decoded_document = base64.b64decode(content)
-                document_file = ContentFile(decoded_document, name=media_name)
-                await database_sync_to_async(UploadImage.objects.create)(image_file=document_file)
-            # Send document to room group
-                await self.channel_layer.group_send(
-                    self.room_group_name, {
-                        "type": "chat_message",
-                        "conversation_id": self.conversation_id,
-                        "content": content,
-                        "content_type": content_type,
-                        "type_content_receive":type_content_receive,
-                    }
-                )
+                caption = text_data_json["caption"]
+                if from_bot == "True":
+                    content = text_data_json["content"]
+                    media_name = text_data_json["media_name"]
+                    decoded_image = base64.b64decode(content)
+                    image_file = ContentFile(decoded_image, name=media_name)
+                    image = await self.create_file(image_file)
+                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me{image}")
+                    # Send image to room group
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message_document",
+                            "conversation_id": self.conversation_id,
+                            "content": content,
+                            "caption": caption,
+                            "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                        }
+                    )
+                    send_message(
+                        message_content= caption,
+                        to= await self.get_phonenumber(self.conversation_id),
+                        wa_id= await self.get_waid(self.conversation_id),
+                        bearer_token= await self.get_token(self.conversation_id),
+                        chat_id=self.conversation_id,
+                        platform="whatsapp",
+                        type="document",
+                        filename=media_name,
+                        source=f"https://chatbot.icsl.me{image}",
+                    )
+                else:
+                    media_url = text_data_json["media_url"]
+                    created_at = text_data_json["created_at"]
+                    message_id = text_data_json["message_id"]
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message_image",
+                            "conversation_id": self.conversation_id,
+                            "caption": caption,
+                            "content_type": content_type,
+                            "from_bot": from_bot,
+                            "wamid": wamid,
+                            "message_id": message_id,
+                            "media_url" : media_url,
+                            "created_at": created_at
+                        }
+                    )
             # Send message to room group
             case 'text':
                 content = text_data_json["content"]
@@ -268,9 +301,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
-        created_at = event["created_at"]
-
+        
         if from_bot == "False":
+            created_at = event["created_at"]
             media_url = event["media_url"]
             await self.send(text_data=json.dumps({
                     "conversation_id": self.conversation_id,
@@ -289,15 +322,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid":wamid,
                     "is_successfully":"true"
                 }))
+            
     async def chat_message_audio(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
-        created_at = event["created_at"]
-
+        
         if from_bot == "False":
+            created_at = event["created_at"]
             media_url = event["media_url"]
             await self.send(text_data=json.dumps({
                     "conversation_id": self.conversation_id,
@@ -315,84 +349,71 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message_id":message_id,
                     "wamid":wamid,
                     "is_successfully":"true"
-                }))          
+                }))      
+                
+    async def chat_message_document(self, event):
+        content_type = event["content_type"]
+        wamid = event["wamid"]
+        message_id = event["message_id"]
+        from_bot = event["from_bot"]
+        caption = event["caption"]
 
+        if from_bot == "False":
+            created_at = event["created_at"]
+            media_url = event["media_url"]
+            await self.send(text_data=json.dumps({
+                    "conversation_id": self.conversation_id,
+                    "media_url":media_url,
+                    "caption":caption,
+                    "content_type": content_type,
+                    "sender":f"{self.user}",
+                    "wamid": wamid,
+                    "message_id":message_id,
+                    "created_at":created_at,
+                    "is_successfully":"true"
+                }))
+        else:
+            await self.send(text_data=json.dumps({
+                    "message_id":message_id,
+                    "wamid":wamid,
+                    "is_successfully":"true"
+                }))
+            
     # Receive message from room group
     async def chat_message(self, event):
-        # conversation_id = event["conversation_id"]
         content = event["content"]
         content_type = event["content_type"]
         from_bot = event["from_bot"]
         wamid = event['wamid']
 
-
-        match content_type:
-        #handel voice
-            case 'voice':
-                await self.send(text_data=json.dumps({
-                        # "conversation_id": self.conversation_id,
-                        # "content": content,
-                        # "content_type": content_type,
-                        # "sender":self.user
-                        "message_id":message_id,
-                        "is_successfully":"true"
-                    }))
-
-            #handel document
-            case 'document':
-                type_content_receive = event["type_content_receive"]
-                await self.send(text_data=json.dumps({
-                        # "conversation_id": self.conversation_id,
-                        # "content": content,
-                        # "content_type": content_type,
-                        # "type_content_receive":type_content_receive,
-                        # "sender":self.user
-                        "message_id":message_id,
-                        "is_successfully":"true"
-                    }))
-
-
-            # handle video
-            case 'video':
-                await self.send(text_data=json.dumps({
-                        # "conversation_id": self.conversation_id,
-                        # "content": content,
-                        # "content_type": content_type,
-                        # "sender":self.user
-                        "message_id":message_id,
-                        "is_successfully":"true"
-                    }))
-        
-            # handel message
-            case 'text':
-                message_id_ = event["message_id"]
-                created_at = event["created_at"]
-                if from_bot == "False":
-                    await self.send(text_data=json.dumps({
-                        "message_id": message_id_,
-                        "content":content,
-                        "content_type":content_type,
-                        "conversation_id":self.conversation_id,
-                        "wamid":wamid,
-                        "created_at":created_at,
-                        "is_successfully":"true"
-                    }))
-                else:
-                    message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot, wamid)
-                    await self.send(text_data=json.dumps({
-                            "message_id":message_id,
-                            "wamid":wamid,
-                            "is_successfully":"true"
-                        }))
-                    send_message(
-                        message_content=content,
-                        to= await self.get_phonenumber(self.conversation_id),
-                        wa_id= await self.get_waid(self.conversation_id),
-                        bearer_token= await self.get_token(self.conversation_id),
-                        chat_id=self.conversation_id,
-                        platform="whatsapp",
-                        question='statment'
-                    )
+        message_id_ = event["message_id"]
+        created_at = event["created_at"]
+        if from_bot == "False":
+            await self.send(text_data=json.dumps({
+                "message_id": message_id_,
+                "content":content,
+                "content_type":content_type,
+                "conversation_id":self.conversation_id,
+                "wamid":wamid,
+                "created_at":created_at,
+                "is_successfully":"true"
+            }))
+        else:
+            message_id = await self.create_chat_message(self.conversation_id, content_type, content, from_bot, wamid)
+            await self.send(text_data=json.dumps({
+                    "message_id":message_id,
+                    "wamid":wamid,
+                    "is_successfully":"true"
+                }))
+            send_message(
+                message_content=content,
+                to= await self.get_phonenumber(self.conversation_id),
+                wa_id= await self.get_waid(self.conversation_id),
+                bearer_token= await self.get_token(self.conversation_id),
+                chat_id=self.conversation_id,
+                platform="whatsapp",
+                question='statment'
+            )
                 
            
     @database_sync_to_async

@@ -511,10 +511,13 @@ def validate_phone_number(phone_number):
 v_v = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQkUwNEU2ODg0MzI4MDZERTlCMDBGRDAzNkZFRTlDRUIA", "timestamp": "1739867538", "type": "video", "video": {"mime_type": "video/mp4", "sha256": "hekbZhF76pvXHZgbD7XwjeYgulKnS63Q1uNXyB0p7AM=", "id": "602300352596747"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739867541070_media-0.3026585401465338.mp4", "caption": "", "type": "video", "file_name": "1739867541070_media-0.3026585401465338.mp4"}]}'
 i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"display_phone_number": "966920025589","phone_number_id": "157289147477280"},"contacts": [{"profile": {"name": "Jacoub"},"wa_id": "966114886645"}], "messages": [{"from": "966114886645","id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA","timestamp": "1739778473","type": "image","image": {"mime_type": "image/jpeg","sha256": "t6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=","id": "1274841703581495"}}]},"field":"messages"},"medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg","caption": "فرع جده","type": "image","file_name": "1739778476665_media-0.4923813022854102.jpeg"}]}'
 a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": "True"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
+d_d = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNjAyNzIyNDYyNjUzMDVFMzU4NEExNDMzMkRFRjhGQ0IA", "timestamp": "1739961961", "type": "document", "document": {"filename": "1709124383910_ICS Company Profile AR.pdf", "mime_type": "application/pdf", "sha256": "IHPpJcYjvjTepZTrKvXAacDUge/p0JKvQHOX7t4V1ag=", "id": "1134184264697475"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf", "caption": "", "type": "document", "file_name": "1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf"}]}'
+
 def handel_request_redis(data):
 
     try:
         redis_client = get_redis_connection()
+        print("klfjdlkjflkdjlk")
         redis_client.lpush('data_queue', json.dumps(data))
         f = open('content_redis.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
@@ -626,6 +629,27 @@ def handel_request_redis(data):
                                     caption= caption
                                 )
                                 sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url)
+                        case 'document':
+                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('mime_type', '')
+                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('sha256', '')
+                            media_url = log_entry.get('medias', [])[0].get('url', '')
+                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
+                            caption = log_entry.get('medias', [])[0].get('caption', '')
+                            response = requests.get(media_url)
+                            if response.status_code == 200:
+                                # url = download_and_save_image(media_url, 'media/chat_message')
+                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                chat_document = ChatMessage.objects.create(
+                                    conversation_id= conversation,
+                                    content_type= content_type,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid,
+                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                    media_sha256_hash = sha256,
+                                    media_mime_type = mime_type,
+                                    caption= caption
+                                )
+                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -705,6 +729,28 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
 
 
 def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "caption":caption,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "media_url": f"{media_url}",
+        "created_at": f"{created_at}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
+def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTY0MTg4LCJpYXQiOjE3Mzk3MDAxODgsImp0aSI6IjNiMTVmNTc1NTQyMTRjYTdiZTg3OWNiMjUyZjBjM2Y2IiwidXNlcl9pZCI6MX0.4nw1OZDRJbLPOvhaBUIjAp0Bm-B_PyL45PkOU9uMhKY"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     ws = websocket.WebSocket()

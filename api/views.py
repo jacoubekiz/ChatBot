@@ -1036,12 +1036,18 @@ class ListReportView(RetrieveAPIView):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 
-class ListMessgesForSpecificConversation(ListAPIView):
-    queryset = ChatMessage.objects.all().order_by('-created_at')
-    serializer_class = ChatMessageSerializer
+class ListMessgesForSpecificConversation(APIView):
     permission_classes = [IsAuthenticated]
-    lookup_url_kwarg = 'conversation_id'
     pagination_class = CustomPaginatins
+
+    def get(self, request, conversation_id):
+        paginator = CustomPaginatins()
+        # paginator.page_size = 20
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        messages = conversation.chatmessage_set.all().order_by('-created_at')
+        result_page = paginator.paginate_queryset(messages, request)
+        messages_serializer = ChatMessageSerializer(result_page, many=True)
+        return paginator.get_paginated_response(messages_serializer.data)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):

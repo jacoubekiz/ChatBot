@@ -273,10 +273,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
-        created_at = event["created_at"]
+        
 
         if from_bot == "False":
             media_url = event["media_url"]
+            created_at = event["created_at"]
             await self.send(text_data=json.dumps({
                     "conversation_id": self.conversation_id,
                     "media_url":media_url,

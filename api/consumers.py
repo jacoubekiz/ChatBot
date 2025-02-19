@@ -93,7 +93,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question='',
                         type="image",
-                        source=f"http://127.0.0.1:8000{image}",
+                        source=f"https://chatbot.icsl.me{image}",
                     )
                 else:
                     media_url = text_data_json["media_url"]
@@ -145,7 +145,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question={"label":caption},
                         type="video",
-                        source="https://chatbot.icsl.me/media/chat_message/WhatsApp_Video_2025-02-04_at_08.43.04_df95132d.mp4",
+                        source=f"https://chatbot.icsl.me{image}",
                     )
                 else:
                     media_url = text_data_json["media_url"]
@@ -389,29 +389,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         file = UploadImage.objects.create(image_file=file_name)
         return file.get_absolute_url
     
-class DocumentConsumers(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room']
-        self.room_group_name = "chat_%s" % self.room_name
-        self.document_data = []
+# class DocumentConsumers(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         self.room_name = self.scope['url_route']['kwargs']['room']
+#         self.room_group_name = "chat_%s" % self.room_name
+#         self.document_data = []
 
-        await self.channel_layer.group_add(self.room_group_name, self.channel_layer)
+#         await self.channel_layer.group_add(self.room_group_name, self.channel_layer)
 
-        return self.accept()
+#         return self.accept()
     
-    async def disconnect(self, code):
-        return await super().disconnect(code)
+#     async def disconnect(self, code):
+#         return await super().disconnect(code)
     
-    async def receive(self, text_data=None, bytes_data=None):
-        text_data_json = json.loads(text_data)
-        chunk = text_data_json.get('chunk', '')
-        last_chunk = text_data_json.get('last_chunk', '')
+#     async def receive(self, text_data=None, bytes_data=None):
+#         text_data_json = json.loads(text_data)
+#         chunk = text_data_json.get('chunk', '')
+#         last_chunk = text_data_json.get('last_chunk', '')
 
-        self.document_data.append(chunk)
+#         self.document_data.append(chunk)
 
-        if last_chunk != '':
-            document_data = ''.join(self.document_data)
+#         if last_chunk != '':
+#             document_data = ''.join(self.document_data)
 
     
-# def split_base64_into_chunks(base64_string, chunk_size=5 * 1024 * 1024): 
-#     return [base64_string[i:i + chunk_size] for i in range(0, len(base64_string), chunk_size)]
+# # def split_base64_into_chunks(base64_string, chunk_size=5 * 1024 * 1024): 
+# #     return [base64_string[i:i + chunk_size] for i in range(0, len(base64_string), chunk_size)]
+
+
+# class ListAllConversations(AsyncWebsocketConsumer)

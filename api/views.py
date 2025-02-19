@@ -25,6 +25,7 @@ from django.utils.decorators import method_decorator
 import threading
 from .send_email import *
 import openpyxl
+from .pagination import *
 
 def write_inside_excel(data):
         response = data['response']
@@ -1040,6 +1041,7 @@ class ListMessgesForSpecificConversation(ListAPIView):
     serializer_class = ChatMessageSerializer
     permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'conversation_id'
+    pagination_class = CustomPaginatins
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):

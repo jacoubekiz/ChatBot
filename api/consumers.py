@@ -107,13 +107,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_image = base64.b64decode(content)
-                    output_folder = 'media/chat_message'
-                    # output_folder = '/var/www/html/media/chat_message'
+                    # output_folder = 'media/chat_message'
+                    output_folder = '/var/www/html/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_image)
-                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
-                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
                         self.room_group_name, {

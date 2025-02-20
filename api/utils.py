@@ -549,7 +549,7 @@ def handel_request_redis(data):
                             content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('button', '').get('text','')
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = conversation,
-                                content_type = content_type,
+                                content_type = 'text',
                                 content = content,
                                 from_message = conversation.contact_id.name,
                                 wamid = wamid
@@ -673,13 +673,13 @@ def handel_request_redis(data):
         error_redis.write(f"your get the error: {e}\n")
     
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
         "content":content,
-        "content_type":content_type,
+        "content_type":'text',
         "wamid":wamid,
         "from_bot":"False",
         "message_id": message_id,

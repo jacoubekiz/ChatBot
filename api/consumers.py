@@ -14,18 +14,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
         self.contact_phonenumber = self.scope["url_route"]["kwargs"]["contact_phonenumber"]
-        self.user = self.scope['user']
-        print(self.user.id)
-        if self.user.is_authenticated:
-            self.room_group_name = "chat_%s" % f"{self.conversation_id}-{self.contact_phonenumber}"
+        # self.user = self.scope['user']
+        # print(self.user.id)
+        # if self.user.is_authenticated:
+        self.room_group_name = "chat_%s" % f"{self.conversation_id}-{self.contact_phonenumber}"
             # Join room group
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-            await self.accept()
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
             # messages = await self.get_messages(self.conversation_id)
             # for message in messages:
             #     await self.send(text_data=json.dumps(message))
-        else:
-            await self.close()
+        # else:
+        # await self.close()
 
 
     async def disconnect(self, close_code):
@@ -107,13 +107,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_image = base64.b64decode(content)
-                    # output_folder = 'media/chat_message'
-                    output_folder = '/var/www/html/media/chat_message'
+                    output_folder = 'media/chat_message'
+                    # output_folder = '/var/www/html/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_image)
-                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
-                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
+                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
                         self.room_group_name, {

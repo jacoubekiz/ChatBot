@@ -649,7 +649,7 @@ def handel_request_redis(data):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url)
+                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -750,7 +750,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
     except Exception as e:
         pass
 
-def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
+def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, mime_type):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODMzNTAzLCJpYXQiOjE3Mzk5Njk1MDMsImp0aSI6ImEzYTk3Yjc4ZWI0ODQ5ODc5NTVlMGJhYmE1MTFkNDEzIiwidXNlcl9pZCI6MX0.2gJ2IV3--raeSleT39UEysF_pMjDTdrJA7GFGuGRTh8"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwNTYyMDY1LCJpYXQiOjE3Mzk2OTgwNjUsImp0aSI6IjliNDFlYWZmMTJhMjQxOTY4NzA4NjI4MmI5YzVjYTU1IiwidXNlcl9pZCI6MTN9.2kRBS2T-m6kpi1-FwwlAKiG2vcSk1joJx9httz_hyok"
     ws = websocket.WebSocket()
@@ -762,7 +762,8 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         "from_bot":"False",
         "message_id": message_id,
         "media_url": f"{media_url}",
-        "created_at": f"{created_at}"
+        "created_at": f"{created_at}",
+        "mime_type": f"{mime_type}"
     }
     try:
         ws.send(json.dumps(data))

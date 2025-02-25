@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from .serializers import *
 import base64
 from .utils import *
+from django.utils import timezone
 
 # from pydub import AudioSegment
 
@@ -549,12 +550,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_conversation(self, conversation_id):
         conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation.updated_at = timezone.now()
+        conversation.save()
         return conversation.conversation_id
 
     @database_sync_to_async
     def get_conversations(self, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)
-        conversation = channel.conversation_set.all().order_by('-created_at')
+        conversation = channel.conversation_set.all().order_by('-updated_at')
         serializer = ConversationSerializer(conversation, many=True)
         return serializer.data
 # class DocumentConsumers(AsyncWebsocketConsumer):

@@ -554,7 +554,7 @@ def handel_request_redis(data):
                                 from_message = conversation.contact_id.name,
                                 wamid = wamid
                             )
-                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
+                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
 
                         case "text":
                             content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
@@ -566,7 +566,7 @@ def handel_request_redis(data):
                                 from_message = conversation.contact_id.name,
                                 wamid = wamid
                             )
-                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number)
+                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
 
                         case "image":
                             mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
@@ -592,7 +592,7 @@ def handel_request_redis(data):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url)
+                                sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
                                 
                         case "video":
                             mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('video', {}).get('mime_type', '')
@@ -617,7 +617,7 @@ def handel_request_redis(data):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url)
+                                sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
                         case "audio":
                             mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('mime_type', '')
                             sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('sha256', '')
@@ -638,7 +638,7 @@ def handel_request_redis(data):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url)
+                                sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
                         case 'document':
                             mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('mime_type', '')
                             sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('sha256', '')
@@ -659,7 +659,7 @@ def handel_request_redis(data):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type)
+                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')
@@ -672,9 +672,9 @@ def handel_request_redis(data):
         error_redis = open('error_redis.txt', 'a')
         error_redis.write(f"your get the error: {e}\n")
     
-def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber):
-    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
+def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber,channel_id):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -683,7 +683,8 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         "wamid":wamid,
         "from_bot":"False",
         "message_id": message_id,
-        "created_at": f"{created_at}"
+        "created_at": f"{created_at}",
+        "conversation_id": f"{conversation_id}"
     }
     try:
         ws.send(json.dumps(data))
@@ -693,76 +694,9 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
     except Exception as e:
         pass
 
-def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    ws = websocket.WebSocket()
-    ws.connect(url_ws)
-    data = {
-        "caption":caption,
-        "content_type":content_type,
-        "wamid":wamid,
-        "from_bot":"False",
-        "message_id": message_id,
-        "media_url": f"{media_url}",
-        "created_at": f"{created_at}"
-    }
-    try:
-        ws.send(json.dumps(data))
-        result = ws.recv()
-        ws.close()
-
-    except Exception as e:
-        pass
-
-def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    ws = websocket.WebSocket()
-    ws.connect(url_ws)
-    data = {
-        "caption":caption,
-        "content_type":content_type,
-        "wamid":wamid,
-        "from_bot":"False",
-        "message_id": message_id,
-        "media_url": f"{media_url}",
-        "created_at": f"{created_at}"
-    }
-    try:
-        ws.send(json.dumps(data))
-        result = ws.recv()
-        ws.close()
-
-    except Exception as e:
-        pass
-
-
-def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    ws = websocket.WebSocket()
-    ws.connect(url_ws)
-    data = {
-        "caption":caption,
-        "content_type":content_type,
-        "wamid":wamid,
-        "from_bot":"False",
-        "message_id": message_id,
-        "media_url": f"{media_url}",
-        "created_at": f"{created_at}"
-    }
-    try:
-        ws.send(json.dumps(data))
-        result = ws.recv()
-        ws.close()
-
-    except Exception as e:
-        pass
-
-def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, mime_type):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{conversation_id}/{contact_phonenumber}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{conversation_id}/{contact_phonenumber}/"
+def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -773,7 +707,78 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
-        "mime_type": f"{mime_type}"
+        "conversation_id": f"{conversation_id}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
+def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "caption":caption,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "media_url": f"{media_url}",
+        "created_at": f"{created_at}",
+        "conversation_id": f"{conversation_id}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
+
+def sent_message_audio(conversation_id, channel_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "caption":caption,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "media_url": f"{media_url}",
+        "created_at": f"{created_at}",
+        "conversation_id": f"{conversation_id}"
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
+def sent_message_document(conversation_id, channel_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, mime_type):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "caption":caption,
+        "content_type":content_type,
+        "wamid":wamid,
+        "from_bot":"False",
+        "message_id": message_id,
+        "media_url": f"{media_url}",
+        "created_at": f"{created_at}",
+        "mime_type": f"{mime_type}",
+        "conversation_id": f"{conversation_id}"
     }
     try:
         ws.send(json.dumps(data))

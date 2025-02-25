@@ -83,9 +83,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     send_message(
                         message_content= '',
-                        to= await self.get_phonenumber(self.conversation_id),
-                        wa_id= await self.get_waid(self.conversation_id),
-                        bearer_token= await self.get_token(self.conversation_id),
+                        to= await self.get_phonenumber(conversation_id),
+                        wa_id= await self.get_waid(conversation_id),
+                        bearer_token= await self.get_token(conversation_id),
                         chat_id=conversation_id,
                         platform="whatsapp",
                         # question={"label":caption},

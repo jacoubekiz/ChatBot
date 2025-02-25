@@ -554,7 +554,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_conversations(self, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)
-        conversation = channel.conversation_set.all().order_dy('-created_at')
+        conversation = channel.conversation_set.all().order_by('-created_at')
         serializer = ConversationSerializer(conversation, many=True)
         return serializer.data
 # class DocumentConsumers(AsyncWebsocketConsumer):

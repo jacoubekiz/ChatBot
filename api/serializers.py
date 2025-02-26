@@ -178,9 +178,16 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'members']
 
 class ContactSerializer(serializers.ModelSerializer):
+    conversation_id = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Contact
-        fields = ['contact_id', 'name', 'phone_number']
+        fields = ['contact_id', 'name', 'phone_number', "conversation_id"]
+
+    def get_conversation_id(self, obj):
+        contact = Contact.objects.get(contact_id=obj.contact_id)
+        conversation_id = Conversation.objects.get(contact_id=contact.contact_id)
+        conversation_id = conversation_id.conversation_id
+        return conversation_id
 
 class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:

@@ -25,11 +25,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
         conversations = await self.get_conversations(self.channel_id)
-        for conversation in conversations:
-            await self.send(text_data=json.dumps({
-                "type": "conversation",
-                "conversation": conversation
-            }))
+        # for conversation in conversations:
+        await self.send(text_data=json.dumps({
+            "type": "conversation",
+            "conversation": conversations
+        }))
             # messages = await self.get_messages(self.conversation_id)
             # for message in messages:
             #     await self.send(text_data=json.dumps(message))

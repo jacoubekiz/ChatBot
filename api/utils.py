@@ -10,6 +10,7 @@ from .models import *
 from django_redis import get_redis_connection
 import websocket
 from django.core.files.base import ContentFile
+from bot.settings import TOKEN_ACCOUNTS
 
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
@@ -513,165 +514,168 @@ i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"displa
 a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": "True"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
 d_d = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNjAyNzIyNDYyNjUzMDVFMzU4NEExNDMzMkRFRjhGQ0IA", "timestamp": "1739961961", "type": "document", "document": {"filename": "1709124383910_ICS Company Profile AR.pdf", "mime_type": "application/pdf", "sha256": "IHPpJcYjvjTepZTrKvXAacDUge/p0JKvQHOX7t4V1ag=", "id": "1134184264697475"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf", "caption": "", "type": "document", "file_name": "1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf"}]}'
 c_c = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"context": {"from": "966920025589", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAERgSNEU2RTg2MDdFQzkzRjM1OURGAA=="}, "from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQUJBNjg1MjA1M0Q3QjFDM0MyQUU4MDc2MzFEOUZEMzYA", "timestamp": "1740040871", "type": "button", "button": {"payload": "موقع المناسبة", "text": "موقع المناسبة"}}]}, "field": "messages"}}'
-def handel_request_redis(data, account_id):
+def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
+    if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
 
-    try:
-        redis_client = get_redis_connection()
-        redis_client.lpush('data_queue', json.dumps(data))
-        f = open(f'content_redis-{account_id}.txt', 'a')
-        f.write("recive redis: " + str(data) + '\n')
-        raw_data = redis_client.rpop('data_queue')
-        test_data = json.loads(raw_data)
-        f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
-        if raw_data == None:
-            return Response({'message':data}, status=status.HTTP_200_OK)
-        else:
-            
-            log_entry = json.loads(raw_data)
-            value = log_entry.get('event', '').get('value', '')
-            
-            if value:   
-                wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
-                content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-                contact_phonenumber = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
-                # timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
-                # messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
-                display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
-                # phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
-                contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
-                if contacts:
-                    account = Account.objects.get(account_id=account_id)         
-                    contact_name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
-                    contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
-                    channel = Channle.objects.filter(phone_number=display_phone_number).first()
-                    conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
-                    match content_type:
-                        case "button":
-                            content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('button', '').get('text','')
-                            chat_message = ChatMessage.objects.create(
-                                conversation_id = conversation,
-                                content_type = 'text',
-                                content = content,
-                                from_message = conversation.contact_id.name,
-                                wamid = wamid
-                            )
-                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
-
-                        case "text":
-                            content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
-                            chat_message = ChatMessage.objects.create(
-                                conversation_id = conversation,
-                                # user_id = CustomUser1.objects.filter(id=15).first(),
-                                content_type = content_type,
-                                content = content,
-                                from_message = conversation.contact_id.name,
-                                wamid = wamid
-                            )
-                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
-
-                        case "image":
-                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
-                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('sha256', '')
-                            # medias = log_entry.get('medias', '')
-                            media_url = log_entry.get('medias', '')[0].get('url', '')
-                            file_name = log_entry.get('medias', '')[0].get('file_name', '')
-                            caption = log_entry.get('medias', '')[0].get('caption', '')
-                            response = requests.get(media_url)
-                            if response.status_code == 200:
-                                # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
-                                chat_image = ChatMessage.objects.create(
-                                    conversation_id= conversation,
-                                    content_type= content_type,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
-                                    media_sha256_hash = sha256,
-                                    media_mime_type = mime_type,
-                                    caption= caption
-                                )
-                                sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
-                                
-                        case "video":
-                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('video', {}).get('mime_type', '')
-                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('viedo', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
-                            if response.status_code == 200:
-                                # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
-                                chat_video = ChatMessage.objects.create(
-                                    conversation_id= conversation,
-                                    content_type= content_type,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
-                                    media_sha256_hash = sha256,
-                                    media_mime_type = mime_type,
-                                    caption= caption
-                                )
-                                sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
-                        case "audio":
-                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('mime_type', '')
-                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
-                            if response.status_code == 200:
-                                # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                chat_audio = ChatMessage.objects.create(
-                                    conversation_id= conversation,
-                                    content_type= content_type,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
-                                    media_sha256_hash = sha256,
-                                    media_mime_type = mime_type,
-                                    caption= caption
-                                )
-                                sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
-                        case 'document':
-                            mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('mime_type', '')
-                            sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
-                            if response.status_code == 200:
-                                # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                chat_document = ChatMessage.objects.create(
-                                    conversation_id= conversation,
-                                    content_type= content_type,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid,
-                                    media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
-                                    media_sha256_hash = sha256,
-                                    media_mime_type = mime_type,
-                                    caption= caption
-                                )
-                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
+        try:
+            redis_client = get_redis_connection()
+            redis_client.lpush('data_queue', json.dumps(data))
+            f = open(f'content_redis-{account_id}.txt', 'a')
+            f.write("recive redis: " + str(data) + '\n')
+            raw_data = redis_client.rpop('data_queue')
+            test_data = json.loads(raw_data)
+            f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
+            if raw_data == None:
+                return Response({'message':data}, status=status.HTTP_200_OK)
             else:
-                mid = log_entry.get('event', {}).get('mid', ' ')
-                status_messaage = log_entry.get('event', {}).get('status', ' ')
-                status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
-                message = ChatMessage.objects.get(wamid=mid)
-                message.status_message = status_messaage
-                message.status_updated_at = status_updated_at
-                message.save()
-    except Exception as e:
-        error_redis = open('error_redis.txt', 'a')
-        error_redis.write(f"your get the error: {e}\n")
+                
+                log_entry = json.loads(raw_data)
+                value = log_entry.get('event', '').get('value', '')
+                
+                if value:   
+                    wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
+                    content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
+                    contact_phonenumber = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
+                    # timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
+                    # messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
+                    display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
+                    # phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
+                    contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+                    if contacts:
+                        account = Account.objects.get(account_id=account_id)         
+                        contact_name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+                        contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
+                        channel = Channle.objects.filter(phone_number=display_phone_number).first()
+                        conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
+                        match content_type:
+                            case "button":
+                                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('button', '').get('text','')
+                                chat_message = ChatMessage.objects.create(
+                                    conversation_id = conversation,
+                                    content_type = 'text',
+                                    content = content,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid
+                                )
+                                sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
+
+                            case "text":
+                                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+                                chat_message = ChatMessage.objects.create(
+                                    conversation_id = conversation,
+                                    # user_id = CustomUser1.objects.filter(id=15).first(),
+                                    content_type = content_type,
+                                    content = content,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid
+                                )
+                                sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
+
+                            case "image":
+                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
+                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('sha256', '')
+                                # medias = log_entry.get('medias', '')
+                                media_url = log_entry.get('medias', '')[0].get('url', '')
+                                file_name = log_entry.get('medias', '')[0].get('file_name', '')
+                                caption = log_entry.get('medias', '')[0].get('caption', '')
+                                response = requests.get(media_url)
+                                if response.status_code == 200:
+                                    # url = download_and_save_image(media_url, 'media/chat_message')
+                                    url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                    # image = UploadImage.objects.create(
+                                    #     image_file= ContentFile(response.content, name=file_name)
+                                    # )
+                                    chat_image = ChatMessage.objects.create(
+                                        conversation_id= conversation,
+                                        content_type= content_type,
+                                        from_message = conversation.contact_id.name,
+                                        wamid = wamid,
+                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_sha256_hash = sha256,
+                                        media_mime_type = mime_type,
+                                        caption= caption
+                                    )
+                                    sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
+                                    
+                            case "video":
+                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('video', {}).get('mime_type', '')
+                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('viedo', {}).get('sha256', '')
+                                media_url = log_entry.get('medias', [])[0].get('url', '')
+                                file_name = log_entry.get('medias', [])[0].get('file_name', '')
+                                caption = log_entry.get('medias', [])[0].get('caption', '')
+                                response = requests.get(media_url)
+                                if response.status_code == 200:
+                                    # url = download_and_save_image(media_url, 'media/chat_message')
+                                    url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                    # image = UploadImage.objects.create(
+                                    #     image_file= ContentFile(response.content, name=file_name)
+                                    # )
+                                    chat_video = ChatMessage.objects.create(
+                                        conversation_id= conversation,
+                                        content_type= content_type,
+                                        from_message = conversation.contact_id.name,
+                                        wamid = wamid,
+                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_sha256_hash = sha256,
+                                        media_mime_type = mime_type,
+                                        caption= caption
+                                    )
+                                    sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
+                            case "audio":
+                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('mime_type', '')
+                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('sha256', '')
+                                media_url = log_entry.get('medias', [])[0].get('url', '')
+                                file_name = log_entry.get('medias', [])[0].get('file_name', '')
+                                caption = log_entry.get('medias', [])[0].get('caption', '')
+                                response = requests.get(media_url)
+                                if response.status_code == 200:
+                                    # url = download_and_save_image(media_url, 'media/chat_message')
+                                    url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                    chat_audio = ChatMessage.objects.create(
+                                        conversation_id= conversation,
+                                        content_type= content_type,
+                                        from_message = conversation.contact_id.name,
+                                        wamid = wamid,
+                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_sha256_hash = sha256,
+                                        media_mime_type = mime_type,
+                                        caption= caption
+                                    )
+                                    sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
+                            case 'document':
+                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('mime_type', '')
+                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('sha256', '')
+                                media_url = log_entry.get('medias', [])[0].get('url', '')
+                                file_name = log_entry.get('medias', [])[0].get('file_name', '')
+                                caption = log_entry.get('medias', [])[0].get('caption', '')
+                                response = requests.get(media_url)
+                                if response.status_code == 200:
+                                    # url = download_and_save_image(media_url, 'media/chat_message')
+                                    url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                    chat_document = ChatMessage.objects.create(
+                                        conversation_id= conversation,
+                                        content_type= content_type,
+                                        from_message = conversation.contact_id.name,
+                                        wamid = wamid,
+                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_sha256_hash = sha256,
+                                        media_mime_type = mime_type,
+                                        caption= caption
+                                    )
+                                    sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
+                else:
+                    mid = log_entry.get('event', {}).get('mid', ' ')
+                    status_messaage = log_entry.get('event', {}).get('status', ' ')
+                    status_updated_at = log_entry.get('event', {}).get('payload', {}).get('timestamp', ' ')
+                    message = ChatMessage.objects.get(wamid=mid)
+                    message.status_message = status_messaage
+                    message.status_updated_at = status_updated_at
+                    message.save()
+        except Exception as e:
+            error_redis = open('error_redis.txt', 'a')
+            error_redis.write(f"your get the error: {e}\n")
+    else:
+        return False
     
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber,channel_id):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"

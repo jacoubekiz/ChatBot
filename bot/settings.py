@@ -99,6 +99,7 @@ TEMPLATES = [
 
 ASGI_APPLICATION = 'bot.asgi.application'
 WSGI_APPLICATION = 'bot.wsgi.application'
+TOKEN_ACCOUNTS = 'asd23erw32rw3rrw3reewr'
 
 REDIS_PATH = os.environ.get('REDIS_PATH', '/usr/bin/redis-server')
 CHANNEL_LAYERS = {

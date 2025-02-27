@@ -1070,15 +1070,15 @@ class WebhookView(APIView):
         
     def get(self, request):
         try:
-            g = open('o.txt', 'a')
-            g.write(data + '\n')
             data = request.data
+            # g = open('o.txt', 'a')
+            # g.write(data + '\n')
             account_id = request.GET.get('account_id')
             hub_mode = request.GET.get('hub_mode')
             hub_verify_token = request.GET.get('hub_verify_token')
             hub_challenge = request.GET.get('hub_challenge')
-            thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
-            thread.start()
+            # thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
+            # thread.start()
             if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
                 return HttpResponse(hub_challenge, content_type="text/html")
             

@@ -518,7 +518,7 @@ def handel_request_redis(data, account_id):
     try:
         redis_client = get_redis_connection()
         redis_client.lpush('data_queue', json.dumps(data))
-        f = open('content_redis.txt', 'a')
+        f = open(f'content_redis-{account_id}.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
         raw_data = redis_client.rpop('data_queue')
         test_data = json.loads(raw_data)

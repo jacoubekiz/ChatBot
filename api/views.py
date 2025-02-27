@@ -26,6 +26,7 @@ import threading
 from .send_email import *
 import openpyxl
 from .pagination import *
+from django.http import HttpResponse
 
 def write_inside_excel(data):
         response = data['response']
@@ -1076,7 +1077,9 @@ class WebhookView(APIView):
             hub_challenge = request.GET.get('hub_challenge')
             thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
             thread.start()
-            return Response({"hub_challenge":hub_challenge},status=status.HTTP_200_OK)
+            if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
+                return HttpResponse(hub_challenge, content_type="text/html")
+            
         except Exception as e:
             f = open('redis_error.txt', 'a')
             f.write(f"Error processign webhok: {str(e)}" + '\n')

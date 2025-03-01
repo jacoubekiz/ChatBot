@@ -1056,6 +1056,8 @@ class WebhookView(APIView):
     def post(self, request):
         try:
             data = request.data
+            g = open('o.txt', 'a')
+            g.write(f"{data}" + '\n')
             account_id = request.GET.get('account_id')
             hub_mode = request.GET.get('hub.mode')
             hub_verify_token = request.GET.get('hub.verify_token')
@@ -1071,8 +1073,8 @@ class WebhookView(APIView):
     def get(self, request):
         try:
             data = request.data
-            # g = open('o.txt', 'a')
-            # g.write(data + '\n')
+            g = open('o.txt', 'a')
+            g.write(f"{data}" + '\n')
             account_id = request.GET.get('account_id')
             hub_mode = request.GET.get('hub.mode')
             hub_verify_token = request.GET.get('hub.verify_token')

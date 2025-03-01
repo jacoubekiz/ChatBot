@@ -1075,7 +1075,7 @@ class WebhookView(APIView):
             # g.write(data + '\n')
             account_id = request.GET.get('account_id')
             hub_mode = request.GET.get('hub.mode')
-            hub_verify_token = request.GET.get('hub_verify.token')
+            hub_verify_token = request.GET.get('hub.verify_token')
             hub_challenge = request.GET.get('hub.challenge')
             # thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
             # thread.start()

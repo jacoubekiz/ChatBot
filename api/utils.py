@@ -514,6 +514,9 @@ i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"displa
 a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": "True"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
 d_d = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNjAyNzIyNDYyNjUzMDVFMzU4NEExNDMzMkRFRjhGQ0IA", "timestamp": "1739961961", "type": "document", "document": {"filename": "1709124383910_ICS Company Profile AR.pdf", "mime_type": "application/pdf", "sha256": "IHPpJcYjvjTepZTrKvXAacDUge/p0JKvQHOX7t4V1ag=", "id": "1134184264697475"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf", "caption": "", "type": "document", "file_name": "1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf"}]}'
 c_c = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"context": {"from": "966920025589", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAERgSNEU2RTg2MDdFQzkzRjM1OURGAA=="}, "from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQUJBNjg1MjA1M0Q3QjFDM0MyQUU4MDc2MzFEOUZEMzYA", "timestamp": "1740040871", "type": "button", "button": {"payload": "موقع المناسبة", "text": "موقع المناسبة"}}]}, "field": "messages"}}'
+
+new_response = '{"object": "whatsapp_business_account", "entry": [{"id": "395690116951596", "changes": [{"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "15556231998", "phone_number_id": "327799347091553"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggOTk3MjIzNkJDMjUzRDRGRDMzOTNCOTg3RkY3MzVCQjYA", "timestamp": "1740823930", "text": {"body": "ببل"}, "type": "text"}]}, "field": "messages"}]}]}'
+
 def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
     if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
 
@@ -530,26 +533,28 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
             else:
                 
                 log_entry = json.loads(raw_data)
-                value = log_entry.get('event', '').get('value', '')
+                value = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {})
                 
-                if value:   
-                    wamid = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('id', '')
-                    content_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('type', '')
-                    contact_phonenumber = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('from', '')
-                    # timestamp = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('timestamp', '')
-                    # messaging_product = log_entry.get('event', {}).get('value', {}).get('messaging_product', '')
-                    display_phone_number = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('display_phone_number', '')
-                    # phone_number_id = log_entry.get('event', {}).get('value', {}).get('metadata', '').get('phone_number_id', '')
-                    contacts = log_entry.get('event', '').get('value', '').get('contacts', '')
+                if value:
+                    
+                    wamid = value.get('messages', '')[0].get('id', '')
+                    content_type = value.get('messages', '')[0].get('type', '')
+                    contact_phonenumber = value.get('messages', '')[0].get('from', '')
+                    # timestamp = value.get('messages', '')[0].get('timestamp', '')
+                    # messaging_product = value.get('messaging_product', '')
+                    display_phone_number = value.get('metadata', '').get('display_phone_number', '')
+                    # phone_number_id = value.get('metadata', '').get('phone_number_id', '')
+                    contacts = value.get('contacts', '')
                     if contacts:
-                        account = Account.objects.get(account_id=account_id)         
-                        contact_name = log_entry.get('event', '').get('value', '').get('contacts', '')[0].get('profile', '').get('name', '')
+                        account = Account.objects.get(account_id=account_id)
+                        print("helloodjsflsjdlfksjl")        
+                        contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')
                         contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
                         channel = Channle.objects.filter(phone_number=display_phone_number).first()
                         conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                         match content_type:
                             case "button":
-                                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('button', '').get('text','')
+                                content = value.get('messages', '')[0].get('button', '').get('text','')
                                 chat_message = ChatMessage.objects.create(
                                     conversation_id = conversation,
                                     content_type = 'text',
@@ -560,7 +565,7 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
                                 sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
 
                             case "text":
-                                content = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('text', '').get('body','')
+                                content = value.get('messages', '')[0].get('text', '').get('body','')
                                 chat_message = ChatMessage.objects.create(
                                     conversation_id = conversation,
                                     # user_id = CustomUser1.objects.filter(id=15).first(),
@@ -572,8 +577,8 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
                                 sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
 
                             case "image":
-                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('mime_type', '')
-                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', '')[0].get('image', '').get('sha256', '')
+                                mime_type = value.get('messages', '')[0].get('image', '').get('mime_type', '')
+                                sha256 = value.get('messages', '')[0].get('image', '').get('sha256', '')
                                 # medias = log_entry.get('medias', '')
                                 media_url = log_entry.get('medias', '')[0].get('url', '')
                                 file_name = log_entry.get('medias', '')[0].get('file_name', '')
@@ -598,8 +603,8 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
                                     sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
                                     
                             case "video":
-                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('video', {}).get('mime_type', '')
-                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('viedo', {}).get('sha256', '')
+                                mime_type = value.get('messages', [])[0].get('video', {}).get('mime_type', '')
+                                sha256 = value.get('messages', [])[0].get('viedo', {}).get('sha256', '')
                                 media_url = log_entry.get('medias', [])[0].get('url', '')
                                 file_name = log_entry.get('medias', [])[0].get('file_name', '')
                                 caption = log_entry.get('medias', [])[0].get('caption', '')
@@ -622,8 +627,8 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
                                     )
                                     sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
                             case "audio":
-                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('mime_type', '')
-                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('audio', {}).get('sha256', '')
+                                mime_type = value.get('messages', [])[0].get('audio', {}).get('mime_type', '')
+                                sha256 = value.get('messages', [])[0].get('audio', {}).get('sha256', '')
                                 media_url = log_entry.get('medias', [])[0].get('url', '')
                                 file_name = log_entry.get('medias', [])[0].get('file_name', '')
                                 caption = log_entry.get('medias', [])[0].get('caption', '')
@@ -643,8 +648,8 @@ def handel_request_redis(data, account_id, hub_mode, hub_verify_token):
                                     )
                                     sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
                             case 'document':
-                                mime_type = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('mime_type', '')
-                                sha256 = log_entry.get('event', {}).get('value', {}).get('messages', [])[0].get('document', {}).get('sha256', '')
+                                mime_type = value.get('messages', [])[0].get('document', {}).get('mime_type', '')
+                                sha256 = value.get('messages', [])[0].get('document', {}).get('sha256', '')
                                 media_url = log_entry.get('medias', [])[0].get('url', '')
                                 file_name = log_entry.get('medias', [])[0].get('file_name', '')
                                 caption = log_entry.get('medias', [])[0].get('caption', '')

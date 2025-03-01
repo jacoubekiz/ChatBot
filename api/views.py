@@ -1057,12 +1057,12 @@ class WebhookView(APIView):
         try:
             data = request.data
             account_id = request.GET.get('account_id')
-            hub_mode = request.GET.get('hub_mode')
-            hub_verify_token = request.GET.get('hub_verify_token')
-            hub_challenge = request.GET.get('hub_challenge')
+            hub_mode = request.GET.get('hub.mode')
+            hub_verify_token = request.GET.get('hub.verify_token')
+            hub_challenge = request.GET.get('hub.challenge')
             thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
             thread.start()
-            return Response({"hub_challenge":hub_challenge},status=status.HTTP_200_OK)
+            return Response({"hub.challenge":hub_challenge},status=status.HTTP_200_OK)
         except Exception as e:
             f = open('redis_error.txt', 'a')
             f.write(f"Error processign webhok: {str(e)}" + '\n')
@@ -1074,9 +1074,9 @@ class WebhookView(APIView):
             # g = open('o.txt', 'a')
             # g.write(data + '\n')
             account_id = request.GET.get('account_id')
-            hub_mode = request.GET.get('hub_mode')
-            hub_verify_token = request.GET.get('hub_verify_token')
-            hub_challenge = request.GET.get('hub_challenge')
+            hub_mode = request.GET.get('hub.mode')
+            hub_verify_token = request.GET.get('hub_verify.token')
+            hub_challenge = request.GET.get('hub.challenge')
             # thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
             # thread.start()
             if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:

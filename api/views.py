@@ -1077,8 +1077,8 @@ class WebhookView(APIView):
             hub_mode = request.GET.get('hub.mode')
             hub_verify_token = request.GET.get('hub.verify_token')
             hub_challenge = request.GET.get('hub.challenge')
-            # thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
-            # thread.start()
+            thread = threading.Thread(target=handel_request_redis(data, account_id, hub_mode, hub_verify_token))
+            thread.start()
             if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
                 return HttpResponse(hub_challenge, content_type="text/html")
             

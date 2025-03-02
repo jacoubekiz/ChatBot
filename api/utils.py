@@ -633,7 +633,7 @@ def handel_request_redis(data, account_id):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_video(conversation.conversation_id, caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
+                                sent_message_video(conversation.conversation_id, chat_video.caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
                         case "audio":
                             mime_type = value.get('messages', [])[0].get('audio', {}).get('mime_type', '')
                             sha256 = value.get('messages', [])[0].get('audio', {}).get('sha256', '')
@@ -685,7 +685,7 @@ def handel_request_redis(data, account_id):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                sent_message_document(conversation.conversation_id, caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
+                                sent_message_document(conversation.conversation_id, chat_document.caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')

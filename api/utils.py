@@ -656,15 +656,25 @@ def handel_request_redis(data, account_id):
                                 )
                                 sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
                         case 'document':
-                            mime_type = value.get('messages', [])[0].get('document', {}).get('mime_type', '')
-                            sha256 = value.get('messages', [])[0].get('document', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'{channel.tocken}'
+                            }
+                            mime_type = value.get('messages', '')[0].get('document', {}).get('mime_type', '')
+                            sha256 = value.get('messages', '')[0].get('document', {}).get('sha256', '')
+                            file_name = value.get('messages', '')[0].get('document', {}).get('filename', '')
+                            document_id = value.get('messages', '')[0].get('document', {}).get('id', '')
+                            try :
+                                caption = value.get('messages', '')[0].get('document', {}).get('caption', '')
+                            except:
+                                pass
+                            response = requests.get(f"https://graph.facebook.com/v15.0/{document_id}", headers=headers)
+                            
                             if response.status_code == 200:
+                                result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                # file_name = f"{document_id}"
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_document = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,

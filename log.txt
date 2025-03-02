@@ -1,4 +1,0 @@
-{'content': 'restat', 'source_id': '966114886645', 'conversation': {'contact_inbox': {'source_id': '966114886645'}}}
-{'content': 'Restart', 'source_id': '966114886645', 'conversation': {'contact_inbox': {'source_id': '966114886645'}}}
-{'content': 'reset', 'source_id': '966114886645', 'conversation': {'contact_inbox': {'source_id': '966114886645'}}}
-{'content': 'hello', 'source_id': '966114886645', 'conversation': {'contact_inbox': {'source_id': '966114886645'}}}n{'content': 'hello', 'source_id': '966114886645', 'conversation': {'contact_inbox': {'source_id': '966114886645'}}}n

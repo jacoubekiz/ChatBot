@@ -674,7 +674,8 @@ def handel_request_redis(data, account_id):
                                 result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
                                 # file_name = f"{document_id}"
-                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
+                                # url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_document = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -685,6 +686,7 @@ def handel_request_redis(data, account_id):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
+                                print(channel.channle_id)
                                 sent_message_document(conversation.conversation_id, chat_document.caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
@@ -790,9 +792,10 @@ def sent_message_audio(conversation_id, channel_id, caption, content_type, wamid
     except Exception as e:
         pass
 
-def sent_message_document(conversation_id, channel_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, mime_type):
+def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    print(url_ws)
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -839,3 +842,7 @@ def download_and_save_image(image_url, headers, save_directory, image_name):
         return full_path
     else:
         raise Exception(f"Failed to download image. Status code: {response.status_code}")
+    
+
+
+hh = '{"object": "whatsapp_business_account", "entry": [{"id": "395690116951596", "changes": [{"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "15556231998", "phone_number_id": "327799347091553"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhgUM0ZGMzNEQTdFQTJDODVBNkQ2REMA", "timestamp": "1740910295", "type": "document", "document": {"filename": "esouth.pdf", "mime_type": "application/pdf", "sha256": "nW3ucjkohtQrsg1fKnQ5lk1fb2+9gb6cld+4A2J5gYg=", "id": "1188035589563307"}}]}, "field": "messages"}]}]}'

@@ -600,9 +600,9 @@ def handel_request_redis(data, account_id):
                                     media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
-                                    # caption= caption
+                                    caption= caption
                                 )
-                                sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
+                                sent_message_image(conversation.conversation_id, chat_image.caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
                                 
                         case "video":
                             mime_type = value.get('messages', [])[0].get('video', {}).get('mime_type', '')

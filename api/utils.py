@@ -592,9 +592,6 @@ def handel_request_redis(data, account_id):
                                 # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', f"{image_id}.jpeg")
                                 file_name = f"{image_id}.jpeg"
                                 url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
                                 chat_image = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -608,18 +605,23 @@ def handel_request_redis(data, account_id):
                                 sent_message_image(conversation.conversation_id, chat_image.caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
                                 
                         case "video":
-                            mime_type = value.get('messages', [])[0].get('video', {}).get('mime_type', '')
-                            sha256 = value.get('messages', [])[0].get('viedo', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'{channel.tocken}'
+                            }
+                            mime_type = value.get('messages', '')[0].get('vidoe', {}).get('mime_type', '')
+                            sha256 = value.get('messages', '')[0].get('vidoe', {}).get('sha256', '')
+                            video_id = value.get('messages', '')[0].get('vidoe', {}).get('id', '')
+                            try :
+                                caption = value.get('messages', '')[0].get('image', {}).get('caption', '')
+                            except:
+                                pass
+                            response = requests.get(f"https://graph.facebook.com/v15.0/{video_id}", headers=headers)
+                            
                             if response.status_code == 200:
                                 # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
-                                # image = UploadImage.objects.create(
-                                #     image_file= ContentFile(response.content, name=file_name)
-                                # )
+                                file_name = f"{video_id}.mp4"
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_video = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,

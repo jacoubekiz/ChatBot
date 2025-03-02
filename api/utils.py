@@ -589,6 +589,7 @@ def handel_request_redis(data, account_id):
                                 # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', f"{image_id}.jpeg")
                                 file_name = f"{image_id}.jpeg"
                                 url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                caption = ''
                                 # image = UploadImage.objects.create(
                                 #     image_file= ContentFile(response.content, name=file_name)
                                 # )

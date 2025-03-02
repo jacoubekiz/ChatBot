@@ -674,8 +674,8 @@ def handel_request_redis(data, account_id):
                                 result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
                                 # file_name = f"{document_id}"
-                                url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
-                                # url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_document = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -686,7 +686,6 @@ def handel_request_redis(data, account_id):
                                     media_mime_type = mime_type,
                                     caption= caption
                                 )
-                                print(channel.channle_id)
                                 sent_message_document(conversation.conversation_id, chat_document.caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')

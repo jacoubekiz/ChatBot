@@ -609,11 +609,11 @@ def handel_request_redis(data, account_id):
                                 'Content-Type': 'application/json',
                                 'Authorization': f'{channel.tocken}'
                             }
-                            mime_type = value.get('messages', '')[0].get('vidoe', {}).get('mime_type', '')
-                            sha256 = value.get('messages', '')[0].get('vidoe', {}).get('sha256', '')
-                            video_id = value.get('messages', '')[0].get('vidoe', {}).get('id', '')
+                            mime_type = value.get('messages', '')[0].get('video', {}).get('mime_type', '')
+                            sha256 = value.get('messages', '')[0].get('video', {}).get('sha256', '')
+                            video_id = value.get('messages', '')[0].get('video', {}).get('id', '')
                             try :
-                                caption = value.get('messages', '')[0].get('image', {}).get('caption', '')
+                                caption = value.get('messages', '')[0].get('video', {}).get('caption', '')
                             except:
                                 pass
                             response = requests.get(f"https://graph.facebook.com/v15.0/{video_id}", headers=headers)

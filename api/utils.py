@@ -510,7 +510,7 @@ def validate_phone_number(phone_number):
 
 
 v_v = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQkUwNEU2ODg0MzI4MDZERTlCMDBGRDAzNkZFRTlDRUIA", "timestamp": "1739867538", "type": "video", "video": {"mime_type": "video/mp4", "sha256": "hekbZhF76pvXHZgbD7XwjeYgulKnS63Q1uNXyB0p7AM=", "id": "602300352596747"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739867541070_media-0.3026585401465338.mp4", "caption": "", "type": "video", "file_name": "1739867541070_media-0.3026585401465338.mp4"}]}'
-i_i = '{"event": {"value": {"messaging_product": "whatsapp","metadata": {"display_phone_number": "966920025589","phone_number_id": "157289147477280"},"contacts": [{"profile": {"name": "Jacoub"},"wa_id": "966114886645"}], "messages": [{"from": "966114886645","id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQzcyMTlCQkM0QTExRjEwQkEwMThFQkQyMDM0N0ZEMkIA","timestamp": "1739778473","type": "image","image": {"mime_type": "image/jpeg","sha256": "t6NxRTNKvhHvzfZguOfPKKzhKLp89dIDrL7p3KxQ3Hg=","id": "1274841703581495"}}]},"field":"messages"},"medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739778476665_media-0.4923813022854102.jpeg","caption": "فرع جده","type": "image","file_name": "1739778476665_media-0.4923813022854102.jpeg"}]}'
+image_ = '{"object": "whatsapp_business_account", "entry": [{"id": "395690116951596", "changes": [{"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "15556231998", "phone_number_id": "327799347091553"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNEYxNTRFMzYxQTRGN0JFRUJCOTAwOThCMjI1MUMxOUUA", "timestamp": "1740826863", "type": "image", "image": {"mime_type": "image/jpeg", "sha256": "Uo6PCbjMKoC1CrA4KF9N2fLTnNsZ8fcvTSkGnsdPm0g=", "id": "1127919925801634"}}]}, "field": "messages"}]}]}'
 a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggODdBRjkzREQxMzhDNDAyOTExODJGOTlFNEFENzgyN0MA", "timestamp": "1739951467", "type": "audio", "audio": {"mime_type": "audio/ogg; codecs=opus", "sha256": "0L/d6Pkc7nt+AYl6gtOPOjXeTMuInphwQmKK/d3VNKo=", "id": "1150877063380292", "voice": "True"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739951469475_media-0.6118878625757445.ogg", "caption": "", "type": "audio", "file_name": "1739951469475_media-0.6118878625757445.ogg"}]}'
 d_d = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNjAyNzIyNDYyNjUzMDVFMzU4NEExNDMzMkRFRjhGQ0IA", "timestamp": "1739961961", "type": "document", "document": {"filename": "1709124383910_ICS Company Profile AR.pdf", "mime_type": "application/pdf", "sha256": "IHPpJcYjvjTepZTrKvXAacDUge/p0JKvQHOX7t4V1ag=", "id": "1134184264697475"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf", "caption": "", "type": "document", "file_name": "1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf"}]}'
 c_c = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"context": {"from": "966920025589", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAERgSNEU2RTg2MDdFQzkzRjM1OURGAA=="}, "from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQUJBNjg1MjA1M0Q3QjFDM0MyQUU4MDc2MzFEOUZEMzYA", "timestamp": "1740040871", "type": "button", "button": {"payload": "موقع المناسبة", "text": "موقع المناسبة"}}]}, "field": "messages"}}'
@@ -535,8 +535,7 @@ def handel_request_redis(data, account_id):
             log_entry = json.loads(raw_data)
             value = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {})
             
-            if value:
-                
+            if value: 
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')
                 contact_phonenumber = value.get('messages', '')[0].get('from', '')
@@ -547,7 +546,6 @@ def handel_request_redis(data, account_id):
                 contacts = value.get('contacts', '')
                 if contacts:
                     account = Account.objects.get(account_id=account_id)
-                    print("helloodjsflsjdlfksjl")        
                     contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')
                     contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
@@ -577,16 +575,19 @@ def handel_request_redis(data, account_id):
                             sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
 
                         case "image":
-                            mime_type = value.get('messages', '')[0].get('image', '').get('mime_type', '')
-                            sha256 = value.get('messages', '')[0].get('image', '').get('sha256', '')
-                            # medias = log_entry.get('medias', '')
-                            media_url = log_entry.get('medias', '')[0].get('url', '')
-                            file_name = log_entry.get('medias', '')[0].get('file_name', '')
-                            caption = log_entry.get('medias', '')[0].get('caption', '')
-                            response = requests.get(media_url)
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'{channel.tocken}'
+                            }
+                            mime_type = value.get('messages', '')[0].get('image', {}).get('mime_type', '')
+                            sha256 = value.get('messages', '')[0].get('image', {}).get('sha256', '')
+                            image_id = value.get('messages', '')[0].get('image', {}).get('id', '')
+                            response = requests.get(f"https://graph.facebook.com/v15.0/{image_id}", headers=headers)
                             if response.status_code == 200:
-                                # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                result_data = response.json()
+                                # result = requests.get(result_data.get('url'), headers=headers)
+                                # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', f"{image_id}.jpeg")
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', f"{image_id}.jpeg")
                                 # image = UploadImage.objects.create(
                                 #     image_file= ContentFile(response.content, name=file_name)
                                 # )
@@ -598,7 +599,7 @@ def handel_request_redis(data, account_id):
                                     media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
                                     media_sha256_hash = sha256,
                                     media_mime_type = mime_type,
-                                    caption= caption
+                                    # caption= caption
                                 )
                                 sent_message_image(conversation.conversation_id, caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
                                 
@@ -796,7 +797,7 @@ def sent_message_document(conversation_id, channel_id, caption, content_type, wa
     except Exception as e:
         pass
 
-def download_and_save_image(image_url, save_directory):
+def download_and_save_image(image_url, headers, save_directory, image_name):
     """
     Downloads an image from a URL and saves it to a specified directory on the server.
 
@@ -805,13 +806,15 @@ def download_and_save_image(image_url, save_directory):
     :return: Full path to the saved image.
     """
     # Extract the image name from the URL
-    image_name = os.path.basename(image_url)
-
+    # image_name = os.path.basename(image_url)
+    # print(image_name)
     # Full path to save the image
     full_path = os.path.join(save_directory, image_name)
 
     # Download the image
-    response = requests.get(image_url, stream=True)
+    response = requests.get(image_url, headers=headers, stream=True)
+    # h = open('h.txt', 'a')
+    # h.write(f"{response.content}")
     if response.status_code == 200:
         with open(full_path, 'wb') as file:
             for chunk in response.iter_content(1024):

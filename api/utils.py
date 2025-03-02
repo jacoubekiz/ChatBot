@@ -619,9 +619,10 @@ def handel_request_redis(data, account_id):
                             response = requests.get(f"https://graph.facebook.com/v15.0/{video_id}", headers=headers)
                             
                             if response.status_code == 200:
+                                result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
                                 file_name = f"{video_id}.mp4"
-                                url = download_and_save_image(response.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_video = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,

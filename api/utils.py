@@ -635,15 +635,25 @@ def handel_request_redis(data, account_id):
                                 )
                                 sent_message_video(conversation.conversation_id, chat_video.caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
                         case "audio":
-                            mime_type = value.get('messages', [])[0].get('audio', {}).get('mime_type', '')
-                            sha256 = value.get('messages', [])[0].get('audio', {}).get('sha256', '')
-                            media_url = log_entry.get('medias', [])[0].get('url', '')
-                            file_name = log_entry.get('medias', [])[0].get('file_name', '')
-                            caption = log_entry.get('medias', [])[0].get('caption', '')
-                            response = requests.get(media_url)
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'{channel.tocken}'
+                            }
+                            mime_type = value.get('messages', '')[0].get('audio', {}).get('mime_type', '')
+                            sha256 = value.get('messages', '')[0].get('audio', {}).get('sha256', '')
+                            audio_id = value.get('messages', '')[0].get('audio', {}).get('id', '')
+                            try :
+                                caption = value.get('messages', '')[0].get('audio', {}).get('caption', '')
+                            except:
+                                pass
+                            response = requests.get(f"https://graph.facebook.com/v15.0/{audio_id}", headers=headers)
+                            
                             if response.status_code == 200:
                                 # url = download_and_save_image(media_url, 'media/chat_message')
-                                url = download_and_save_image(media_url, '/var/www/html/media/chat_message')
+                                result_data = response.json()
+                                # url = download_and_save_image(media_url, 'media/chat_message')
+                                file_name = f"{audio_id}.ogg"
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_audio = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -674,8 +684,8 @@ def handel_request_redis(data, account_id):
                                 result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
                                 # file_name = f"{document_id}"
-                                # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
-                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
+                                # url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_document = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -792,8 +802,8 @@ def sent_message_audio(conversation_id, channel_id, caption, content_type, wamid
         pass
 
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     print(url_ws)
     ws = websocket.WebSocket()
     ws.connect(url_ws)

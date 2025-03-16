@@ -260,7 +260,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         chat_id= conversation_id,
                         platform="whatsapp",
                         type="document",
-                        filename=media_name,
+                        # filename=media_name,
                         source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
                     )
                 else:

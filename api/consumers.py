@@ -225,7 +225,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Send document to room group
             case 'document':
                 caption = text_data_json["caption"]
-                mime_type = text_data_json["mime_type"]
+                # mime_type = text_data_json["mime_type"]
                 if from_bot == "True":
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
@@ -249,7 +249,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": wamid,
                             "message_id": message_id,
-                            "mime_type": mime_type
+                            # "mime_type": mime_type
                         }
                     )
                     send_message(
@@ -278,7 +278,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "message_id": message_id,
                             "media_url" : media_url,
                             "created_at": created_at,
-                            "mime_type": mime_type
+                            # "mime_type": mime_type
                         }
                     )
             # Send message to room group
@@ -426,7 +426,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
-        mime_type = event["mime_type"]
+        # mime_type = event["mime_type"]
         conversation_id = event["conversation_id"]
 
         if from_bot == "False":
@@ -442,7 +442,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
-                    "mime_type": mime_type,
+                    # "mime_type": mime_type,
                     "is_successfully":"true"
                 }))
         else:
@@ -450,7 +450,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
-                    "mime_type": mime_type,
+                    # "mime_type": mime_type,
                     "conversation_id": conversation_id,
                     "is_successfully": "true"
                 }))

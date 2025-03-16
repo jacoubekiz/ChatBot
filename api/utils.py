@@ -815,7 +815,7 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
-        "mime_type": f"{mime_type}",
+        # "mime_type": f"{mime_type}",
         "conversation_id": f"{conversation_id}"
     }
     try:

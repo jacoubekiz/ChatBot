@@ -684,8 +684,8 @@ def handel_request_redis(data, account_id):
                                 result_data = response.json()
                                 # url = download_and_save_image(media_url, 'media/chat_message')
                                 # file_name = f"{document_id}"
-                                url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
-                                # url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
+                                url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
                                 chat_document = ChatMessage.objects.create(
                                     conversation_id= conversation,
                                     content_type= content_type,
@@ -778,7 +778,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
         pass
 
 
-def sent_message_audio(conversation_id, channel_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url):
+def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
@@ -802,8 +802,8 @@ def sent_message_audio(conversation_id, channel_id, caption, content_type, wamid
         pass
 
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
-    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     print(url_ws)
     ws = websocket.WebSocket()
     ws.connect(url_ws)

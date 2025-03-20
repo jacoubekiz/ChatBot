@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import *
 from rest_framework.routers import DefaultRouter
+from .handel_templates.views import *
 
 router = DefaultRouter()
 
@@ -42,5 +43,7 @@ urlpatterns = [
     path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),
 
     path('register-response-client/', RegisterResponseClient.as_view()),
+
+    path('create-template/<str:channel_id>/', CreateTemplate.as_view(), name='create-template')
 ]
 

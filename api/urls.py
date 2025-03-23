@@ -44,6 +44,7 @@ urlpatterns = [
 
     path('register-response-client/', RegisterResponseClient.as_view()),
 
-    path('create-template/<str:channel_id>/', CreateTemplate.as_view(), name='create-template')
+    path('create-template/<str:channel_id>/', ListCreateTemplate.as_view(), name='create-template'),
+    path('get-template/', GetTemplate.as_view(), name='get-template'),
 ]
 

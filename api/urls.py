@@ -46,5 +46,7 @@ urlpatterns = [
 
     path('create-template/<str:channel_id>/', ListCreateTemplate.as_view(), name='create-template'),
     path('get-template/', GetTemplate.as_view(), name='get-template'),
+
+    path('send-template/<str:channel_id>/', SendTemplate.as_view(), name='send_template'),
 ]
 

@@ -17,6 +17,7 @@ class ListCreateTemplate(APIView):
         response = requests.get(url, headers=headers)
         responses = []
         results = response.json()
+        print(results)
         for result in results.get('data', []):
             responses.append(
                 {
@@ -54,4 +55,19 @@ class GetTemplate(APIView):
         }
 
         response = requests.get(url, headers=headers)
+        print(response.json())
         return Response(response.json(), status=status.HTTP_302_FOUND)
+    
+class SendTemplate(APIView):
+    def get(self, request, channel_id):
+        channel = Channle.objects.get(channle_id= channel_id)
+        url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"{channel.tocken}"
+        }
+        data = request.data
+        template_data = json.dumps(data)
+        response = requests.post(url, headers=headers, data=template_data)
+        result = response.json()
+        return Response(result, status=status.HTTP_200_OK)

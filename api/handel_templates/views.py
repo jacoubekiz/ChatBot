@@ -72,5 +72,5 @@ class SendTemplate(APIView):
         result = response.json()
         return Response(result, status=status.HTTP_200_OK)
     
-class TestView(APIView):
-    pass
+# class TestView(APIView):
+#     pass

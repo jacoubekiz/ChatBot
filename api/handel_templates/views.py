@@ -68,7 +68,9 @@ class SendTemplate(APIView):
         }
         data = request.data
         template_data = json.dumps(data)
-        
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
         return Response(result, status=status.HTTP_200_OK)
+    
+class TestView(APIView):
+    pass

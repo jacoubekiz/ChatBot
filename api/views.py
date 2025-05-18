@@ -30,20 +30,23 @@ from django.http import HttpResponse
 
 def write_inside_excel(data):
         response = data['response']
+        time_meeting = data['time_meeting']
         phonenumber = data['phonenumber']
         try:
-            workbook =  openpyxl.load_workbook('media/cashif.xlsx')
+            workbook =  openpyxl.load_workbook('media/Seamless_DXB.xlsx')
             
         except FileNotFoundError:
             workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet['A1'] = 'client name'
         sheet['B1'] = 'phone number'
+        sheet['C1'] = 'time_meeting'
         last_row = sheet.max_row
-        new_data = [response, phonenumber]
+        new_data = [response, phonenumber, time_meeting]
         sheet.cell(row=last_row + 1, column=1, value=new_data[0])
         sheet.cell(row=last_row + 1, column=2, value=new_data[1])
-        workbook.save('media/cashif.xlsx')
+        sheet.cell(row=last_row + 1, column=3, value=new_data[2])
+        workbook.save('media/Seamless_DXB.xlsx')
 
 class RegisterResponseClient(APIView):
     def post(self, request):

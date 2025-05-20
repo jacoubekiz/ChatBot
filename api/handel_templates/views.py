@@ -56,7 +56,7 @@ class GetTemplate(APIView):
 
         response = requests.get(url, headers=headers)
         print(response.json())
-        return Response(response.json(), status=status.HTTP_302_FOUND)
+        return Response(response.json(), status=status.HTTP_200_OK)
     
 class SendTemplate(APIView):
     def get(self, request, channel_id):

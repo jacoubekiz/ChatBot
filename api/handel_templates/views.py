@@ -59,7 +59,7 @@ class GetTemplate(APIView):
         return Response(response.json(), status=status.HTTP_200_OK)
     
 class SendTemplate(APIView):
-    def get(self, request, channel_id):
+    def post(self, request, channel_id):
         channel = Channle.objects.get(channle_id= channel_id)
         url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
         headers = {

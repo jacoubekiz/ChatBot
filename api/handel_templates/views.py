@@ -75,8 +75,8 @@ class SendTemplate(APIView):
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             # user_id = CustomUser1.objects.filter(id=15).first(),
-            content_type = data.get('content_template', ' '),
-            content = "data.get",
+            content_type = "text",
+            content = data.get('content_template', ''),
             from_message = 'bot',
             wamid = result.get('messages', '')[0].get('id', '')
         )

@@ -68,8 +68,18 @@ class SendTemplate(APIView):
         }
         data = request.data
         template_data = json.dumps(data)
+        # print(template_data)
+        conversation = Conversation.objects.get(contact_id__phone_number=data.get('to'))
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
+        chat_message = ChatMessage.objects.create(
+            conversation_id = conversation,
+            # user_id = CustomUser1.objects.filter(id=15).first(),
+            content_type = data.get('content_template', ' '),
+            content = "data.get",
+            from_message = 'bot',
+            wamid = result.get('messages', '')[0].get('id', '')
+        )
         return Response(result, status=status.HTTP_200_OK)
     
 # class TestView(APIView):

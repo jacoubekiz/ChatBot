@@ -78,7 +78,7 @@ class SendTemplate(APIView):
             content_type = "text",
             content = data.get('content_template', ''),
             from_message = 'bot',
-            wamid = result.get('messages', '')[0].get('id', '')
+            wamid = "result.get('messages', '')[0].get('id', '')"
         )
         return Response(result, status=status.HTTP_200_OK)
     

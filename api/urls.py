@@ -28,6 +28,8 @@ urlpatterns = [
     path('send-email/', SendEmailView.as_view(), name='send-email'),
 
 # add new api
+    path('add-account/', CreateAccount.as_view(), name='add_account'),
+    path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
     path('users/', ListCreateUserView.as_view(), name='users'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),

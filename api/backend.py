@@ -26,19 +26,19 @@
 # authentication.py
 
 from django.contrib.auth.backends import ModelBackend
-from .models import CustomUser1
+from .models import CustomUser
 
 class CustomAuthBackend(ModelBackend):
     def authenticate(self, request, email=None, password=None, **kwargs):
         try:
-            user1 = CustomUser1.objects.get(email=email)
+            user1 = CustomUser.objects.get(email=email)
             if user1.check_password(password):
                 return user1
-        except CustomUser1.DoesNotExist:
+        except CustomUser.DoesNotExist:
             pass
 
     def get_user(self, user_id):
         try:
-            return CustomUser1.objects.get(pk=user_id)
-        except CustomUser1.DoesNotExist:
+            return CustomUser.objects.get(pk=user_id)
+        except CustomUser.DoesNotExist:
            pass

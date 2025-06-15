@@ -924,7 +924,7 @@ class SendEmailView(APIView):
 
 class ListCreateUserView(ListCreateAPIView):
     permission_classes = [IsAuthenticated, UserIsAdmin]
-    queryset = CustomUser1.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = AddUserSerializer
 
     def get_serializer_context(self):
@@ -932,7 +932,42 @@ class ListCreateUserView(ListCreateAPIView):
         context['request'] = self.request
         return context
         
+class CreateAccount(GenericAPIView):
+
+    def post(self, request):
+        data_request = request.data
+        serializer = AddAccountSerializer(data = data_request, many=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        email = data_request['email']
+        user = CustomUser.objects.get(email=email)
+        account = Account.objects.create(
+            user=user,
+            name=user.username
+        )
+        return Response(status=status.HTTP_201_CREATED)
+
+class ListCreateChannelView(ListCreateAPIView):
     
+    serializer_class = ChannleSerializer
+    # permission_classes = [IsAuthenticated,]
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        return Channle.objects.filter(account_id=account_id)
+    
+    def perform_create(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account_id=account_id)
+    
+class CreateTeam(GenericAPIView):
+
+    def post(self, request, account_id):
+        # account = Account.objects.get(account_id=account_id)
+        data = request.data
+        serializer = TeamSerializer(data=data, context={'account_id':account_id})
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class ViewLogin(GenericAPIView):
 
     def post(self, request):
@@ -941,7 +976,7 @@ class ViewLogin(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = data_request['email']
         try:
-            user = CustomUser1.objects.get(email=email)
+            user = CustomUser.objects.get(email=email)
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -949,7 +984,7 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    'role':user.role
+                    'role':user.role_user
                 }
             }
         except:

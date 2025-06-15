@@ -112,8 +112,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser1
-        fields  = ['id', 'username', 'email', 'password', 'role']
+        model = CustomUser
+        fields  = ['id', 'username', 'email', 'password', 'role_user']
         extra_kwargs = {
             'password':{'write_only':True},
         }
@@ -125,15 +125,34 @@ class AddUserSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get('request')
-        user_ = CustomUser1.objects.get(id=request.user.id)
+        user_ = CustomUser.objects.get(id=request.user.id)
         validated_data['account_id'] = user_.account_id
         password = self.validated_data.pop('password')
-        user = CustomUser1.objects.create(**validated_data)
+        user = CustomUser.objects.create(**validated_data)
         user.set_password(password)
         user.save()
         return user
     
+
+class AddAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields  = ['id', 'username', 'email', 'password']
+        extra_kwargs = {
+            'password':{'write_only':True},
+        }
+        
+    def validate(self, attrs):
+        password = attrs.get('password')
+        validate_password(password)
+        return attrs
     
+    def create(self, validated_data):
+        password = self.validated_data.pop('password')
+        user = CustomUser.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
         
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
@@ -165,17 +184,33 @@ class LogoutSerializer(serializers.Serializer):
             self.fail('bad_token')
 
 
-class TeamAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fiedls = ['account_id', 'name']
+# class TeamAccountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Account
+#         fiedls = ['account_id', 'name']
 
 class TeamSerializer(serializers.ModelSerializer):
-    members = TeamAccountSerializer(read_only=True, many=True)
+    # members = TeamAccountSerializer(read_only=True, many=True)
 
     class Meta:
         model = Team
-        fields = ['id', 'name', 'members']
+        fields = ['team_id', 'account_id', 'name']
+
+    def create(self, validated_data):
+        account_id = self.context.get('account_id')
+        account = Account.objects.get(account_id=account_id)
+        validated_data['account_id'] = account
+        team = Team.objects.create(**validated_data)
+        return team
+
+class ChannleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Channle
+        # fields = ['channle_id', 'account_id', 'type_channle', 'tocken', 'phone_number']
+        fields = '__all__'
+        extra_kwargs = {
+            'account_id':{'read_only':True},
+        }
 
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
@@ -241,5 +276,3 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ['report_id', 'name', 'data']
-
-    

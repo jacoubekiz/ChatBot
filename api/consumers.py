@@ -53,6 +53,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
         match content_type:
+            # # handel receive template message
+            # case "template":
+            #     content = text_data_json["content"]
+            #     message_id = text_data_json["message_id"]
+            #     created_at = text_data_json['created_at']
+            #     if from_bot == "False":
+            #         await self.channel_layer.group_send(
+            #             self.room_group_name, {
+            #                 "type": "chat_message",
+            #                 "conversation_id": conversation_id,
+            #                 "content": content,
+            #                 "content_type": content_type,
+            #                 "from_bot":from_bot,
+            #                 "wamid":wamid,
+            #                 "message_id":message_id,
+            #                 "created_at": created_at
+            #             }
+            #         )
+            #     else:
+            #         message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid)
+            #         send_message(
+            #             message_content=content,
+            #             to= await self.get_phonenumber(conversation_id),
+            #             wa_id= await self.get_waid(conversation_id),
+            #             bearer_token= await self.get_token(conversation_id),
+            #             chat_id= conversation_id,
+            #             platform="whatsapp",
+            #             question='statment'
+            #         )
+            #         await self.channel_layer.group_send(
+            #             self.room_group_name, {
+            #                 "type": "chat_message",
+            #                 "conversation_id": conversation_id,
+            #                 "content": content,
+            #                 "content_type": content_type,
+            #                 "from_bot":from_bot,
+            #                 "wamid":wamid,
+            #                 "message_id":message_id,
+            #                 "created_at": created_at
+            #             }
+            #         )
+
             # handel receive voice message
             case "audio":
                 caption = text_data_json["caption"]

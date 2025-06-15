@@ -6,6 +6,12 @@ from django.contrib.auth.models import AbstractUser
 from .configure_api import *
 import secrets
 
+ROLE_USER = (
+    ('admin', 'admin'),
+    ('sub-admin', 'sub-admin'),
+    ('agent', 'agent')
+)
+
 Days = (
     ('1','الأحد'),
     ('2', 'الإثنين'),
@@ -17,7 +23,8 @@ Days = (
 )
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=40, unique=True)
-    # phonenumber = models.BigIntegerField(default=352353525)
+    phonenumber = models.BigIntegerField(default=352353525)
+    role_user = models.CharField(choices=ROLE_USER, max_length=20, default='admin')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username',]
@@ -225,10 +232,6 @@ class TestWebhook(models.Model):
 # models.py
 
 
-ROLE = (
-    ('admin', 'admin'),
-    ('agent', 'agent')
-)
 
 TYPE_CHANNLE = (
     ('WhatsApp', 'WhatsApp'),
@@ -277,6 +280,7 @@ TYPE_SETTTING = (
 
 class Account(models.Model):
     account_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE , default=1)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -285,23 +289,23 @@ class Account(models.Model):
         return self.name
     
     
-class CustomUser1(CustomUser):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
-    # team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    role = models.CharField(choices=ROLE, max_length=20, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+# class CustomUser1(CustomUser):
+#     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+#     # team_id = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+#     role = models.CharField(choices=ROLE, max_length=20, blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now_add=True)
 
 
-    def __str__(self) -> str:
-        return self.username
-    class Meta:
-        verbose_name_plural = "Custom Usre"
+    # def __str__(self) -> str:
+    #     return self.username
+    # class Meta:
+    #     verbose_name_plural = "Custom Usre"
 
 class Team(models.Model):
     team_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    user_id = models.ManyToManyField(CustomUser1)
+    members = models.ManyToManyField(CustomUser)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -358,7 +362,7 @@ class ChatMessage(models.Model):
     # message_key = wamid = models.CharField(max_length=500, default='123')
     from_message = models.CharField(max_length=30, default='bot')
     conversation_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE, blank=True, null=True)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     content_type = models.CharField(choices=CONTENT_TYPE, max_length=20)
     content = models.TextField(max_length=1000, blank=True, null=True)
     caption = models.CharField(max_length=500, blank=True, null=True)
@@ -412,7 +416,7 @@ class Campaign(models.Model):
 class InternalChat(models.Model):
     caht_id = models.AutoField(primary_key=True)
     team_id = models.ForeignKey(Team, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(CustomUser1, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     content = models.TextField(null=True, blank=True)
     sent_at = models.DateTimeField(auto_now_add=True)
 

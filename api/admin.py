@@ -4,11 +4,11 @@ from .forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
 from .handel_time import get_day_name
 
-@admin.register(CustomUser1)
-class CustomUser1Admin(admin.ModelAdmin):
-    list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
-    search_fields = ('email', 'username', 'first_name', 'last_name')
-    ordering = ('email',)
+# @admin.register(CustomUser1)
+# class CustomUser1Admin(admin.ModelAdmin):
+#     list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
+#     search_fields = ('email', 'username', 'first_name', 'last_name')
+#     ordering = ('email',)
 
 
 class CustomUserAdmin(UserAdmin):
@@ -23,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
          {'fields':('email', 'password',)}
      ),
     ('User Information',
-        {'fields':('username', 'first_name', 'last_name')}
+        {'fields':('username', 'first_name', 'last_name',)}
     ),
     ('Permissions', 
         {'fields':('is_staff', 'is_superuser', 'is_active', 'groups','user_permissions')}

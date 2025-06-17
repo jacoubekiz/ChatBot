@@ -133,7 +133,11 @@ class AddUserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
-
+class AccontSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = '__all__'
+        
 class AddAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser

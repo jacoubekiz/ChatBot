@@ -932,7 +932,7 @@ class ListCreateUserView(ListCreateAPIView):
         context['request'] = self.request
         return context
         
-class CreateAccount(GenericAPIView):
+class CreateListAccount(GenericAPIView):
 
     def post(self, request):
         data_request = request.data
@@ -946,6 +946,11 @@ class CreateAccount(GenericAPIView):
             name=user.username
         )
         return Response(status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        accounts = Account.objects.filter(user__role_user='admin')
+        serializer = AccontSerializer(accounts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ListCreateChannelView(ListCreateAPIView):
     

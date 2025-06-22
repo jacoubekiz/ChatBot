@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
@@ -931,7 +933,23 @@ class ListCreateTeamView(ListCreateAPIView):
         # context['team_id'] = self.kwargs['team_id']
         return context
 
-
+class AssigningPermissions(APIView):
+    def post(self, request, user_id):
+        user = CustomUser.objects.get(id=user_id)
+        role = request.data['role']
+        add = request.GET.get('add')
+        print(add)
+        content_type = ContentType.objects.get_for_model(CustomUser)
+        permission = Permission.objects.get(
+            codename= role,
+            content_type=content_type
+        )
+        if add == 'True':
+            user.user_permissions.add(permission)
+        else:
+            user.user_permissions.remove(permission)
+        return Response(status=status.HTTP_200_OK)
+    
 class ListCreateTeamMemberView(ListCreateAPIView):
     # permission_classes = [IsAuthenticated, UserIsAdmin]
     queryset = CustomUser.objects.all()
@@ -942,7 +960,11 @@ class ListCreateTeamMemberView(ListCreateAPIView):
         context['request'] = self.request
         context['team_id'] = self.kwargs['team_id']
         return context
-        
+    
+    def get_queryset(self):
+        team_id = Team.objects.get(team_id=self.kwargs['team_id'])
+        return team_id.members
+    
 class CreateListAccount(GenericAPIView):
 
     def post(self, request):

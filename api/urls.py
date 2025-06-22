@@ -28,6 +28,7 @@ urlpatterns = [
     path('send-email/', SendEmailView.as_view(), name='send-email'),
 
 # add new api
+    path('assign-role/<user_id>/', AssigningPermissions.as_view(), name='assign_role'),
     path('add-account/', CreateListAccount.as_view(), name='add_account'),
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
     path('add-team-member/<team_id>/', ListCreateTeamMemberView.as_view(), name='users'),

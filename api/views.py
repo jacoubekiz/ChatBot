@@ -920,16 +920,27 @@ class SendEmailView(APIView):
         Utlil.send_email(data)
         return Response(status=status.HTTP_200_OK)
 # --------------------------------------------------------------------------------------------------------------
+class ListCreateTeamView(ListCreateAPIView):
+    # permission_classes = [IsAuthenticated]
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['account_id'] = self.request.data['account_id']
+        # context['team_id'] = self.kwargs['team_id']
+        return context
 
 
-class ListCreateUserView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated, UserIsAdmin]
+class ListCreateTeamMemberView(ListCreateAPIView):
+    # permission_classes = [IsAuthenticated, UserIsAdmin]
     queryset = CustomUser.objects.all()
     serializer_class = AddUserSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
+        context['team_id'] = self.kwargs['team_id']
         return context
         
 class CreateListAccount(GenericAPIView):
@@ -1018,10 +1029,10 @@ class LogoutAPIView(APIView):
         return Response({"message": 'logout true'})
     
 # End Points for GET all teams
-class GetTeamView(ListAPIView):
-    queryset = Team.objects.all()
-    serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticated]
+# class GetTeamView(ListAPIView):
+#     queryset = Team.objects.all()
+#     serializer_class = TeamSerializer
+#     permission_classes = [IsAuthenticated]
 
 class ListContactView(ListAPIView):
     queryset = Contact.objects.all()

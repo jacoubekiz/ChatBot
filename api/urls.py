@@ -30,11 +30,11 @@ urlpatterns = [
 # add new api
     path('add-account/', CreateListAccount.as_view(), name='add_account'),
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
-    path('users/', ListCreateUserView.as_view(), name='users'),
+    path('add-team-member/<team_id>/', ListCreateTeamMemberView.as_view(), name='users'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
 
-    path('teams/', GetTeamView.as_view(), name='teams'),
+    path('add-team/', ListCreateTeamView.as_view(), name='teams'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
     path('list-messages/<str:conversation_id>/', ListMessgesForSpecificConversation.as_view(), name='list-messages'),

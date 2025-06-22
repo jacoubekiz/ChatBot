@@ -125,12 +125,13 @@ class AddUserSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get('request')
-        user_ = CustomUser.objects.get(id=request.user.id)
-        validated_data['account_id'] = user_.account_id
+        team = Team.objects.get(team_id = self.context.get('team_id', ' '))
         password = self.validated_data.pop('password')
         user = CustomUser.objects.create(**validated_data)
+        # user_ = CustomUser.objects.get(pk=request.user.id)
         user.set_password(password)
         user.save()
+        team.members.add(user)
         return user
     
 class AccontSerializer(serializers.ModelSerializer):

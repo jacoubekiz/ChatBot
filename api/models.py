@@ -31,6 +31,13 @@ class CustomUser(AbstractUser):
 
     def __str__(self) -> str:
         return self.username
+    
+    class Meta:
+        permissions = [
+            ('can_access_chatBotBuilder', 'Can Access ChatBot Builder'),
+            ('can_access_channels', 'Can Access Channels'),
+            ('can_access_team_members', 'Can Access Team Members')
+        ]
 
 class Duration(models.Model):
     duration = models.DurationField()

@@ -3,6 +3,8 @@ from django.contrib.auth import  authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.utils.duration import duration_string
 from .models import *
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 class ClientSerializer(serializers.ModelSerializer):
     
@@ -113,7 +115,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields  = ['id', 'username', 'email', 'password', 'role_user']
+        fields  = ['id', 'username', 'phonenumber', 'email', 'password', 'role_user']
         extra_kwargs = {
             'password':{'write_only':True},
         }
@@ -124,11 +126,18 @@ class AddUserSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        request = self.context.get('request')
+        # request = self.context.get('request')
+        roles = self.context.get('role')
         team = Team.objects.get(team_id = self.context.get('team_id', ' '))
         password = self.validated_data.pop('password')
         user = CustomUser.objects.create(**validated_data)
-        # user_ = CustomUser.objects.get(pk=request.user.id)
+        for role in roles:
+            content_type = ContentType.objects.get_for_model(CustomUser)
+            permission = Permission.objects.get(
+                codename= role,
+                content_type=content_type
+            )
+            user.user_permissions.add(permission)
         user.set_password(password)
         user.save()
         team.members.add(user)

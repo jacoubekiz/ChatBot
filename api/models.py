@@ -23,7 +23,7 @@ Days = (
 )
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=40, unique=True)
-    phonenumber = models.BigIntegerField(default=352353525)
+    phonenumber = models.BigIntegerField(null=True, blank=True)
     role_user = models.CharField(choices=ROLE_USER, max_length=20, default='admin')
 
     USERNAME_FIELD = 'email'

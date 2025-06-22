@@ -958,6 +958,7 @@ class ListCreateTeamMemberView(ListCreateAPIView):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
+        context['role'] = self.request.data['role']
         context['team_id'] = self.kwargs['team_id']
         return context
     

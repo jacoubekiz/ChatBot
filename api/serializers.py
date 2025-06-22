@@ -209,7 +209,9 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ['team_id', 'account_id', 'name']
-
+        extra_kwargs = {
+            'account_id':{'read_only':True},
+        }
     def create(self, validated_data):
         account_id = self.context.get('account_id')
         account = Account.objects.get(account_id=account_id)

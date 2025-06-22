@@ -35,7 +35,7 @@ urlpatterns = [
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
 
-    path('add-team/', ListCreateTeamView.as_view(), name='teams'),
+    path('add-team/<account_id>/', ListCreateTeamView.as_view(), name='teams'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
     path('list-messages/<str:conversation_id>/', ListMessgesForSpecificConversation.as_view(), name='list-messages'),

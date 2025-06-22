@@ -923,15 +923,19 @@ class SendEmailView(APIView):
         return Response(status=status.HTTP_200_OK)
 # --------------------------------------------------------------------------------------------------------------
 class ListCreateTeamView(ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['account_id'] = self.request.data['account_id']
+        context['account_id'] = self.kwargs['account_id']
         # context['team_id'] = self.kwargs['team_id']
         return context
+    
+    def get_queryset(self):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        return account_id.team_set.all()
 
 class AssigningPermissions(APIView):
     def post(self, request, user_id):
@@ -950,24 +954,40 @@ class AssigningPermissions(APIView):
             user.user_permissions.remove(permission)
         return Response(status=status.HTTP_200_OK)
     
-class ListCreateTeamMemberView(ListCreateAPIView):
-    # permission_classes = [IsAuthenticated, UserIsAdmin]
-    queryset = CustomUser.objects.all()
-    serializer_class = AddUserSerializer
+# class ListCreateTeamMemberView(ListCreateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     queryset = CustomUser.objects.all()
+#     serializer_class = AddUserSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        context['role'] = self.request.data['role']
-        context['team_id'] = self.kwargs['team_id']
-        return context
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context['request'] = self.request
+#         context['role'] = self.request.data['role']
+#         context['team_id'] = self.kwargs['team_id']
+#         return context
     
-    def get_queryset(self):
-        team_id = Team.objects.get(team_id=self.kwargs['team_id'])
-        return team_id.members
-    
+#     def get_queryset(self):
+#         team_id = Team.objects.get(team_id=self.kwargs['team_id'])
+#         return team_id.members
+
+
+class ListCreateTeamMemberView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, team_id):
+        data_request = request.data
+        serializer = AddUserSerializer(data = data_request, many=False, context={'role':request.data['role'], 'team_id':team_id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request, team_id):
+        team_id = Team.objects.get(team_id=team_id)
+        serializer = AddUserSerializer(team_id.members, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateListAccount(GenericAPIView):
-
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         data_request = request.data
         serializer = AddAccountSerializer(data = data_request, many=False)
@@ -989,7 +1009,7 @@ class CreateListAccount(GenericAPIView):
 class ListCreateChannelView(ListCreateAPIView):
     
     serializer_class = ChannleSerializer
-    # permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated,]
     def get_queryset(self):
         account_id = self.kwargs['account_id']
         return Channle.objects.filter(account_id=account_id)
@@ -998,14 +1018,20 @@ class ListCreateChannelView(ListCreateAPIView):
         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
     
-class CreateTeam(GenericAPIView):
-
-    def post(self, request, account_id):
-        # account = Account.objects.get(account_id=account_id)
-        data = request.data
-        serializer = TeamSerializer(data=data, context={'account_id':account_id})
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+# class CreateTeam(GenericAPIView):
+#     # permission_classes = [IsAuthenticated]
+#     def post(self, request, account_id):
+#         # account = Account.objects.get(account_id=account_id)
+#         data = request.data
+#         serializer = TeamSerializer(data=data, context={'account_id':account_id})
+#         serializer.is_valid(raise_exception=True)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+#     def get(self, request, account_id):
+#         account = Account.objects.get(account_id=account_id)
+#         team = account.team_set.all()
+#         serializer = TeamSerializer(team, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ViewLogin(GenericAPIView):
 

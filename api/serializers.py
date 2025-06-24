@@ -144,9 +144,14 @@ class AddUserSerializer(serializers.ModelSerializer):
         return user
     
 class AccontSerializer(serializers.ModelSerializer):
+    channel_id = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Account
         fields = '__all__'
+        # fields = ['account_id', 'name', 'user', 'channel_id']
+
+    def get_channel_id(self, obj):
+        return obj.channle_set.all().first().channle_id
         
 class AddAccountSerializer(serializers.ModelSerializer):
     class Meta:

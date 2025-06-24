@@ -1004,6 +1004,10 @@ class CreateListAccount(GenericAPIView):
     def get(self, request):
         accounts = Account.objects.filter(user__role_user='admin')
         serializer = AccontSerializer(accounts, many=True)
+        # for account in range(len(accounts)):
+        #     print
+        #     channel_id = accounts[account].channle_set.all().first()
+        #     serializer[account]['channel'] = channel_id.channle_id
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ListCreateChannelView(ListCreateAPIView):

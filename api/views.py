@@ -1004,10 +1004,6 @@ class CreateListAccount(GenericAPIView):
     def get(self, request):
         accounts = Account.objects.filter(user__role_user='admin')
         serializer = AccontSerializer(accounts, many=True)
-        # for account in range(len(accounts)):
-        #     print
-        #     channel_id = accounts[account].channle_set.all().first()
-        #     serializer[account]['channel'] = channel_id.channle_id
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ListCreateChannelView(ListCreateAPIView):
@@ -1022,21 +1018,16 @@ class ListCreateChannelView(ListCreateAPIView):
         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
     
-# class CreateTeam(GenericAPIView):
-#     # permission_classes = [IsAuthenticated]
-#     def post(self, request, account_id):
-#         # account = Account.objects.get(account_id=account_id)
-#         data = request.data
-#         serializer = TeamSerializer(data=data, context={'account_id':account_id})
-#         serializer.is_valid(raise_exception=True)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+class CreateNewContact(GenericAPIView):
+    def post(self, request, account_id, channel_id):
+        data = request.data
+        account_id = Account.objects.get(account_id=account_id)
+        channel_id = Channle.objects.get(channle_id= channel_id)
+        contact = ContactSerializer(data=data, many=False, context = {'account_id': account_id, 'channel_id': channel_id})
+        contact.is_valid(raise_exception=True)
+        contact.save()
+        return Response(contact.data, status=status.HTTP_200_OK)
     
-#     def get(self, request, account_id):
-#         account = Account.objects.get(account_id=account_id)
-#         team = account.team_set.all()
-#         serializer = TeamSerializer(team, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
 class ViewLogin(GenericAPIView):
 
     def post(self, request):

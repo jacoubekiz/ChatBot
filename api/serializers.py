@@ -237,14 +237,30 @@ class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Contact
-        fields = ['contact_id', 'name', 'phone_number', "conversation_id"]
-
+        fields = ['contact_id', 'account_id', 'name', 'phone_number', 'email', "conversation_id"]
+        extra_kwargs ={
+            'account_id':{'read_only':True}
+        }
+    def create(self, validated_data):
+        account_id = self.context.get('account_id')
+        channel_id = self.context.get('channel_id')
+        validated_data['account_id'] = account_id
+        contact = Contact.objects.create(**validated_data)
+        conversation = Conversation.objects.create(account_id=account_id, channle_id=channel_id, contact_id=contact)
+        return contact
+    
     def get_conversation_id(self, obj):
         contact = Contact.objects.get(contact_id=obj.contact_id)
         conversation_id = Conversation.objects.get(contact_id=contact.contact_id)
         conversation_id = conversation_id.conversation_id
         return conversation_id
-
+    
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['account_id'] = instance.account_id.name
+        # repre['contact_id'] = instance.contact_id.name
+        return repre
+    
 class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact

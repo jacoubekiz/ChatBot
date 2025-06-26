@@ -13,28 +13,27 @@ from django.utils import timezone
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
-        # self.contact_phonenumber = self.scope["url_route"]["kwargs"]["contact_phonenumber"]
         self.channel_id= self.scope["url_route"]["kwargs"]["channel_id"]
-        # self.user = self.scope['user']
-        # print(self.user.id)
-        # if self.user.is_authenticated:
-        # self.room_group_name = "chat_%s" % f"{self.conversation_id}-{self.contact_phonenumber}"
         self.room_group_name = "chat_"
             # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
         conversations = await self.get_conversations(self.channel_id)
+        for conversation in conversations:
+            message = await self.get_last_message(conversation.get('conversation_id'))
+            if message == None:
+                pass
+            else:
+                # print(message.created_at)
+                # print(timezone.now() - message.created_at)
+                s = timezone.now() - message.created_at
+                if s > timedelta(hours=24):
+                    conversation['status_conversation'] = 'lock'
         # for conversation in conversations:
         await self.send(text_data=json.dumps({
             "type": "conversation",
             "conversation": conversations
         }))
-            # messages = await self.get_messages(self.conversation_id)
-            # for message in messages:
-            #     await self.send(text_data=json.dumps(message))
-        # else:
-        # await self.close()
 
 
     async def disconnect(self, close_code):
@@ -529,6 +528,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                 
            
+    @database_sync_to_async
+    def get_last_message(self, conversation_id):
+        conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
+        message = conversation.chatmessage_set.exclude(from_message ='bot').order_by("-created_at").first()
+        return message
+    
     @database_sync_to_async
     def create_chat_message(self, conversation_id, content_type, content, wamid, media_url):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()

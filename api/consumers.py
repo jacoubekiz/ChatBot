@@ -22,7 +22,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for conversation in conversations:
             message = await self.get_last_message(conversation.get('conversation_id'))
             if message == None:
-                pass
+                conversation['status_conversation'] = 'lock'
             else:
                 # print(message.created_at)
                 # print(timezone.now() - message.created_at)

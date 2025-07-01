@@ -255,7 +255,8 @@ CONTENT_TYPE = (
     ('image', 'imgage'),
     ('video', 'video'),
     ('document', 'document'),
-    ('audio', 'audio')
+    ('audio', 'audio'),
+    ('template', 'template')
 )
 
 STATUS_MESSAGE = (

@@ -53,46 +53,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         match content_type:
             # # handel receive template message
-            # case "template":
-            #     content = text_data_json["content"]
-            #     message_id = text_data_json["message_id"]
-            #     created_at = text_data_json['created_at']
-            #     if from_bot == "False":
-            #         await self.channel_layer.group_send(
-            #             self.room_group_name, {
-            #                 "type": "chat_message",
-            #                 "conversation_id": conversation_id,
-            #                 "content": content,
-            #                 "content_type": content_type,
-            #                 "from_bot":from_bot,
-            #                 "wamid":wamid,
-            #                 "message_id":message_id,
-            #                 "created_at": created_at
-            #             }
-            #         )
-            #     else:
-            #         message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid)
-            #         send_message(
-            #             message_content=content,
-            #             to= await self.get_phonenumber(conversation_id),
-            #             wa_id= await self.get_waid(conversation_id),
-            #             bearer_token= await self.get_token(conversation_id),
-            #             chat_id= conversation_id,
-            #             platform="whatsapp",
-            #             question='statment'
-            #         )
-            #         await self.channel_layer.group_send(
-            #             self.room_group_name, {
-            #                 "type": "chat_message",
-            #                 "conversation_id": conversation_id,
-            #                 "content": content,
-            #                 "content_type": content_type,
-            #                 "from_bot":from_bot,
-            #                 "wamid":wamid,
-            #                 "message_id":message_id,
-            #                 "created_at": created_at
-            #             }
-            #         )
+            case "template":
+                content = text_data_json["content"]
+                # message_id = text_data_json["message_id"]
+                template_info = text_data_json['template_info']
+                created_at = text_data_json['created_at']
+                channel_id = await self.get_channel(self.channel_id)
+                url = f"https://graph.facebook.com/v22.0/{channel_id.phone_number_id}/messages"
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"{channel_id.tocken}"
+                }
+                template_data = json.dumps(template_info)   
+                response = requests.post(url, headers=headers, data=template_data)
+                print(response._content)
+                message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid)
+                await self.channel_layer.group_send(
+                    self.room_group_name, {
+                        "type": "chat_message",
+                        "conversation_id": conversation_id,
+                        "content": content,
+                        "content_type": content_type,
+                        "from_bot":from_bot,
+                        "wamid":wamid,
+                        "message_id":message_id,
+                        "created_at": created_at
+                    }
+                )
 
             # handel receive voice message
             case "audio":
@@ -607,6 +594,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation = channel.conversation_set.all().order_by('-updated_at')
         serializer = ConversationSerializer(conversation, many=True)
         return serializer.data
+    
+    @database_sync_to_async
+    def get_channel(self, channel_id):
+        channel = Channle.objects.get(channle_id = channel_id)
+        return channel
 # class DocumentConsumers(AsyncWebsocketConsumer):
 #     async def connect(self):
 #         self.room_name = self.scope['url_route']['kwargs']['room']

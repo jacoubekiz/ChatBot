@@ -61,6 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # handel receive template message
             case "template":
                 content = text_data_json["content"]
+                status = text_data_json['status']
                 # message_id = text_data_json["message_id"]
                 template_info = text_data_json['template_info']
                 created_at = text_data_json['created_at']
@@ -72,8 +73,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
                 template_data = json.dumps(template_info)   
                 response = requests.post(url, headers=headers, data=template_data)
-                print(response._content)
-                message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid)
+                message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid, status)
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "chat_message",

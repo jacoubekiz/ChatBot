@@ -623,7 +623,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     @database_sync_to_async
     def get_message(self, message_id):
-        message = MessageChat.objects.get(message_id = message_id)
+        message = ChatMessage.objects.get(message_id = message_id)
         message.status_message = 'delivered'
         message.save()
         return message

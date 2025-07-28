@@ -270,7 +270,7 @@ class ConversationContactSerializer(serializers.ModelSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ['message_id', 'from_message', 'content','caption', 'content_type', 'created_at', 'conversation_id', 'media_url', 'media_sha256_hash']
+        fields = ['message_id', 'from_message', 'content','caption', 'content_type', 'created_at', 'conversation_id', 'media_url', 'media_sha256_hash', 'status_message']
 
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)

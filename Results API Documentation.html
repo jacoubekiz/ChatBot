@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL Results API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+}
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+}
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+}
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+}
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+}
+        .endpoint {
+            background-color: #eaf2f8;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+}
+        .response {
+            background-color: #e8f8f5;
+            padding: 15px;
+            border-left: 4px solid #1abc9c;
+            margin: 20px 0;
+}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+}
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+}
+        th {
+            background-color: #f2f2f2;
+}
+    </style>
+</head>
+<body>
+    <h1>ACL Results API Documentation</h1>
+    
+    <h2>Base URL</h2>
+    <code>https: //api.acl.com/lab/v1</code>
+    
+    <h2>Authentication</h2>
+    <p>All requests require API key authentication:</p>
+    <pre>Authorization: Bearer {your_api_key
+}</pre>
+    
+    <h2>Endpoint</h2>
+    <div class="endpoint">
+        <h3>Get Patient Details with Results URL</h3>
+        <p><strong>Method:</strong> GET</p>
+        <p><strong>Endpoint:</strong> <code>/patient/results</code></p>
+        
+        <h4>Parameters</h4>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>mobile</td>
+                <td>string</td>
+                <td>Patient's mobile number with country code (required)</td>
+                <td>966501234567</td>
+            </tr>
+            <tr>
+                <td>dob</td>
+                <td>string</td>
+                <td>Date of birth for verification (YYYY-MM-DD, optional)</td>
+                <td>1985-03-15</td>
+            </tr>
+        </table>
+        
+        <h4>Example Request</h4>
+        <pre>curl -X GET \
+  'https: //api.acl.com/lab/v1/patient/results?mobile=966501234567' \
+  -H 'Authorization: Bearer your_api_key_here'</pre>
+    </div>
+    
+    <h2>Response</h2>
+    <div class="response">
+        <h3>Success Response</h3>
+        <pre>{
+    "success": true,
+    "data": {
+        "patientId": "PAT123456",
+        "mobile": "96650**67",
+        "name": "Ahmed Mohammed",
+        "resultsUrl": "https://api.acl.com/lab/v1/results/PAT123456",
+        "lastTestDate": "2023-11-15",
+        "availableResults": 3
+    }
+}</pre>
+        
+        <h4>Response Fields</h4>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>patientId</td>
+                <td>string</td>
+                <td>Unique patient identifier</td>
+            </tr>
+            <tr>
+                <td>mobile</td>
+                <td>string</td>
+                <td>Masked mobile number for privacy</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>string</td>
+                <td>Patient's full name</td>
+            </tr>
+            <tr>
+                <td>resultsUrl</td>
+                <td>string</td>
+                <td>URL to access detailed results</td>
+            </tr>
+            <tr>
+                <td>lastTestDate</td>
+                <td>string</td>
+                <td>Date of most recent test (YYYY-MM-DD)</td>
+            </tr>
+            <tr>
+                <td>availableResults</td>
+                <td>integer</td>
+                <td>Number of available test results</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h2>Error Responses</h2>
+    <table>
+        <tr>
+            <th>Code</th>
+            <th>Response</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>400</td>
+            <td><pre>{
+    "success": false,
+    "error": "INVALID_MOBILE_FORMAT"
+}</pre></td>
+            <td>Invalid mobile number format</td>
+        </tr>
+        <tr>
+            <td>404</td>
+            <td><pre>{
+    "success": false,
+    "error": "PATIENT_NOT_FOUND"
+}</pre></td>
+            <td>No patient found with this mobile number</td>
+        </tr>
+        <tr>
+            <td>401</td>
+            <td><pre>{
+    "success": false,
+    "error": "UNAUTHORIZED"
+}</pre></td>
+            <td>Invalid or missing API key</td>
+        </tr>
+    </table>
+    
+    <h2>Security Notes</h2>
+    <ul>
+        <li>Mobile numbers are partially masked in responses</li>
+        <li>All requests require valid API key</li>
+        <li>Results URLs contain unique identifiers instead of mobile numbers</li>
+        <li>Always use HTTPS for all requests</li>
+        <li>Recommended to implement rate limiting (100 requests/minute)</li>
+    </ul>
+</body>
+</html>

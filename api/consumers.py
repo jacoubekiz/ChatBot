@@ -52,7 +52,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
         match content_type:
-            # # handel receive template message
+            case "read_receipt":
+                message_id = text_data_json['message_id']
+                message = ChatMessage.objects.get(message_id=message_id)
+                message.status_message = 'read'
+                message.save()
+
+            # handel receive template message
             case "template":
                 content = text_data_json["content"]
                 # message_id = text_data_json["message_id"]
@@ -85,6 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case "audio":
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    status = text_data_json['status']
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_audio = base64.b64decode(content)
@@ -94,7 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}", status)
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -142,6 +149,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case 'image':
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    status = text_data_json['status']
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_image = base64.b64decode(content)
@@ -151,7 +159,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_image)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}", status)
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -198,6 +206,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case 'video':
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    status = text_data_json['status']
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_video = base64.b64decode(content)
@@ -207,7 +216,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_video)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}", status)
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -255,6 +264,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 caption = text_data_json["caption"]
                 # mime_type = text_data_json["mime_type"]
                 if from_bot == "True":
+                    status = text_data_json['status']
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_document = base64.b64decode(content)
@@ -264,7 +274,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_document)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, content_type, caption, wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}", status)
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -328,7 +338,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     )
                 else:
-                    message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid)
+                    status = text_data_json['status']
+                    message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid,status)
                     send_message(
                         message_content=content,
                         to= await self.get_phonenumber(conversation_id),
@@ -376,12 +387,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
+            message = await self.get_message(message_id)
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
-                    "is_successfully": "true"
+                    "is_successfully": "true",
+                    "status_message" : "delivered"
                 }))
             
     async def chat_message_video(self, event):
@@ -408,12 +421,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
+            message = await self.get_message(message_id)
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
-                    "is_successfully": "true"
+                    "is_successfully": "true",
+                    "status_message" : "delivered"
                 }))
             
     async def chat_message_audio(self, event):
@@ -440,12 +455,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
+            message = await self.get_message(message_id)
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
-                    "is_successfully": "true"
+                    "is_successfully": "true",
+                    "status_message" : "delivered"
                 }))      
                 
     async def chat_message_document(self, event):
@@ -474,13 +491,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
+            message = await self.get_message(message_id)
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     # "mime_type": mime_type,
                     "conversation_id": conversation_id,
-                    "is_successfully": "true"
+                    "is_successfully": "true",
+                    "status_message" : "delivered"
                 }))
             
     # Receive message from room group
@@ -505,12 +524,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "is_successfully":"true"
             }))
         else:
+            message = await self.get_message(message_id_)
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
-                    "is_successfully": "true"
+                    "is_successfully": "true",
+                    "status_message" : "delivered"
                 }))
 
                 
@@ -522,28 +543,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return message
     
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, content_type, content, wamid, media_url):
+    def create_chat_message(self, conversation_id, content_type, content, wamid, media_url, status):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             # user_id = CustomUser1.objects.filter(id=self.user.id).first(),
             content_type = content_type,
             content = content,
-            # from_message = bot,
+            status_message = status,
             wamid = wamid,
             media_url = media_url,
         )
         return chat_message.message_id
     
     @database_sync_to_async
-    def create_chat_image(self, conversation_id, content_type, caption, wamid, media_url):
+    def create_chat_image(self, conversation_id, content_type, caption, wamid, media_url, status):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             # user_id = CustomUser1.objects.filter(id=self.user.id).first(),
             content_type = content_type,
             caption = caption,
-            # from_message = bot,
+            status_message = status,
             wamid = wamid,
             media_url = media_url,
         )
@@ -599,6 +620,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_channel(self, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)
         return channel
+    
+    @database_sync_to_async
+    def get_message(self, message_id):
+        message = MessageChat.objects.get(message_id = message_id)
+        message.status_message = 'delivered'
+        message.save()
+        return message
 # class DocumentConsumers(AsyncWebsocketConsumer):
 #     async def connect(self):
 #         self.room_name = self.scope['url_route']['kwargs']['room']

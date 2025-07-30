@@ -528,7 +528,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             wamid = wamid,
-            from_bot = from_bot
+            from_message = from_bot
         )
         return chat_message.message_id
     

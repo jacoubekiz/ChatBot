@@ -528,8 +528,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             wamid = wamid,
-            media_url = media_url,
-            status_message = status,
+            media_url = media_url
         )
         return chat_message.message_id
     

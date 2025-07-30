@@ -520,7 +520,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return message
     
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, content_type, content, wamid, media_url):
+    def create_chat_message(self, conversation_id, content_type, content, from_bot, wamid):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
@@ -528,7 +528,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             wamid = wamid,
-            media_url = media_url
+            from_bot = from_bot
         )
         return chat_message.message_id
     

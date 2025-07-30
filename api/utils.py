@@ -374,7 +374,12 @@ def send_message(version = '18.0',
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.status_code)
+
+        data = json.loads(response.content.decode())
+        message_id = data['messages'][0]['id']
+        return message_id
+
+        
     elif platform == 'beam':
         url = f'https://offapi-sccc-test.rongcloud.net/v1/{wa_id}/message'
         if type == 'interactive':
@@ -531,18 +536,20 @@ def handel_request_redis(data, account_id):
         if raw_data == None:
             return Response({'message':data}, status=status.HTTP_200_OK)
         else:
-            
             log_entry = json.loads(raw_data)
             value = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {})
-            
+            statuses = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {}).get('statuses', {})
+            if statuses:
+                message_id = statuses[0].get('id', '')
+                status_message = statuses[0].get('status', '')
+                chatmessage = ChatMessage.objects.get(wamid=message_id)
+                chatmessage.status_message = status_message
+                chatmessage.save()
             if value: 
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')
                 contact_phonenumber = value.get('messages', '')[0].get('from', '')
-                # timestamp = value.get('messages', '')[0].get('timestamp', '')
-                # messaging_product = value.get('messaging_product', '')
                 display_phone_number = value.get('metadata', '').get('display_phone_number', '')
-                # phone_number_id = value.get('metadata', '').get('phone_number_id', '')
                 contacts = value.get('contacts', '')
                 if contacts:
                     account = Account.objects.get(account_id=account_id)
@@ -834,10 +841,6 @@ def download_and_save_image(image_url, headers, save_directory, image_name):
     :param save_directory: Directory where the image will be saved.
     :return: Full path to the saved image.
     """
-    # Extract the image name from the URL
-    # image_name = os.path.basename(image_url)
-    # print(image_name)
-    # Full path to save the image
     full_path = os.path.join(save_directory, image_name)
 
     # Download the image

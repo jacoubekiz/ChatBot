@@ -547,7 +547,7 @@ def handel_request_redis(data, account_id):
                 chatmessage = ChatMessage.objects.get(wamid=message_id)
                 chatmessage.status_message = status_message
                 chatmessage.save()
-                read_receipt(chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
+                read_receipt(channel.channle_id, chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
             if value: 
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')

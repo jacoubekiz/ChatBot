@@ -94,6 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case "audio":
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    front_id = text_data_json['front_id']
                     message_wamid = send_message(
                         message_content= '',
                         to= await self.get_phonenumber(conversation_id),
@@ -127,6 +128,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid,
                             "message_id": message_id,
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -163,6 +165,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
                     )
                     content = text_data_json["content"]
+                    front_id = text_data_json['front_id']
                     media_name = text_data_json["media_name"]
                     decoded_image = base64.b64decode(content)
                     # output_folder = 'media/chat_message'
@@ -184,6 +187,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid,
                             "message_id": message_id,
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -218,6 +222,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         type="video",
                         source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
                     )
+                    front_id = text_data_json["front_id"]
                     content = text_data_json["content"]
                     media_name = text_data_json["media_name"]
                     decoded_video = base64.b64decode(content)
@@ -239,6 +244,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid,
                             "message_id": message_id,
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -273,6 +279,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
                     )
                     content = text_data_json["content"]
+                    front_id = text_data_json["front_id"]
                     media_name = text_data_json["media_name"]
                     decoded_document = base64.b64decode(content)
                     output_folder = '/var/www/html/media/chat_message'
@@ -292,7 +299,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid,
                             "message_id": message_id,
-                            # "mime_type": mime_type
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -342,6 +349,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question='statment'
                     )
+                    front_id = text_data_json['front_id']
                     message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, message_wamid)
                     await self.channel_layer.group_send(
                         self.room_group_name, {
@@ -352,7 +360,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot":from_bot,
                             "wamid":message_wamid,
                             "message_id":message_id,
-                            "created_at": created_at
+                            "created_at": created_at,
+                            "front_id": front_id
                         }
                     )
 
@@ -380,12 +389,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
-            message = await self.get_message(message_id)
+            front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
+                    "front_id": front_id,
                     "is_successfully": "true",
                 }))
             
@@ -412,12 +422,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
-            message = await self.get_message(message_id)
+            front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
+                    "front_id": front_id,
                     "is_successfully": "true",
                 }))
             
@@ -444,12 +455,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
-            message = await self.get_message(message_id)
+            front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
+                    "front_id": front_id,
                     "is_successfully": "true",
                 }))      
                 
@@ -476,12 +488,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "is_successfully":"true"
                 }))
         else:
-            message = await self.get_message(message_id)
+            front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
+                    "front_id": front_id,
                     "is_successfully": "true",
                 }))
             
@@ -507,14 +520,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "is_successfully":"true"
             }))
         else:
-            message = await self.get_message(message_id_)
+            front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
+                    "front_id": front_id,
                     "is_successfully": "true",
-                    "status_message" : "delivered"
                 }))
 
     async def chat_message_status(self, event):

@@ -518,7 +518,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }))
 
     async def chat_message_status(self, event):
-        content_type = event["content_type"]
+        content_type = event["content_type"] 
         conversation_id = event["conversation_id"]
         message_id_ = event["message_id"]
         status_message = event["status_message"]

@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'api',
     'django_redis',
     'webhook',
-    'gdstorage',
+    # 'gdstorage',
     
 ]
 

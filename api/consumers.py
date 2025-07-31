@@ -44,18 +44,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json["conversation_id"]
-        
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
 
 
 
         match content_type:
-            case "read_receipt":
+            case "message_status":
                 message_id = text_data_json['message_id']
-                message = ChatMessage.objects.get(message_id=message_id)
-                message.status_message = 'read'
-                message.save()
 
             # handel receive template message
             case "template":

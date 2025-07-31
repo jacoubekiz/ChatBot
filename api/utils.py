@@ -542,9 +542,12 @@ def handel_request_redis(data, account_id):
             if statuses:
                 message_id = statuses[0].get('id', '')
                 status_message = statuses[0].get('status', '')
+                display_phone_number = value.get('metadata', '').get('display_phone_number', '')
+                channel = Channle.objects.filter(phone_number=display_phone_number).first()
                 chatmessage = ChatMessage.objects.get(wamid=message_id)
                 chatmessage.status_message = status_message
                 chatmessage.save()
+                read_receipt(chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
             if value: 
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')
@@ -833,6 +836,26 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
     except Exception as e:
         pass
 
+def read_receipt(channel_id, message_id, conversation_id, status):
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    print(url_ws)
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "content_type":"message_status",
+        "message_id": message_id,
+        "conversation_id": conversation_id,
+        "status": status
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+
+    except Exception as e:
+        pass
+
 def download_and_save_image(image_url, headers, save_directory, image_name):
     """
     Downloads an image from a URL and saves it to a specified directory on the server.
@@ -856,5 +879,3 @@ def download_and_save_image(image_url, headers, save_directory, image_name):
         raise Exception(f"Failed to download image. Status code: {response.status_code}")
     
 
-
-hh = '{"object": "whatsapp_business_account", "entry": [{"id": "395690116951596", "changes": [{"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "15556231998", "phone_number_id": "327799347091553"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhgUM0ZGMzNEQTdFQTJDODVBNkQ2REMA", "timestamp": "1740910295", "type": "document", "document": {"filename": "esouth.pdf", "mime_type": "application/pdf", "sha256": "nW3ucjkohtQrsg1fKnQ5lk1fb2+9gb6cld+4A2J5gYg=", "id": "1188035589563307"}}]}, "field": "messages"}]}]}'

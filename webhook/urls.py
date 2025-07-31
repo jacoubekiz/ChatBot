@@ -3,5 +3,5 @@ from .views import *
 
 
 urlpatterns = [
-    path('upload-file/', uploadfile.as_view(), name='webhook'),
+    # path('upload-file/', uploadfile.as_view(), name='webhook'),
 ]

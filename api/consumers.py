@@ -52,7 +52,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         match content_type:
             case "message_status":
                 message_id = text_data_json['message_id']
+                status_message = text_data_json['status']
 
+                await self.channel_layer.group_send(
+                    self.room_group_name, {
+                        "type": "chat_message_status",
+                        "conversation_id": conversation_id,
+                        "content_type": content_type,
+                        "message_id":message_id,
+                        "status_message": status_message
+                    }
+                )
             # handel receive template message
             case "template":
                 content = text_data_json["content"]
@@ -507,7 +517,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "status_message" : "delivered"
                 }))
 
-                
+    async def chat_message_status(self, event):
+        content_type = event["content_type"]
+        conversation_id = event["conversation_id"]
+        message_id_ = event["message_id"]
+        status_message = event["status_message"]
+
+        await self.send(text_data=json.dumps({
+                "message_id": message_id_,
+                "conversation_id": conversation_id,
+                "content_type": content_type,
+                "status_message" : status_message
+                }))
+
            
     @database_sync_to_async
     def get_last_message(self, conversation_id):

@@ -846,7 +846,8 @@ def read_receipt(channel_id, message_id, conversation_id, status):
         "content_type":"message_status",
         "message_id": message_id,
         "conversation_id": conversation_id,
-        "status": status
+        "status": status,
+        "from_bot": "True"
     }
     try:
         ws.send(json.dumps(data))

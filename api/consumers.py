@@ -152,6 +152,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # handel receive image
             case 'image':
                 caption = text_data_json["caption"]
+                media_name = text_data_json["media_name"]
                 if from_bot == "True":
                     message_wamid = send_message(
                         message_content= caption,
@@ -166,7 +167,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     content = text_data_json["content"]
                     front_id = text_data_json['front_id']
-                    media_name = text_data_json["media_name"]
                     decoded_image = base64.b64decode(content)
                     # output_folder = 'media/chat_message'
                     output_folder = '/var/www/html/media/chat_message'

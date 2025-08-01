@@ -564,14 +564,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return chat_message.message_id
     
     @database_sync_to_async
-    def create_chat_image(self, conversation_id, content_type, caption, wamid, media_url, status):
+    def create_chat_image(self, conversation_id, content_type, caption, wamid, media_url):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             # user_id = CustomUser1.objects.filter(id=self.user.id).first(),
             content_type = content_type,
             caption = caption,
-            status_message = status,
             wamid = wamid,
             media_url = media_url,
         )

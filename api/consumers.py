@@ -98,6 +98,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case "audio":
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    media_name = text_data_json["media_name"]
                     front_id = text_data_json['front_id']
                     message_wamid = send_message(
                         message_content= '',
@@ -111,7 +112,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
                     )
                     content = text_data_json["content"]
-                    media_name = text_data_json["media_name"]
                     decoded_audio = base64.b64decode(content)
                     # output_folder = 'media/chat_message'
                     output_folder = '/var/www/html/media/chat_message'
@@ -215,6 +215,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case 'video':
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    media_name = text_data_json["media_name"]
                     message_wamid = send_message(
                         message_content= caption,
                         to= await self.get_phonenumber(conversation_id),
@@ -228,7 +229,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     front_id = text_data_json["front_id"]
                     content = text_data_json["content"]
-                    media_name = text_data_json["media_name"]
                     decoded_video = base64.b64decode(content)
                     output_folder = '/var/www/html/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
@@ -272,6 +272,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case 'document':
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    media_name = text_data_json["media_name"]
                     message_wamid = send_message(
                         message_content= caption,
                         to= await self.get_phonenumber(conversation_id),
@@ -284,7 +285,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     content = text_data_json["content"]
                     front_id = text_data_json["front_id"]
-                    media_name = text_data_json["media_name"]
                     decoded_document = base64.b64decode(content)
                     output_folder = '/var/www/html/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)

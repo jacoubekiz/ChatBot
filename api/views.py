@@ -1037,6 +1037,7 @@ class ViewLogin(GenericAPIView):
         email = data_request['email']
         try:
             user = CustomUser.objects.get(email=email)
+            permissions = list(user.get_all_permissions())
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -1044,7 +1045,8 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    'role':user.role_user
+                    'role':user.role_user,
+                    'permissions': list(user.get_all_permissions())
                 }
             }
         except:
@@ -1056,7 +1058,7 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    # 'role':user.role
+                    'permissions':list(user.get_all_permissions())
                 }
             }
         return Response(data, status=status.HTTP_200_OK)

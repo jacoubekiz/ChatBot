@@ -392,6 +392,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
+                    "content_type":"message_status",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -425,6 +426,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
+                    "content_type":"message_status",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -458,6 +460,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
+                    "content_type":"message_status",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -491,6 +494,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
+                    "content_type":"message_status",
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -523,6 +527,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
+                    "content_type":"message_status",
                     "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,

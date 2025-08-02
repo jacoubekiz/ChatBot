@@ -65,6 +65,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             # handel receive template message
             case "template":
+                front_id = text_data_json['front_id']
                 content = text_data_json["content"]
                 template_info = text_data_json['template_info']
                 created_at = text_data_json['created_at']
@@ -76,7 +77,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
                 template_data = json.dumps(template_info)   
                 response = requests.post(url, headers=headers, data=template_data)
-                message_id = await self.create_chat_message(conversation_id, content_type, content, wamid='fdf')
+                data = json.loads(response.content.decode())
+                template_wamid = data['messages'][0]['id']
+                message_id = await self.create_chat_message(conversation_id, content_type, content, template_wamid)
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "chat_message",
@@ -84,8 +87,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "content": content,
                         "content_type": content_type,
                         "from_bot":from_bot,
-                        "wamid":'wamid',
-                        "message_id":message_id,
+                        "wamid":template_wamid,
+                        "front_id":front_id,
+                        # "message_id":message_id,
                         "created_at": created_at
                     }
                 )
@@ -127,14 +131,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": message_wamid,
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "front_id": front_id
                         }
                     )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
-                    message_id = text_data_json["message_id"]
+                    # message_id = text_data_json["message_id"]
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message_audio",
@@ -143,7 +147,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": 'message_wamid',
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "media_url" : media_url,
                             "created_at": created_at
                         }
@@ -186,14 +190,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": message_wamid,
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "front_id": front_id
                         }
                     )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
-                    message_id = text_data_json["message_id"]
+                    # message_id = text_data_json["message_id"]
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message_image",
@@ -202,7 +206,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": 'wamid',
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "media_url" : media_url,
                             "created_at": created_at
                         }
@@ -243,14 +247,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": message_wamid,
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "front_id": front_id
                         }
                     )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
-                    message_id = text_data_json["message_id"]
+                    # message_id = text_data_json["message_id"]
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message_image",
@@ -259,7 +263,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": 'wamid',
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "media_url" : media_url,
                             "created_at": created_at
                         }
@@ -298,14 +302,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": message_wamid,
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "front_id": front_id
                         }
                     )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
-                    message_id = text_data_json["message_id"]
+                    # message_id = text_data_json["message_id"]
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message_image",
@@ -314,7 +318,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot": from_bot,
                             "wamid": 'wamid',
-                            "message_id": message_id,
+                            # "message_id": message_id,
                             "media_url" : media_url,
                             "created_at": created_at,
                             # "mime_type": mime_type
@@ -323,7 +327,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Send message to room group
             case 'text':
                 content = text_data_json["content"]
-                message_id = text_data_json["message_id"]
+                # message_id = text_data_json["message_id"]
                 created_at = text_data_json['created_at']
                 if from_bot == "False":
                     await self.channel_layer.group_send(
@@ -334,7 +338,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot":from_bot,
                             "wamid":'wamid',
-                            "message_id":message_id,
+                            # "message_id":message_id,
                             "created_at": created_at
                         }
                     )
@@ -359,7 +363,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content_type": content_type,
                             "from_bot":from_bot,
                             "wamid":message_wamid,
-                            "message_id":message_id,
+                            # "message_id":message_id,
                             "created_at": created_at,
                             "front_id": front_id
                         }
@@ -368,7 +372,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message_image(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
-        message_id = event["message_id"]
+        # message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
@@ -384,7 +388,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "caption":caption,
                     "content_type": content_type,
                     "wamid": wamid,
-                    "message_id":message_id,
+                    # "message_id":message_id,
                     "created_at":created_at,
                     "is_successfully":"true"
                 }))
@@ -393,7 +397,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content_type":"message_status",
-                    "message_id": message_id,
+                    # "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
@@ -403,7 +407,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message_video(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
-        message_id = event["message_id"]
+        # message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
@@ -418,7 +422,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "caption":caption,
                     "content_type": content_type,
                     "wamid": wamid,
-                    "message_id":message_id,
+                    # "message_id":message_id,
                     "created_at":created_at,
                     "is_successfully":"true"
                 }))
@@ -427,7 +431,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content_type":"message_status",
-                    "message_id": message_id,
+                    # "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
@@ -437,7 +441,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message_audio(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
-        message_id = event["message_id"]
+        # message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
@@ -452,7 +456,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "caption":caption,
                     "content_type": content_type,
                     "wamid": wamid,
-                    "message_id":message_id,
+                    # "message_id":message_id,
                     "created_at":created_at,
                     "is_successfully":"true"
                 }))
@@ -461,7 +465,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content_type":"message_status",
-                    "message_id": message_id,
+                    # "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
@@ -471,7 +475,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message_document(self, event):
         content_type = event["content_type"]
         wamid = event["wamid"]
-        message_id = event["message_id"]
+        # message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
@@ -486,7 +490,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "caption":caption,
                     "content_type": content_type,
                     "wamid": wamid,
-                    "message_id":message_id,
+                    # "message_id":message_id,
                     "created_at":created_at,
                     "is_successfully":"true"
                 }))
@@ -495,7 +499,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content_type":"message_status",
-                    "message_id": message_id,
+                    # "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
@@ -510,12 +514,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         wamid = event['wamid']
         conversation_id = event["conversation_id"]
 
-        message_id_ = event["message_id"]
+        # message_id_ = event["message_id"]
         created_at = event["created_at"]
         if from_bot == "False":
             await self.send(text_data=json.dumps({
                 "type":"message",
-                "message_id": message_id_,
+                # "message_id": message_id_,
                 "content":content,
                 "content_type":content_type,
                 "conversation_id": conversation_id,
@@ -528,7 +532,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content_type":"message_status",
-                    "message_id": message_id_,
+                    # "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,

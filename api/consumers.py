@@ -76,7 +76,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
                 template_data = json.dumps(template_info)   
                 response = requests.post(url, headers=headers, data=template_data)
-                message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, wamid='fdf')
+                message_id = await self.create_chat_message(conversation_id, content_type, content, wamid='fdf')
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "chat_message",
@@ -350,7 +350,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         question='statment'
                     )
                     front_id = text_data_json['front_id']
-                    message_id = await self.create_chat_message(conversation_id, content_type, content, from_bot, message_wamid)
+                    message_id = await self.create_chat_message(conversation_id, content_type, content, message_wamid)
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message",
@@ -556,7 +556,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return message
     
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, content_type, content, from_bot, wamid):
+    def create_chat_message(self, conversation_id, content_type, content, wamid):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
@@ -564,7 +564,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             wamid = wamid,
-            from_message = from_bot
+            # from_message = from_bot
         )
         return chat_message.message_id
     

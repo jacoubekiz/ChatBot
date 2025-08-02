@@ -729,7 +729,7 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         "content_type":'text',
         "wamid":wamid,
         "from_bot":"False",
-        # "message_id": message_id,
+        "message_id": message_id,
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
     }
@@ -751,7 +751,7 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
         "content_type":content_type,
         "wamid":wamid,
         "from_bot":"False",
-        # "message_id": message_id,
+        "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -774,7 +774,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
         "content_type":content_type,
         "wamid":wamid,
         "from_bot":"False",
-        # "message_id": message_id,
+        "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -798,7 +798,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
         "content_type":content_type,
         "wamid":wamid,
         "from_bot":"False",
-        # "message_id": message_id,
+        "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -822,7 +822,7 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         "content_type":content_type,
         "wamid":wamid,
         "from_bot":"False",
-        # "message_id": message_id,
+        "message_id": message_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         # "mime_type": f"{mime_type}",

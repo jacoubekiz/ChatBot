@@ -22,13 +22,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for conversation in conversations:
             message = await self.get_last_message(conversation.get('conversation_id'))
             if message == None:
-                conversation['status_conversation'] = 'lock'
+                await self.return_conversation(conversation.get('conversation_id'))
+
             else:
-                # print(message.created_at)
-                # print(timezone.now() - message.created_at)
                 s = timezone.now() - message.created_at
                 if s > timedelta(hours=24):
-                    conversation['status_conversation'] = 'lock'
+                    await self.return_conversation(conversation.get('conversation_id'))
         # for conversation in conversations:
         await self.send(text_data=json.dumps({
             "type": "conversation",
@@ -642,6 +641,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message.status_message = 'delivered'
         message.save()
         return message
+    
+    @database_sync_to_async
+    def return_conversation(self, con_id):
+        conv = Conversation.objects.get(conversation_id=con_id)
+        conv.status = 'lock'
+        return conv.save()
 # class DocumentConsumers(AsyncWebsocketConsumer):
 #     async def connect(self):
 #         self.room_name = self.scope['url_route']['kwargs']['room']

@@ -247,7 +247,8 @@ TYPE_CHANNLE = (
 STATUS = (
     ('open', 'open'),
     ('closed', 'closed'),
-    ('pending', 'pending')
+    ('pending', 'pending'),
+    ('lock', 'lock')
 )
 
 CONTENT_TYPE = (

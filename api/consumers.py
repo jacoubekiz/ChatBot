@@ -23,7 +23,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = await self.get_last_message(conversation.get('conversation_id'))
             if message == None:
                 await self.return_conversation(conversation.get('conversation_id'))
-
             else:
                 s = timezone.now() - message.created_at
                 if s > timedelta(hours=24):
@@ -45,7 +44,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
-
+        if from_bot == 'False':
+            c =Conversation.objects.get(conversation_id=conversation_id)
+            c.status = 'open'
+            c.save()
 
 
         match content_type:

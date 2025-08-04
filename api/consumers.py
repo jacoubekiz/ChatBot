@@ -44,10 +44,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
-        if from_bot == 'False':
-            c =Conversation.objects.get(conversation_id=conversation_id)
-            c.status = 'open'
-            c.save()
+        await self.change_status(conversation_id, from_bot)
 
 
         match content_type:
@@ -649,6 +646,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conv = Conversation.objects.get(conversation_id=con_id)
         conv.status = 'lock'
         return conv.save()
+    
+    @database_sync_to_async
+    def change_status(conversation_id, from_bot):
+        if from_bot == 'False':
+            print("yes its me")
+            c =Conversation.objects.get(conversation_id=conversation_id)
+            c.status = 'open'
+            c.save()
+        return True
 # class DocumentConsumers(AsyncWebsocketConsumer):
 #     async def connect(self):
 #         self.room_name = self.scope['url_route']['kwargs']['room']

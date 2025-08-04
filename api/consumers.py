@@ -648,7 +648,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return conv.save()
     
     @database_sync_to_async
-    def change_status(conversation_id, from_bot):
+    def change_status(self, conversation_id, from_bot):
         if from_bot == 'False':
             print("yes its me")
             c =Conversation.objects.get(conversation_id=conversation_id)

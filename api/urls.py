@@ -39,6 +39,7 @@ urlpatterns = [
     path('create-contact/<account_id>/<channel_id>/', CreateNewContact.as_view(), name='create_contact'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
+    path('reassign-conversation/<str:conversation_id>/', ReasignConversation.as_view(), name='reassign_conversation'),
     path('list-messages/<str:conversation_id>/', ListMessgesForSpecificConversation.as_view(), name='list-messages'),
 
     # path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),

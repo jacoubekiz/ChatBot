@@ -627,11 +627,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_conversations(self, channel_id):
-        channel = Channle.objects.get(channle_id = channel_id)
-        conversation = channel.conversation_set.all().order_by('-updated_at')
-        serializer = ConversationSerializer(conversation, many=True)
-        return serializer.data
-    
+        user = CustomUser.objects.get(id=self.user.id)
+        permissions = list(user.get_all_permissions())
+        if 'api.visibility all conversations' in permissions:
+            conversation = Conversation.objects.filter(channle_id=channel_id)
+            # conversation = channel.conversation_set.all().order_by('-updated_at')
+            serializer = ConversationSerializer(conversation, many=True)
+            return serializer.data
+        else:
+            conversation = Conversation.objects.filter(channle_id=channel_id, user=self.user)
+            # conversation = channel.conversation_set.all().order_by('-updated_at')
+            serializer = ConversationSerializer(conversation, many=True)
+            return serializer.data
     @database_sync_to_async
     def get_channel(self, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)

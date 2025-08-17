@@ -36,7 +36,12 @@ class CustomUser(AbstractUser):
         permissions = [
             ('can_access_chatBotBuilder', 'Can Access ChatBot Builder'),
             ('can_access_channels', 'Can Access Channels'),
-            ('can_access_team_members', 'Can Access Team Members')
+            ('can_access_team_members', 'Can Access Team Members'),
+            ('can reassign for all chat', 'can reassign for all chat'),
+            ('can reassign one chat', 'can reassign one chat'),
+            ('can not reassign', 'can not reassign'),
+            ('visibility all conversations', 'visibility all conversations'),
+            ('visibility assigned conversations', 'visibility assigned conversations')
         ]
 
 class Duration(models.Model):
@@ -354,6 +359,7 @@ class Conversation(models.Model):
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     channle_id = models.ForeignKey(Channle, on_delete=models.CASCADE, null=True, blank=True)
     contact_id = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(choices=STATUS, max_length=20, default='open')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)

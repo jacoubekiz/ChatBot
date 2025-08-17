@@ -1090,9 +1090,16 @@ class ListConversationView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, channel_id):
-        conversation = Conversation.objects.filter(channle_id=channel_id)
-        serializer = self.get_serializer(conversation, many=True)
-        return Response(serializer.data)
+        user = CustomUser.objects.get(id=request.user.id)
+        permissions = list(user.get_all_permissions())
+        if 'api.visibility all conversations' in permissions:
+            conversation = Conversation.objects.filter(channle_id=channel_id)
+            serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
+            return Response(serializer.data)
+        else:
+            conversation = Conversation.objects.filter(channle_id=channel_id, user=user)
+            serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
+            return Response(serializer.data)
     
     def post(self, request, channel_id):
         data = request.data
@@ -1100,12 +1107,17 @@ class ListConversationView(GenericAPIView):
         contact = Contact.objects.filter(contact_id = channel_id).first()
         conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
-
-            # conversation_serializer = ConverstionSerializerCreate(conversation, many=True)
-        # conversation_serializer.is_valid(raise_exception=True)
-        # conversation_serializer.save()
         return Response(conversation_serializer.data)
 
+class ReasignConversation(GenericAPIView):
+    def post(self, request, conversation_id):
+        data = request.data
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        user = CustomUser.objects.get(id=data['user_id'])
+        conversation.user = user
+        conversation.save()
+
+        return Response(status=status.HTTP_200_OK)
 
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerilizer

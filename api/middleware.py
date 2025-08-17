@@ -1,6 +1,6 @@
 # middleware.py
 from asgiref.sync import sync_to_async
-from channels.middleware     import BaseMiddleware
+from channels.middleware import BaseMiddleware
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
 from django.contrib.auth.models import AnonymousUser

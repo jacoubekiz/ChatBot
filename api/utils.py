@@ -720,7 +720,7 @@ def handel_request_redis(data, account_id):
         error_redis.write(f"your get the error: {e}\n")
     
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber,channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -742,7 +742,7 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         pass
 
 def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -765,7 +765,7 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
         pass
 
 def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -789,7 +789,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
 
 
 def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -812,7 +812,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
         pass
 
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     print(url_ws)
     ws = websocket.WebSocket()
@@ -837,7 +837,7 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         pass
 
 def read_receipt(channel_id, message_id, conversation_id, status):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False/"
+    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/&token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     print(url_ws)
     ws = websocket.WebSocket()

@@ -6,12 +6,12 @@ from .models import *
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
-class ClientSerializer(serializers.ModelSerializer):
+# class ClientSerializer(serializers.ModelSerializer):
     
-    class Meta:
+#     class Meta:
 
-        model = Client
-        fields = '__all__'
+#         model = Client
+#         fields = '__all__'
 
 
 # class SerializerSignUp(serializers.ModelSerializer):

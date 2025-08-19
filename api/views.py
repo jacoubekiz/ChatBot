@@ -57,14 +57,14 @@ class RegisterResponseClient(APIView):
         thread.start()
         return Response(status=status.HTTP_200_OK)
 
-class ClientsViewSet(viewsets.ModelViewSet):
-    serializer_class = ClientSerializer
-    queryset = Client.objects.all()
+# class ClientsViewSet(viewsets.ModelViewSet):
+#     serializer_class = ClientSerializer
+#     queryset = Client.objects.all()
 
 class BotAPI(APIView):
     def post(self, request, *args, **kwargs):
-        f = open('log.txt', 'a')
-        f.write(str(request.data) + 'n')
+        # f = open('log.txt', 'a')
+        # f.write(str(request.data) + 'n')
         try:
             conversation = request.data['conversation']
             source_id = conversation['contact_inbox']['source_id']
@@ -73,22 +73,23 @@ class BotAPI(APIView):
         except:
             source_id = request.data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
             platform = 'beam'
-        client_id_hashed = request.GET.get('client')
-        client_id = [c.id for c in Client.objects.all() if client_id_hashed == hashlib.sha256(str(c.id).encode()).hexdigest()][0]
+        channel_id = request.GET.get('channel_id')
+        # client_id = [c.id for c in Client.objects.all() if client_id_hashed == hashlib.sha256(str(c.id).encode()).hexdigest()][0]
         try:
-            client = Client.objects.get(Q(id = client_id))
+            channel = Channle.objects.get(Q(channle_id = channel_id))
         except:
             pass
         reset_flow = False
-        restart_keyword = RestartKeyword.objects.filter(client=client.id)
+        restart_keyword = RestartKeyword.objects.filter(channel_id=channel_id)
         for rest in restart_keyword:
             if rest.keyword == request.data['content']:
+                print(request.data['content'])
                 reset_flow = True
-                flows = rest.client.flow.all()
+                flows = rest.channel_id.flows.all()
                 for flow in flows:
-                    ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & Q(flow=flow)).first()
+                    ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(channel_id = channel.channle_id) & Q(flow=flow)).first()
                     if ch :
-                        ch.update_state('end')
+                        ch.update_state('start')
                         ch.isSent = False
                         ch.save()
                     continue
@@ -96,25 +97,26 @@ class BotAPI(APIView):
 
         
         try:
-            flow = client.flow.get(trigger__trigger=request.data['content'])
-            chats = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(flow = flow))
+            flow = channel.flows.get(trigger__trigger=request.data['content'])
+            chats = Chat.objects.filter(Q(conversation_id = source_id) & Q(channel_id = channel.channle_id) & ~Q(flow = flow))
             for c in chats:
                 c.update_state('end')
                 c.isSent = False
                 c.save()
         except:
-            ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(client_id = client.id) & ~Q(state = 'end')).first()
+            ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(channel_id = channel.channle_id) & ~Q(state = 'end')).first()
+            print(ch)
             if ch:
                 flow = ch.flow
             else:
                 flow = None
             
         if not flow:
-            flow = client.flow.get(is_default = True)
+            flow = channel.flows.get(is_default = True)
         file_path = default_storage.path(flow.flow.name)
         chat_flow = read_json(file_path)
         if chat_flow and source_id:
-            chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, client_id = client.id, flow=flow )
+            chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, channel_id = channel, flow=flow )
             questions = chat_flow['payload']['questions']
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 chat.update_state('start')
@@ -177,8 +179,8 @@ class BotAPI(APIView):
                                         footer=question['footer'],
                                         header=question['header'],
                                         to = chat.conversation_id,
-                                        bearer_token=client.token,
-                                        wa_id=client.wa_id,
+                                        bearer_token=channel.tocken,
+                                        wa_id=channel.phone_number_id,
                                         chat_id=chat.id,
                                         platform=platform,
                                         question=question)
@@ -189,8 +191,8 @@ class BotAPI(APIView):
                                         type='interactive', 
                                         interaction_type='button',
                                         to=chat.conversation_id,
-                                        bearer_token=client.token,
-                                        wa_id=client.wa_id,
+                                        bearer_token=channel.tocken,
+                                        wa_id=channel.phone_number_id,
                                         chat_id=chat.id,
                                         platform=platform,
                                         question=question)
@@ -214,8 +216,8 @@ class BotAPI(APIView):
                             
                             send_message(message_content=error_message,
                                             to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
@@ -238,8 +240,8 @@ class BotAPI(APIView):
                         
                         send_message(message_content=message,
                                     to = chat.conversation_id,
-                                    bearer_token=client.token, 
-                                    wa_id=client.wa_id,
+                                    bearer_token=channel.tocken,
+                                    wa_id=channel.phone_number_id,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
@@ -282,207 +284,207 @@ class BotAPI(APIView):
                         chat.save()
                 # for handel component calender
                     
-                elif question['type'] == 'calendar':
-                    headers = {
-                            'Content-Type': 'application/json',
-                        }
-                    day = Attribute.objects.filter(key='day', chat=chat.id).first()
-                    hour = Attribute.objects.filter(key='hour', chat=chat.id).first()
-                    if not day or day == None:
-                        if not chat.isSent:
-                            chat.isSent = True
-                            chat.save()
-                            url = f"https://chatbot.ics.me/get-first-ten-days/?date=&key={question['key']}"
-                            response = requests.get(url , headers=headers)
-                            result = response.json()
-                            choice = next(iter(result.values()))
-                            choice.append('next')
-                            NextTenDay.objects.create(chat=chat, day=choice[0], day_end=choice[-2])
-                            chat.update_state(question['id'])
-                            send_message(message_content=question['day-message'],
-                                    choices = choice,
-                                    type='interactive',
-                                    interaction_type='button',
-                                    to=chat.conversation_id,
-                                    bearer_token=client.token,
-                                    wa_id=client.wa_id,
-                                    chat_id=chat.id,
-                                    platform=platform,
-                                    question=question
-                                )
-                            return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
-                        else:
-                            day = NextTenDay.objects.filter(chat=chat.id).first()
-                            url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day}&key={question['key']}"
-                            response = requests.get(url , headers=headers)
-                            result = response.json()
-                            choices = next(iter(result.values()))
-                            print(len(choices))
-                            # if len(choices) > 9:
-                            choices.append('next')
-                            # else:
-                            #     print('I am her')
-                            #     day.day = choices[-1]
-                            #     day.save()
-                            # print(choices)
-                            user_reply = request.data['content']
-                            if user_reply not in choices:
-                                error_message = question['error-Message']
-                                send_message(message_content=error_message,
-                                                to=chat.conversation_id,
-                                                bearer_token=client.token,
-                                                wa_id=client.wa_id,
-                                                chat_id=chat.id,
-                                                platform=platform,
-                                                question=question)
-                                return Response(
-                                    {"Message" : "BOT has interacted successfully."},
-                                    status=status.HTTP_200_OK
-                                )
-                            # print(user_reply)
+                # elif question['type'] == 'calendar':
+                #     headers = {
+                #             'Content-Type': 'application/json',
+                #         }
+                #     day = Attribute.objects.filter(key='day', chat=chat.id).first()
+                #     hour = Attribute.objects.filter(key='hour', chat=chat.id).first()
+                #     if not day or day == None:
+                #         if not chat.isSent:
+                #             chat.isSent = True
+                #             chat.save()
+                #             url = f"https://chatbot.ics.me/get-first-ten-days/?date=&key={question['key']}"
+                #             response = requests.get(url , headers=headers)
+                #             result = response.json()
+                #             choice = next(iter(result.values()))
+                #             choice.append('next')
+                #             NextTenDay.objects.create(chat=chat, day=choice[0], day_end=choice[-2])
+                #             chat.update_state(question['id'])
+                #             send_message(message_content=question['day-message'],
+                #                     choices = choice,
+                #                     type='interactive',
+                #                     interaction_type='button',
+                #                     to=chat.conversation_id,
+                #                     bearer_token=client.token,
+                #                     wa_id=client.wa_id,
+                #                     chat_id=chat.id,
+                #                     platform=platform,
+                #                     question=question
+                #                 )
+                #             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
+                #         else:
+                #             day = NextTenDay.objects.filter(chat=chat.id).first()
+                #             url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day}&key={question['key']}"
+                #             response = requests.get(url , headers=headers)
+                #             result = response.json()
+                #             choices = next(iter(result.values()))
+                #             print(len(choices))
+                #             # if len(choices) > 9:
+                #             choices.append('next')
+                #             # else:
+                #             #     print('I am her')
+                #             #     day.day = choices[-1]
+                #             #     day.save()
+                #             # print(choices)
+                #             user_reply = request.data['content']
+                #             if user_reply not in choices:
+                #                 error_message = question['error-Message']
+                #                 send_message(message_content=error_message,
+                #                                 to=chat.conversation_id,
+                #                                 bearer_token=client.token,
+                #                                 wa_id=client.wa_id,
+                #                                 chat_id=chat.id,
+                #                                 platform=platform,
+                #                                 question=question)
+                #                 return Response(
+                #                     {"Message" : "BOT has interacted successfully."},
+                #                     status=status.HTTP_200_OK
+                #                 )
+                #             # print(user_reply)
                             
-                            if user_reply == "next" and chat.isSent:
-                                # day = NextTenDay.objects.filter(chat=chat.id).first()
-                                chat.isSent = True
-                                chat.save()
-                                url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day_end}&key={question['key']}"
-                                response = requests.get(url , headers=headers)
-                                result = response.json()
-                                chat.update_state(question['id'])
-                                ch = next(iter(result.values()))
-                                if len(ch) >= 9:
-                                    ch.append('next')
-                                    day.day_end = ch[-2]
-                                day.day = ch[0]
-                                day.save()
-                                send_message(message_content=question['day-message'],
-                                        choices = ch,
-                                        type='interactive',
-                                        interaction_type='button',
-                                        to=chat.conversation_id,
-                                        bearer_token=client.token,
-                                        wa_id=client.wa_id,
-                                        chat_id=chat.id,
-                                        platform=platform,
-                                        question=question
-                                    )
-                                return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)                            
+                #             if user_reply == "next" and chat.isSent:
+                #                 # day = NextTenDay.objects.filter(chat=chat.id).first()
+                #                 chat.isSent = True
+                #                 chat.save()
+                #                 url = f"https://chatbot.ics.me/get-first-ten-days/?date={day.day_end}&key={question['key']}"
+                #                 response = requests.get(url , headers=headers)
+                #                 result = response.json()
+                #                 chat.update_state(question['id'])
+                #                 ch = next(iter(result.values()))
+                #                 if len(ch) >= 9:
+                #                     ch.append('next')
+                #                     day.day_end = ch[-2]
+                #                 day.day = ch[0]
+                #                 day.save()
+                #                 send_message(message_content=question['day-message'],
+                #                         choices = ch,
+                #                         type='interactive',
+                #                         interaction_type='button',
+                #                         to=chat.conversation_id,
+                #                         bearer_token=client.token,
+                #                         wa_id=client.wa_id,
+                #                         chat_id=chat.id,
+                #                         platform=platform,
+                #                         question=question
+                #                     )
+                #                 return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)                            
 
                             
-                            attr, created = Attribute.objects.get_or_create(key='day', chat_id=chat.id)
-                            attr.value = user_reply
-                            attr.save()
-                            next_question_id = question['id']
-                            chat.isSent = False
-                            chat.save()
-                    elif not hour or hour == None:
-                        if not chat.isSent:
-                            chat.isSent = True
-                            chat.save()
-                            url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
-                            response = requests.get(url , headers=headers)
-                            result = response.json()
-                            chat.update_state(question['id'])
-                            choices = next(iter(result.values()))
-                            try:
-                                ch = choices[:9]
-                                ch.append('next')
-                                NextTime.objects.create(chat=chat, time=ch[-2])
-                            except:
-                                ch=choices
-                            send_message(message_content=question['appointment-message'],
-                                    choices = ch,
-                                    type='interactive',
-                                    interaction_type='button',
-                                    to=chat.conversation_id,
-                                    bearer_token=client.token,
-                                    wa_id=client.wa_id,
-                                    chat_id=chat.id,
-                                    platform=platform,
-                                    question=question
-                                )
-                            return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
-                        else:
-                            time_day = NextTime.objects.filter(chat=chat.id).first()
-                            url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
-                            response = requests.get(url , headers=headers)
-                            result = response.json()
-                            choices = next(iter(result.values()))
-                            choices.append('next')
-                            user_reply = request.data['content']
-                            if user_reply not in choices:
-                                error_message = question['error-Message']
-                                send_message(message_content=error_message,
-                                                to=chat.conversation_id,
-                                                bearer_token=client.token,
-                                                wa_id=client.wa_id,
-                                                chat_id=chat.id,
-                                                platform=platform,
-                                                question=question)
-                                return Response(
-                                    {"Message" : "BOT has interacted successfully."},
-                                    status=status.HTTP_200_OK
-                                )
-                            if user_reply == "next" and chat.isSent:
-                                chat.isSent = True
-                                chat.save()
-                                url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
-                                response = requests.get(url , headers=headers)
-                                result = response.json()
-                                chat.update_state(question['id'])
-                                choices = next(iter(result.values()))
-                                try:
-                                    print(str(time_day.time)[:-3])
-                                    index_time = choices.index(str(time_day.time)[:-3])
-                                    print(index_time)
-                                    ch = choices[index_time:index_time+9]
-                                    time_day.time = ch[-2]
-                                    time_day.save()
-                                except:
-                                    ch = choices
-                                send_message(message_content=question['appointment-message'],
-                                        choices = ch,
-                                        type='interactive',
-                                        interaction_type='button',
-                                        to=chat.conversation_id,
-                                        bearer_token=client.token,
-                                        wa_id=client.wa_id,
-                                        chat_id=chat.id,
-                                        platform=platform,
-                                        question=question
-                                    )
-                                return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK) 
-                            user_reply = request.data['content']
-                            attr, created = Attribute.objects.get_or_create(key='hour', chat_id=chat.id)
-                            attr.value = user_reply
-                            attr.save()
-                            next_question_id = question['id']
-                            chat.isSent = False
-                            chat.save()
-                    else:
-                        calendar = Calendar.objects.get(key=question['key'])
-                        duration = calendar.duration
-                        user = calendar.user
-                        print(user.id)
-                        data = {
-                            "user":user.id,
-                            "day":day.value,
-                            "duration":f"{duration}",
-                            "hour":f"{hour.value}",
-                            "details":f"{question['parameters'][1]['value']}",
-                            "patientName":f"{question['parameters'][0]['value']}"
-                        } 
-                        url = "https://chatbot.ics.me/create-book-an-appointment/"
-                        response = requests.post(url , headers=headers, json=data)
+                #             attr, created = Attribute.objects.get_or_create(key='day', chat_id=chat.id)
+                #             attr.value = user_reply
+                #             attr.save()
+                #             next_question_id = question['id']
+                #             chat.isSent = False
+                #             chat.save()
+                #     elif not hour or hour == None:
+                #         if not chat.isSent:
+                #             chat.isSent = True
+                #             chat.save()
+                #             url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
+                #             response = requests.get(url , headers=headers)
+                #             result = response.json()
+                #             chat.update_state(question['id'])
+                #             choices = next(iter(result.values()))
+                #             try:
+                #                 ch = choices[:9]
+                #                 ch.append('next')
+                #                 NextTime.objects.create(chat=chat, time=ch[-2])
+                #             except:
+                #                 ch=choices
+                #             send_message(message_content=question['appointment-message'],
+                #                     choices = ch,
+                #                     type='interactive',
+                #                     interaction_type='button',
+                #                     to=chat.conversation_id,
+                #                     bearer_token=client.token,
+                #                     wa_id=client.wa_id,
+                #                     chat_id=chat.id,
+                #                     platform=platform,
+                #                     question=question
+                #                 )
+                #             return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK)
+                #         else:
+                #             time_day = NextTime.objects.filter(chat=chat.id).first()
+                #             url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
+                #             response = requests.get(url , headers=headers)
+                #             result = response.json()
+                #             choices = next(iter(result.values()))
+                #             choices.append('next')
+                #             user_reply = request.data['content']
+                #             if user_reply not in choices:
+                #                 error_message = question['error-Message']
+                #                 send_message(message_content=error_message,
+                #                                 to=chat.conversation_id,
+                #                                 bearer_token=client.token,
+                #                                 wa_id=client.wa_id,
+                #                                 chat_id=chat.id,
+                #                                 platform=platform,
+                #                                 question=question)
+                #                 return Response(
+                #                     {"Message" : "BOT has interacted successfully."},
+                #                     status=status.HTTP_200_OK
+                #                 )
+                #             if user_reply == "next" and chat.isSent:
+                #                 chat.isSent = True
+                #                 chat.save()
+                #                 url = f"https://chatbot.ics.me/get-hours-free/?date={day.value}&key={question['key']}"
+                #                 response = requests.get(url , headers=headers)
+                #                 result = response.json()
+                #                 chat.update_state(question['id'])
+                #                 choices = next(iter(result.values()))
+                #                 try:
+                #                     print(str(time_day.time)[:-3])
+                #                     index_time = choices.index(str(time_day.time)[:-3])
+                #                     print(index_time)
+                #                     ch = choices[index_time:index_time+9]
+                #                     time_day.time = ch[-2]
+                #                     time_day.save()
+                #                 except:
+                #                     ch = choices
+                #                 send_message(message_content=question['appointment-message'],
+                #                         choices = ch,
+                #                         type='interactive',
+                #                         interaction_type='button',
+                #                         to=chat.conversation_id,
+                #                         bearer_token=client.token,
+                #                         wa_id=client.wa_id,
+                #                         chat_id=chat.id,
+                #                         platform=platform,
+                #                         question=question
+                #                     )
+                #                 return Response({"Message" : "BOT has interacted successfully."},status=status.HTTP_200_OK) 
+                #             user_reply = request.data['content']
+                #             attr, created = Attribute.objects.get_or_create(key='hour', chat_id=chat.id)
+                #             attr.value = user_reply
+                #             attr.save()
+                #             next_question_id = question['id']
+                #             chat.isSent = False
+                #             chat.save()
+                #     else:
+                #         calendar = Calendar.objects.get(key=question['key'])
+                #         duration = calendar.duration
+                #         user = calendar.user
+                #         print(user.id)
+                #         data = {
+                #             "user":user.id,
+                #             "day":day.value,
+                #             "duration":f"{duration}",
+                #             "hour":f"{hour.value}",
+                #             "details":f"{question['parameters'][1]['value']}",
+                #             "patientName":f"{question['parameters'][0]['value']}"
+                #         } 
+                #         url = "https://chatbot.ics.me/create-book-an-appointment/"
+                #         response = requests.post(url , headers=headers, json=data)
 
-                        for option in choices_with_next:
-                            for state in option:
-                                if str(response.status_code) == str(state):
-                                    next_question_id = option[1]
-                        day.delete()
-                        hour.delete()
-                        NextTenDay.objects.get(chat=chat).delete()
-                        NextTime.objects.get(chat=chat).delete()
+                #         for option in choices_with_next:
+                #             for state in option:
+                #                 if str(response.status_code) == str(state):
+                #                     next_question_id = option[1]
+                #         day.delete()
+                #         hour.delete()
+                #         NextTenDay.objects.get(chat=chat).delete()
+                #         NextTime.objects.get(chat=chat).delete()
                 # for handle api in flow
                 elif r_type == 'api':
                         url = question['url']
@@ -514,8 +516,8 @@ class BotAPI(APIView):
                 
                         send_message(message_content=message,
                                         to=chat.conversation_id,
-                                        bearer_token=client.token,
-                                        wa_id=client.wa_id,
+                                        bearer_token=channel.tocken,
+                                        wa_id=channel.phone_number_id,
                                         chat_id=chat.id,
                                         platform=platform,
                                         question=question)
@@ -539,7 +541,7 @@ class BotAPI(APIView):
                             except:
                                 user_reply = request.data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                         
-                        restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(client_id = client.id)]
+                        restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(channel_id = channel.channle_id)]
                         
                         if user_reply in restart_keywords:
                             chat.isSent = False
@@ -550,8 +552,8 @@ class BotAPI(APIView):
                             error_message = question['message']['error']
                             send_message(message_content=error_message,
                                             to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
@@ -564,8 +566,8 @@ class BotAPI(APIView):
                             error_message = question['message']['error']
                             send_message(message_content=error_message,
                                             to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
@@ -578,8 +580,8 @@ class BotAPI(APIView):
                             error_message = question['message']['error']
                             send_message(message_content=error_message,
                                             to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
@@ -592,8 +594,8 @@ class BotAPI(APIView):
                             error_message = question['message']['error']
                             send_message(message_content=error_message,
                                             to=chat.conversation_id,
-                                            bearer_token=client.token,
-                                            wa_id=client.wa_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
@@ -615,11 +617,11 @@ class BotAPI(APIView):
                 elif r_type == 'document':
                     send_message(message_content=message,
                                     to=chat.conversation_id,
-                                    bearer_token=client.token,
+                                    bearer_token=channel.tocken,
                                     type='document',
                                     source=question['source'],
                                     beem_media_id=question.get('beem_media_id'),
-                                    wa_id=client.wa_id,
+                                    wa_id=channel.phone_number_id,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
@@ -627,10 +629,11 @@ class BotAPI(APIView):
                 elif r_type == 'image':
                     send_message(message_content=message,
                                     to=chat.conversation_id,
-                                    bearer_token=client.token, type='image',
+                                    bearer_token=channel.tocken,
+                                    wa_id=channel.phone_number_id,
+                                    type='image',
                                     source=question['source'],
                                     beem_media_id=question.get('beem_media_id'), 
-                                    wa_id=client.wa_id,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
@@ -640,9 +643,10 @@ class BotAPI(APIView):
 
                     send_message(message_content=message,
                                     to=chat.conversation_id,
-                                    bearer_token=client.token, type=r_type,
+                                    bearer_token=channel.tocken,
+                                    wa_id=channel.phone_number_id,
+                                    type=r_type,
                                     source=question['source'], 
-                                    wa_id=client.wa_id,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
@@ -651,8 +655,9 @@ class BotAPI(APIView):
                 elif r_type == 'contact' or r_type == 'location':
                     send_message(message_content=message,
                                     to=chat.conversation_id,
-                                    bearer_token=client.token, type=r_type,
-                                    wa_id=client.wa_id,
+                                    bearer_token=channel.tocken,
+                                    wa_id=channel.phone_number_id,
+                                    type=r_type,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
@@ -684,8 +689,8 @@ class BotAPI(APIView):
                     #     print(detect(request.data['content']))
                     send_message(message_content=message,
                                     to=chat.conversation_id,
-                                    bearer_token=client.token,
-                                    wa_id=client.wa_id,
+                                    bearer_token=channel.tocken,
+                                    wa_id=channel.phone_number_id,
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question,

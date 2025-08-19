@@ -8,6 +8,7 @@ from .serializers import *
 import base64
 from .utils import *
 from django.utils import timezone
+import urllib.parse as up
 
 # from pydub import AudioSegment
 
@@ -17,6 +18,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = "chat_"
             # Join room group
         self.user = self.scope['user']
+        query_string = self.scope['query_string'].decode()
+        params = dict(up.parse_qsl(query_string))
+        self.from_message = params.get('from_bot')
         if self.user and self.user.is_authenticated:
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
@@ -34,6 +38,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "conversation",
                 "conversation": conversations
             }))
+        elif self.from_message == 'False':
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            await self.accept()
+            # conversations = await self.get_conversations(self.channel_id)
+            # for conversation in conversations:
+            #     message = await self.get_last_message(conversation.get('conversation_id'))
+            #     if message == None:
+            #         await self.return_conversation(conversation.get('conversation_id'))
+            #     else:
+            #         s = timezone.now() - message.created_at
+            #         if s > timedelta(hours=24):
+            #             await self.return_conversation(conversation.get('conversation_id'))
+            # # for conversation in conversations:
+            # await self.send(text_data=json.dumps({
+            #     "type": "conversation",
+            #     "conversation": conversations
+            # }))
         else:
             await self.close()
 

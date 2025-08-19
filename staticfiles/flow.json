@@ -1,0 +1,117 @@
+{
+    "platform":"WHATSAPP",
+    "payload":{
+        "_id":"68a44bda47d49a558f38fb04",
+        "_user":"64e6fb2936b0c57c32be2dc7",
+        "_bot":"659e44234ab45d4f3b70df60",
+        "name":"Jacoub_test",
+        "questions":
+        [
+  {
+    "id": "f9f4e5bf-1026-4a00-96bc-9eba127d229e",
+    "type": "statement",
+    "label": "hello my name is jacoub",
+    "position": {
+      "x": 598.829132492369,
+      "y": 91.95835265165152
+    },
+    "next": {
+      "type": "statement",
+      "target": "393eace6-afa8-4d7e-8d8c-2accb2d33765"
+    }
+  },
+  {
+    "id": "393eace6-afa8-4d7e-8d8c-2accb2d33765",
+    "type": "button",
+    "label": "please select from options",
+    "position": {
+      "x": 609.5317784106138,
+      "y": 187.11804458188982
+    },
+    "options": [
+      {
+        "value": "one",
+        "next": {
+          "type": "button",
+          "target": "fd1e367a-ff0e-4a88-b8b7-3aa063425919"
+        },
+        "id": "550df0bc-2753-4aaf-8099-04e069c42734"
+      },
+      {
+        "value": "two",
+        "next": {
+          "type": "button",
+          "target": "fd1e367a-ff0e-4a88-b8b7-3aa063425919"
+        },
+        "id": "7b572750-9390-4d1b-8adb-253016c616fc"
+      }
+    ],
+    "message":{
+        "error":"Please select an option from above given choices!",
+        "success":""
+    }
+  },
+  {
+    "id": "fd1e367a-ff0e-4a88-b8b7-3aa063425919",
+    "type": "name",
+    "label": "",
+    "position": {
+      "x": 627.364490248349,
+      "y": 321.91416511483413
+    },
+    "attributeName": "name",
+    "message": "more than 100",
+    "max":100,
+    "next": {
+      "type": "name",
+      "target": "0788df72-00ff-4035-9d9f-6d76ad0de639"
+    }
+  },
+  {
+    "id": "0788df72-00ff-4035-9d9f-6d76ad0de639",
+    "type": "email",
+    "label": "",
+    "position": {
+      "x": 627.9629980574192,
+      "y": 422.91759113919034
+    },
+    "attributeName": "",
+    "message": "",
+    "next": ""
+  },
+  {
+    "id": "a611d51f-22ad-48af-8cde-8d86c4de83b7",
+    "type": "phone",
+    "label": "",
+    "position": {
+      "x": 623.6394755392007,
+      "y": 509.75556218886715
+    },
+    "attributeName": "phonenumber",
+    "message": "more than 100",
+    "next": {
+      "type": "phone",
+      "target": "06194bb6-240e-4d31-8a25-253f1d4718ee"
+    }
+  },
+  {
+    "id": "06194bb6-240e-4d31-8a25-253f1d4718ee",
+    "type": "image",
+    "label": "image",
+    "position": {
+      "x": 629.350782806395,
+      "y": 598.6807520871171
+    },
+    "source": "https://chatbot.icsl.me/media/chat_message/a722eb79-1c69-43aa-846f-ca76b26cd064.png",
+    "header": "",
+    "message": "",
+    "next": {
+      "type": "image",
+      "target": "f9f4e5bf-1026-4a00-96bc-9eba127d229e"
+    }
+  }
+]
+        
+    }
+    
+}

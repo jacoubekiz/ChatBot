@@ -5,11 +5,11 @@ from .handel_templates.views import *
 
 router = DefaultRouter()
 
-router.register(r'clients', ClientsViewSet, basename='clients')
+# router.register(r'clients', ClientsViewSet, basename='clients')
 
 urlpatterns = [
     path('bot-api/', BotAPI.as_view(), name = 'bot_api'),
-    path('', include(router.urls)),
+    # path('', include(router.urls)),
 
     # path('get-redis/', GetData.as_view()),
 

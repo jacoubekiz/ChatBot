@@ -57,15 +57,15 @@ class RestartKeywordInline(admin.TabularInline):
     max_num = 10
     extra = 2
 
-class ClientAdmin(admin.ModelAdmin):
-    list_display = ['name', 'id', 'client_endpoint']
-    search_fields = ['name']
-    inlines = [RestartKeywordInline]
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ['id', 'client_endpoint']
-        else:
-            return []
+# class ClientAdmin(admin.ModelAdmin):
+#     list_display = ['name', 'id', 'client_endpoint']
+#     search_fields = ['name']
+#     inlines = [RestartKeywordInline]
+#     def get_readonly_fields(self, request, obj=None):
+#         if obj:
+#             return ['id', 'client_endpoint']
+#         else:
+#             return []
 
 class BookAnAppointmentAdmin(admin.ModelAdmin):
     list_display = ['doctor','days', 'duration', 'hour', 'patientName']
@@ -84,16 +84,16 @@ class UploadImageAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_file']
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Client, ClientAdmin)
+# admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
 admin.site.register(Attribute)
 admin.site.register(Duration)
 admin.site.register(Calendar)
 admin.site.register(BookAnAppointment, BookAnAppointmentAdmin)
 admin.site.register(WorkingTime)
-admin.site.register(NextTenDay)
-admin.site.register(NextTime)
-admin.site.register(MessageChat)
+admin.site.register(RestartKeyword)
+# admin.site.register(NextTime)
+# admin.site.register(MessageChat)
 
 admin.site.register(Trigger)
 admin.site.register(Flow)

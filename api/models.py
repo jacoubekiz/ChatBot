@@ -99,96 +99,52 @@ class BookAnAppointment(models.Model):
         ordering = ['day', 'hour']
 
 # add new futures ------------------------------------------------
-class Trigger(models.Model):
-    trigger = models.CharField(max_length=50, null=True, blank=True)
 
-    def __str__(self) -> str:
-        return self.trigger
-        
-class Flow(models.Model):
-    flow = models.FileField(upload_to='flows/')
-    trigger = models.ManyToManyField(Trigger, null=True, blank=True)
-    is_default = models.BooleanField(default=False)
-
-    def __str__(self) -> str:
-        return f'{self.flow}-{self.trigger}'
 # ------------------------------------------------------------------
-class Client(models.Model):
-    name = models.CharField(max_length=255, null=True)
-    flow = models.ManyToManyField(Flow)
-    resetting_minutes = models.PositiveIntegerField(null=True, default = 60)
-    wa_id = models.CharField(max_length=700, null=True)
-    token = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
+# class Client(models.Model):
+#     name = models.CharField(max_length=255, null=True)
+#     flow = models.ManyToManyField(Flow)
+#     resetting_minutes = models.PositiveIntegerField(null=True, default = 60)
+#     wa_id = models.CharField(max_length=700, null=True)
+#     token = models.TextField(null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True, null=True)
+#     updated_at = models.DateTimeField(auto_now=True, null=True)
     
-    @property
-    def client_endpoint(self):
-        client_id_hash = hashlib.sha256(str(self.id).encode()).hexdigest()
+#     @property
+#     def client_endpoint(self):
+#         client_id_hash = hashlib.sha256(str(self.id).encode()).hexdigest()
         
-        if settings.DEBUG:
-            return f'http://localhost:8000/api/?client={client_id_hash}'
-        else:
-            return f'https://chatbot.icsl.me/api/?client={client_id_hash}'
+#         if settings.DEBUG:
+#             return f'http://localhost:8000/api/?client={client_id_hash}'
+#         else:
+#             return f'https://chatbot.icsl.me/api/?client={client_id_hash}'
         
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
  
-class RestartKeyword(models.Model):
-    keyword = models.CharField(max_length=255)
-    client =  models.ForeignKey(Client, on_delete=models.CASCADE, related_name='restart_keyword')
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    
-class Chat(models.Model):
-    client = models.ForeignKey(Client, null=True, blank=True, on_delete=models.CASCADE)
-    flow = models.ForeignKey(Flow, on_delete=models.CASCADE)
-    state = models.CharField(max_length=255, blank=True, null=True, default='start')
-    conversation_id = models.CharField(max_length=255, blank=True, null=True)
-    isSent = models.BooleanField(default=False, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    last_state_change = models.DateTimeField(default=timezone.now)
-    
-    
-    def update_state(self, new_state):
-        self.state = new_state
-        self.last_state_change = timezone.now()
-        self.save()
-        
-    def __str__(self) -> str:
-        return f"{self.conversation_id} Client -> {self.client}, State -> {self.state}"
-    
-class Attribute(models.Model):
-    key = models.CharField(max_length=255)
-    value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self) -> str:
-        return f'{self.key} - {self.value}'
+
     
 
 
-class NextTenDay(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    day = models.DateField()
-    day_end = models.DateField(default='2024-05-5')
+# class NextTenDay(models.Model):
+#     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+#     day = models.DateField()
+#     day_end = models.DateField(default='2024-05-5')
 
 
-class NextTime(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    time = models.TimeField()
+# class NextTime(models.Model):
+#     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+#     time = models.TimeField()
     # end_time = models.TimeField()
     
 
-class MessageChat(models.Model):
-    message = models.CharField(max_length=100)
+# class MessageChat(models.Model):
+#     message = models.CharField(max_length=100)
 
-    def __str__(self) -> str:
-        return self.message
+#     def __str__(self) -> str:
+#         return self.message
     
 # class Testing(models.Model):
 #     test = models.CharField(max_length=30)
@@ -339,6 +295,28 @@ class Contact(models.Model):
     def __str__(self) -> str:
         return self.name
     
+
+    
+
+# _____________________________________________________________________________________________________________________
+
+# new
+
+class Trigger(models.Model):
+    trigger = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.trigger
+        
+class Flow(models.Model):
+    flow = models.FileField(upload_to='flows/')
+    trigger = models.ManyToManyField(Trigger, null=True, blank=True)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return f'{self.flow}-{self.trigger}'
+
+
 class Channle(models.Model):
     channle_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -348,12 +326,53 @@ class Channle(models.Model):
     phone_number_id = models.PositiveBigIntegerField()
     organization_id = models.PositiveBigIntegerField(default=1)
     name = models.CharField(max_length=50)
+    flows = models.ManyToManyField(Flow)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name
     
+
+class RestartKeyword(models.Model):
+    keyword = models.CharField(max_length=255)
+    channel_id =  models.ForeignKey(Channle, on_delete=models.CASCADE, related_name='restart_keyword', default='1')
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+class Chat(models.Model):
+    channel_id = models.ForeignKey(Channle, null=True, blank=True, on_delete=models.CASCADE, default='1')
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE)
+    state = models.CharField(max_length=255, blank=True, null=True, default='start')
+    conversation_id = models.CharField(max_length=255, blank=True, null=True)
+    isSent = models.BooleanField(default=False, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    last_state_change = models.DateTimeField(default=timezone.now)
+    
+    
+    def update_state(self, new_state):
+        self.state = new_state
+        self.last_state_change = timezone.now()
+        self.save()
+        
+    def __str__(self) -> str:
+        return f"{self.conversation_id} Client -> {self.channel_id}, State -> {self.state}"
+    
+class Attribute(models.Model):
+    key = models.CharField(max_length=255)
+    value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f'{self.key} - {self.value}'
+# _____________________________________________________________________________________________________________________
+
+
+
+
 class Conversation(models.Model):
     conversation_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
@@ -478,3 +497,4 @@ class UploadImage(models.Model):
     def get_absolute_url(self):
         return f"{settings.MEDIA_URL}{self.image_file.name}"
     
+

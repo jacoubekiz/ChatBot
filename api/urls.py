@@ -32,6 +32,9 @@ urlpatterns = [
     path('add-account/', CreateListAccount.as_view(), name='add_account'),
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
     path('add-team-member/<team_id>/', ListCreateTeamMemberView.as_view(), name='users'),
+    path('list-all-members/<account_id>/', ListAllTeamMembers.as_view(), name='List_all_team_members'),
+    path('create-flow/<channel_id>/', AddListFlows.as_view(), name='create_flow'),
+    path('set-default-flow/<channel_id>/', SetDefaultFlow.as_view(), name='set_default_flow'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
 

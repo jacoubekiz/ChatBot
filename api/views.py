@@ -1221,3 +1221,54 @@ class ImageToBase64View(APIView):
     
 
 
+class ListAllTeamMembers(GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+    def get(self, request, account_id):
+        # account = Account.objects.get(account_id=account_id)
+        teams = Team.objects.filter(account_id__account_id=account_id)
+        members = []
+        for team in teams:
+            member = team.members.all()
+            serializer = MemberSerializer(member, many=True)
+            members.extend(serializer.data)
+        return Response(members, status=status.HTTP_200_OK)
+
+
+class AddListFlows(GenericAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    def post(self, request, channel_id):
+        channel = Channle.objects.get(channle_id = channel_id)
+        flow = request.data['flow']
+        # print(flow)
+        flow_ = Flow.objects.create(flow=flow)
+        channel.flows.add(flow_)
+        channel.save()
+
+        return Response(status=status.HTTP_200_OK)
+    
+    def get(self, request, channel_id):
+        channel = Channle.objects.get(channle_id = channel_id)
+        flows = channel.flows.all()
+        serializer = SerializerFlows(flows, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SetDefaultFlow(GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+    def post(self, request, channel_id):
+        data = request.data
+        channel = Channle.objects.get(channle_id = channel_id)
+        flows = channel.flows.all()
+        for flow in flows:
+            if str(flow.id) == data['flow_id']:
+                
+                flow.is_default = request.GET['is_default']
+                flow.save()
+            else:
+                flow.is_default = 'False'
+                flow.save()
+
+        return Response(status=status.HTTP_200_OK)

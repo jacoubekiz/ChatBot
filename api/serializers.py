@@ -176,7 +176,12 @@ class AddAccountSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
-        
+    
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only = True)
@@ -317,3 +322,9 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ['report_id', 'name', 'data']
+
+
+class SerializerFlows(serializers.ModelSerializer):
+    class Meta:
+        model = Flow
+        fields = '__all__'

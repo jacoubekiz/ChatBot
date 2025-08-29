@@ -1272,3 +1272,8 @@ class SetDefaultFlow(GenericAPIView):
                 flow.save()
 
         return Response(status=status.HTTP_200_OK)
+    
+class RetrieveFlow(RetrieveAPIView):
+    queryset = Flow.objects.all()
+    serializer_class = SerializerFlows
+    permission_classes = [IsAuthenticated]

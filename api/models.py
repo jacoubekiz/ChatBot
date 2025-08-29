@@ -309,6 +309,7 @@ class Trigger(models.Model):
         return self.trigger
         
 class Flow(models.Model):
+    flow_name = models.CharField(max_length=100, default="flow_1")
     flow = models.FileField(upload_to='flows/')
     trigger = models.ManyToManyField(Trigger, null=True, blank=True)
     is_default = models.BooleanField(default=False)

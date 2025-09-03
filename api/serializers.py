@@ -279,12 +279,21 @@ class ConversationContactSerializer(serializers.ModelSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ['message_id', 'from_message', 'content','caption', 'content_type', 'created_at', 'conversation_id', 'media_url', 'media_sha256_hash', 'status_message']
+        fields = ['message_id', 'user_id', 'from_message', 'content','caption', 'content_type', 'created_at', 'conversation_id', 'media_url', 'media_sha256_hash', 'status_message']
 
+        extra_kwargs = {
+            'user_id':{'read_only': True},
+        }
+
+    def to_representation(self, instance):
+        repr =  super().to_representation(instance)
+        repr['user_id'] = instance.user_id.username
+        return repr
+        
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
-    # last_message = ChatMessageSerializer(read_only=True)
+    
     
     class Meta:
         model = Conversation

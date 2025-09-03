@@ -71,6 +71,7 @@ AUTHENTICATION_BACKENDS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -122,7 +123,12 @@ CACHES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']
+# CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173", # Also allow the IP version of localhost
+    "https://chatfe.dev.icsl.me",
+]
 # Database
 
 

@@ -1272,8 +1272,21 @@ class SetDefaultFlow(GenericAPIView):
                 flow.save()
 
         return Response(status=status.HTTP_200_OK)
-    
+
+import os
+from django.conf import settings
+import json
 class RetrieveFlow(RetrieveAPIView):
     queryset = Flow.objects.all()
     serializer_class = SerializerFlows
     permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        obj = super().get_object()
+        print(obj.flow)
+        file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
+        print(file_path)
+        # with open(file_path, 'r') as file:
+        #     data = json.load(file)
+        # print(data)
+        return obj

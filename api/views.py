@@ -83,7 +83,6 @@ class BotAPI(APIView):
         restart_keyword = RestartKeyword.objects.filter(channel_id=channel_id)
         for rest in restart_keyword:
             if rest.keyword == request.data['content']:
-                print(request.data['content'])
                 reset_flow = True
                 flows = rest.channel_id.flows.all()
                 for flow in flows:
@@ -105,7 +104,6 @@ class BotAPI(APIView):
                 c.save()
         except:
             ch = Chat.objects.filter(Q(conversation_id = source_id) & Q(channel_id = channel.channle_id) & ~Q(state = 'end')).first()
-            print(ch)
             if ch:
                 flow = ch.flow
             else:

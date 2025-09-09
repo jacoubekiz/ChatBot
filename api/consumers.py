@@ -72,6 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
         await self.change_status(conversation_id, from_bot)
+        await self.update_state_conversation(conversation_id)
 
 
         match content_type:
@@ -684,11 +685,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def change_status(self, conversation_id, from_bot):
         if from_bot == 'False':
-            print("yes its me")
             c =Conversation.objects.get(conversation_id=conversation_id)
             c.status = 'open'
             c.save()
         return True
+    
+    @database_sync_to_async
+    def update_state_conversation(self, conversation_id):
+        c =Conversation.objects.get(conversation_id=conversation_id)
+        c.state = "user"
+        return c.save()
 # class DocumentConsumers(AsyncWebsocketConsumer):
 #     async def connect(self):
 #         self.room_name = self.scope['url_route']['kwargs']['room']
@@ -840,7 +846,6 @@ class ChatBotConsumer(AsyncWebsocketConsumer):
         if chat_flow and source_id:
             chat, isCreated = Chat.objects.get_or_create(conversation_id = source_id, channel_id = channel, flow=flow )
             questions = chat_flow['payload']['questions']
-            print(questions)
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 chat.update_state('start')
             while True:

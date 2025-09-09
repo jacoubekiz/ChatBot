@@ -381,8 +381,15 @@ class Conversation(models.Model):
     contact_id = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(choices=STATUS, max_length=20, default='open')
+    state = models.CharField(max_length=100, blank=True, null=True, default='start_bot')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+    # last_state_change = models.DateTimeField(default=timezone.now)
+
+    # def update_state(self, new_state):
+    #     self.state = new_state
+    #     self.last_state_change = timezone.now()
+    #     self.save()
 
     def __str__(self) -> str:
         return f'conversation for contact {self.contact_id.name}'

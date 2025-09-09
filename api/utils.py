@@ -724,8 +724,8 @@ def handel_request_redis(data, account_id):
         error_redis.write(f"your get the error: {e}\n")
     
 def connect_web_socket(channel_id, conversation_id, source_id, content):
-    # url_ws = f"wss://chatbot.icsl.me/ws/start-chat-bot/{channel_id}/{conversation_id}/"
-    url_ws = f"ws://127.0.0.1:8000/ws/start-chat-bot/{channel_id}/{conversation_id}/"
+    url_ws = f"wss://chatbot.icsl.me/ws/start-chat-bot/{channel_id}/{conversation_id}/"
+    # url_ws = f"ws://127.0.0.1:8000/ws/start-chat-bot/{channel_id}/{conversation_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

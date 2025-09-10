@@ -561,15 +561,13 @@ def handel_request_redis(data, account_id):
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                     if conversation.state == 'start_bot':
-                        content = value.get('messages', '')[0].get('text', '').get('body','')
-                        chat_message = ChatMessage.objects.create(
-                            conversation_id = conversation,
-                            # user_id = CustomUser1.objects.filter(id=15).first(),
-                            content_type = content_type,
-                            content = content,
-                            from_message = conversation.contact_id.name,
-                            wamid = wamid
-                        )
+                        match content_type:
+                            case "text":
+                                content = value.get('messages', '')[0].get('text', '').get('body','')
+                            case "button":
+                                content = value.get('messages', '')[0].get('button', '').get('text','')
+                            case "interactive":
+                                content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
                         connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content)
                     else:        
                         match content_type:
@@ -583,7 +581,6 @@ def handel_request_redis(data, account_id):
                                     wamid = wamid
                                 )
                                 sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
-
                             case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body','')
                                 chat_message = ChatMessage.objects.create(
@@ -914,4 +911,3 @@ def download_and_save_image(image_url, headers, save_directory, image_name):
     else:
         raise Exception(f"Failed to download image. Status code: {response.status_code}")
     
-

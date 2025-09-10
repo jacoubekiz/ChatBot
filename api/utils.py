@@ -562,6 +562,14 @@ def handel_request_redis(data, account_id):
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                     if conversation.state == 'start_bot':
                         content = value.get('messages', '')[0].get('text', '').get('body','')
+                        chat_message = ChatMessage.objects.create(
+                            conversation_id = conversation,
+                            # user_id = CustomUser1.objects.filter(id=15).first(),
+                            content_type = content_type,
+                            content = content,
+                            from_message = conversation.contact_id.name,
+                            wamid = wamid
+                        )
                         connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content)
                     else:        
                         match content_type:

@@ -757,9 +757,6 @@ class ChatBotConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         data = text_data_json.get('data', '')
 
-        
-        
-
         try:
             conversation = data['conversation']
             source_id = conversation['contact_inbox']['source_id']

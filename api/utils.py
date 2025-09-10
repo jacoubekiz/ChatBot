@@ -729,11 +729,13 @@ def connect_web_socket(channel_id, conversation_id, source_id, content):
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
-        "content": {content},
-        "source_id": {source_id},
-        "conversation": {
-            "contact_inbox": {
-                "source_id":{source_id}
+        "data": {
+            "content": f"{content}",
+            "source_id": f"{source_id}",
+            "conversation": {
+                "contact_inbox": {
+                    "source_id":f"{source_id}"
+                }
             }
         }
     }

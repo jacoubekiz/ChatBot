@@ -44,20 +44,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif self.from_message == 'False':
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
-            # conversations = await self.get_conversations(self.channel_id)
-            # for conversation in conversations:
-            #     message = await self.get_last_message(conversation.get('conversation_id'))
-            #     if message == None:
-            #         await self.return_conversation(conversation.get('conversation_id'))
-            #     else:
-            #         s = timezone.now() - message.created_at
-            #         if s > timedelta(hours=24):
-            #             await self.return_conversation(conversation.get('conversation_id'))
-            # # for conversation in conversations:
-            # await self.send(text_data=json.dumps({
-            #     "type": "conversation",
-            #     "conversation": conversations
-            # }))
         else:
             await self.close()
 
@@ -72,10 +58,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
         await self.change_status(conversation_id, from_bot)
-        await self.update_state_conversation(conversation_id)
 
 
         match content_type:
+            case "bot_integration":
+                data = text_data_json.get('data', '')
+
+                try:
+                    conversation = data['conversation']
+                    source_id = conversation['contact_inbox']['source_id']
+                    platform = 'whatsapp'
+
+                except:
+                    source_id = data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
+                    platform = 'beam'
+
+                value = await self.chat_bot(data, source_id, platform)
+                if value == True:   
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "bot_integration",
+                            "Message": "bot_integration_succesfully",
+                        }
+                    )
+                else:
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "bot_integration_error",
+                            'Message' : 'Please make sure you have provided client info and source_id.'
+                        }
+                    )
             case "message_status":
                 message_id = text_data_json['message_id']
                 status_message = text_data_json['status']
@@ -695,92 +707,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         c =Conversation.objects.get(conversation_id=conversation_id)
         c.state = "user"
         return c.save()
-# class DocumentConsumers(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         self.room_name = self.scope['url_route']['kwargs']['room']
-#         self.room_group_name = "chat_%s" % self.room_name
-#         self.document_data = []
-
-#         await self.channel_layer.group_add(self.room_group_name, self.channel_layer)
-
-#         return self.accept()
-    
-#     async def disconnect(self, code):
-#         return await super().disconnect(code)
-    
-#     async def receive(self, text_data=None, bytes_data=None):
-#         text_data_json = json.loads(text_data)
-#         chunk = text_data_json.get('chunk', '')
-#         last_chunk = text_data_json.get('last_chunk', '')
-
-#         self.document_data.append(chunk)
-
-#         if last_chunk != '':
-#             document_data = ''.join(self.document_data)
-
-    
-# # def split_base64_into_chunks(base64_string, chunk_size=5 * 1024 * 1024): 
-# #     return [base64_string[i:i + chunk_size] for i in range(0, len(base64_string), chunk_size)]
-
-
-class ListAllConversations(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.channel_id = self.scope["url_route"]["kwargs"]["channel_id"]
-        await self.accept()
-        
-        conversations = await self.get_conversation(self.channel_id)
-        for conversation in conversations:
-            await self.send(text_data=json.dumps(conversation))
-        
-
-    @database_sync_to_async
-    def get_conversation(self, channel_id):
-        channel = Channle.objects.get(channle_id = channel_id)
-        conversation = channel.conversation_set.all()
-        serializer = ConversationSerializer(conversation, many=True)
-        return serializer.data
-
-
-class ChatBotConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.channel_id = self.scope["url_route"]["kwargs"]["channel_id"]
-        self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
-        self.room_group_name = "djsdk"
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        # Leave room group
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
-    async def receive(self, text_data=None, bytes_data=None):
-        text_data_json = json.loads(text_data)
-        data = text_data_json.get('data', '')
-
-        try:
-            conversation = data['conversation']
-            source_id = conversation['contact_inbox']['source_id']
-            platform = 'whatsapp'
-
-        except:
-            source_id = data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
-            platform = 'beam'
-
-        value = await self.chat_bot(data, source_id, platform)
-        if value == True:   
-            await self.channel_layer.group_send(
-                self.room_group_name, {
-                    "type": "bot_integration",
-                    "Message": "bot_integration_succesfully",
-                }
-            )
-        else:
-            await self.channel_layer.group_send(
-                self.room_group_name, {
-                    "type": "bot_integration_error",
-                    'Message' : 'Please make sure you have provided client info and source_id.'
-                }
-            )
 
     async def bot_integration_error(self, event):
         message = event["Message"]

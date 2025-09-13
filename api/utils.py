@@ -734,6 +734,9 @@ def connect_web_socket(channel_id, conversation_id, source_id, content):
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
+        "conversation_id":f"{conversation_id}",
+        "content_type": "bot_integration",
+        "from_bot":"True",
         "data": {
             "content": f"{content}",
             "source_id": f"{source_id}",

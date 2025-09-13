@@ -63,6 +63,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         match content_type:
             case "bot_integration":
                 data = text_data_json.get('data', '')
+                wamid = text_data_json.get('wamid', '')
+                contact_name = text_data_json.get('contact_name', '')
 
                 try:
                     conversation = data['conversation']
@@ -73,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     source_id = data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
                     platform = 'beam'
 
-                value = await self.chat_bot(data, source_id, platform)
+                value = await self.chat_bot(data, source_id, platform, wamid, contact_name, conversation_id)
                 if value == True:   
                     await self.channel_layer.group_send(
                         self.room_group_name, {
@@ -640,7 +642,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_waid(self, conversation_id):
         conversation = Conversation.objects.get(conversation_id=conversation_id)
-        print(conversation.channle_id)
         waid = conversation.channle_id.phone_number_id
         return waid
 
@@ -728,7 +729,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     @database_sync_to_async
-    def chat_bot(self, data, source_id, platform):
+    def chat_bot(self, data, source_id, platform, wamid, contact_name, conv):
         try:
             channel = Channle.objects.get(Q(channle_id = self.channel_id))
         except:
@@ -847,7 +848,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         chat_id=chat.id,
                                         platform=platform,
                                         question=question)
-                            
+                        chat_message = ChatMessage.objects.create(
+                            conversation_id = Conversation.objects.get(conversation_id=conv),
+                            content_type = r_type,
+                            content = message,
+                            from_message = contact_name,
+                            wamid = wamid
+                        )
                         return Response(
                             {"Message" : "BOT has interacted successfully."},
                             status=status.HTTP_200_OK
@@ -1264,7 +1271,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             chat.isSent = False
                             attr.save()
                             chat.save()
-                
+                    chat_message = ChatMessage.objects.create(
+                        conversation_id = self.get_conversation(conv),
+                        content_type = r_type,
+                        content = message,
+                        from_message = contact_name,
+                        wamid = wamid
+                    )
                 elif r_type == 'document':
                     send_message(message_content=message,
                                     to=chat.conversation_id,
@@ -1336,8 +1349,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 elif r_type == 'detect_language':
                     pass    
                 else:
-                    # if chat.state == 'start':
-                    #     print(detect(request.data['content']))
                     send_message(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,

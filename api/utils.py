@@ -564,11 +564,32 @@ def handel_request_redis(data, account_id):
                         match content_type:
                             case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body','')
+                                chat_message = ChatMessage.objects.create(
+                                    conversation_id = conversation,
+                                    content_type = 'text',
+                                    content = content,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid
+                                )
                             case "button":
                                 content = value.get('messages', '')[0].get('button', '').get('text','')
+                                chat_message = ChatMessage.objects.create(
+                                    conversation_id = conversation,
+                                    content_type = 'text',
+                                    content = content,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid
+                                )
                             case "interactive":
                                 content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
-                        connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content)
+                                chat_message = ChatMessage.objects.create(
+                                    conversation_id = conversation,
+                                    content_type = 'text',
+                                    content = content,
+                                    from_message = conversation.contact_id.name,
+                                    wamid = wamid
+                                )
+                        connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)
                     else:        
                         match content_type:
                             case "button":
@@ -728,9 +749,9 @@ def handel_request_redis(data, account_id):
         error_redis = open('error_redis.txt', 'a')
         error_redis.write(f"your get the error: {e}\n")
     
-def connect_web_socket(channel_id, conversation_id, source_id, content):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/start-chat-bot/{channel_id}/{conversation_id}/"
+def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -745,7 +766,10 @@ def connect_web_socket(channel_id, conversation_id, source_id, content):
                     "source_id":f"{source_id}"
                 }
             }
-        }
+        },
+        "wamid": wamid,
+        "contact_name": contact_name,
+        "from_bot" : ""
     }
     try:
         ws.send(json.dumps(data))

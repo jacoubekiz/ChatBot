@@ -852,7 +852,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         question=question)
                         chat_message = ChatMessage.objects.create(
                             conversation_id = Conversation.objects.get(conversation_id=conv),
-                            content_type = r_type,
+                            content_type = 'text',
                             content = message,
                             from_message = 'bot',
                             wamid = wamid
@@ -880,7 +880,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question)
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = Conversation.objects.get(conversation_id=conv),
-                                content_type = r_type,
+                                content_type = 'text',
                                 content = error_message,
                                 from_message = 'bot',
                                 wamid = wamid

@@ -1315,7 +1315,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     platform=platform,
                                     question=question)
                     chat_document = ChatMessage.objects.create(
-                            conversation_id= self.get_conversation(conv),
+                            conversation_id= Conversation.objects.get(conversation_id=conv),
                             content_type= 'document',
                             from_message = 'bot',
                             wamid = wamid_message['messages'][0]['id'],
@@ -1336,7 +1336,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     platform=platform,
                                     question=question)
                     chat_document = ChatMessage.objects.create(
-                            conversation_id= self.get_conversation(conv),
+                            conversation_id= Conversation.objects.get(conversation_id=conv),
                             content_type= 'image',
                             from_message = 'bot',
                             wamid = wamid_message['messages'][0]['id'],
@@ -1358,7 +1358,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     platform=platform,
                                     question=question)
                     chat_document = ChatMessage.objects.create(
-                            conversation_id= self.get_conversation(conv),
+                            conversation_id= Conversation.objects.get(conversation_id=conv),
                             content_type= 'audio',
                             from_message = 'bot',
                             wamid = wamid_message['messages'][0]['id'],
@@ -1379,7 +1379,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         question=question
                     )
                     chat_document = ChatMessage.objects.create(
-                            conversation_id= self.get_conversation(conv),
+                            conversation_id= Conversation.objects.get(conversation_id=conv),
                             content_type= 'video',
                             from_message = 'bot',
                             wamid = wamid_message['messages'][0]['id'],

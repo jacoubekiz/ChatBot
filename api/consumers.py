@@ -1187,7 +1187,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         question=question)
                         chat_message = ChatMessage.objects.create(
                             conversation_id = Conversation.objects.get(conversation_id=conv),
-                            content_type = r_type,
+                            content_type = 'text',
                             content = message,
                             from_message = 'bot',
                             wamid = wamid
@@ -1226,7 +1226,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question)
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = Conversation.objects.get(conversation_id=conv),
-                                content_type = r_type,
+                                content_type = 'text',
                                 content = error_message,
                                 from_message = 'bot',
                                 wamid = wamid
@@ -1244,7 +1244,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question)
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = Conversation.objects.get(conversation_id=conv),
-                                content_type = r_type,
+                                content_type = 'text',
                                 content = error_message,
                                 from_message = 'bot',
                                 wamid = wamid
@@ -1262,7 +1262,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question)
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = Conversation.objects.get(conversation_id=conv),
-                                content_type = r_type,
+                                content_type = 'text',
                                 content = error_message,
                                 from_message = 'bot',
                                 wamid = wamid
@@ -1280,7 +1280,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question)
                             chat_message = ChatMessage.objects.create(
                                 conversation_id = Conversation.objects.get(conversation_id=conv),
-                                content_type = r_type,
+                                content_type = 'text',
                                 content = error_message,
                                 from_message = 'bot',
                                 wamid = wamid
@@ -1304,7 +1304,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     #     wamid = wamid
                     # )
                 elif r_type == 'document':
-                    send_message(message_content=message,
+                    wamid_message = send_message(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     type='document',
@@ -1314,9 +1314,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
-                
+                    chat_document = ChatMessage.objects.create(
+                            conversation_id= self.get_conversation(conv),
+                            content_type= 'document',
+                            from_message = 'bot',
+                            wamid = wamid_message['messages'][0]['id'],
+                            media_url = question['source'],
+                            # media_sha256_hash = sha256,
+                            # media_mime_type = mime_type,
+                            caption= message
+                        )
                 elif r_type == 'image':
-                    send_message(message_content=message,
+                    wamid_message = send_message(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     wa_id=channel.phone_number_id,
@@ -1326,11 +1335,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
-
+                    chat_document = ChatMessage.objects.create(
+                            conversation_id= self.get_conversation(conv),
+                            content_type= 'image',
+                            from_message = 'bot',
+                            wamid = wamid_message['messages'][0]['id'],
+                            media_url = question['source'],
+                            # media_sha256_hash = sha256,
+                            # media_mime_type = mime_type,
+                            caption= message
+                        )
                 
-                elif r_type == 'audio' or r_type == 'sticker' or r_type == 'video':
+                elif r_type == 'audio':
 
-                    send_message(message_content=message,
+                    wamid_message = send_message(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     wa_id=channel.phone_number_id,
@@ -1339,8 +1357,49 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
+                    chat_document = ChatMessage.objects.create(
+                            conversation_id= self.get_conversation(conv),
+                            content_type= 'audio',
+                            from_message = 'bot',
+                            wamid = wamid_message['messages'][0]['id'],
+                            media_url = question['source'],
+                            # media_sha256_hash = sha256,
+                            # media_mime_type = mime_type,
+                            caption= message
+                        )
+                elif r_type == "video":
+                    wamid_message = send_message(message_content=message,
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        type=r_type,
+                        source=question['source'], 
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question
+                    )
+                    chat_document = ChatMessage.objects.create(
+                            conversation_id= self.get_conversation(conv),
+                            content_type= 'video',
+                            from_message = 'bot',
+                            wamid = wamid_message['messages'][0]['id'],
+                            media_url = question['source'],
+                            # media_sha256_hash = sha256,
+                            # media_mime_type = mime_type,
+                            caption= message
+                        )
+                elif r_type == 'sticker':
+                    send_message(message_content=message,
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        type=r_type,
+                        source=question['source'], 
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question
+                    )
 
-                
                 elif r_type == 'contact' or r_type == 'location':
                     send_message(message_content=message,
                                     to=chat.conversation_id,

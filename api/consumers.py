@@ -57,6 +57,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
+        if from_bot == "True":
+            await self.update_state_conversation(conversation_id)
         await self.change_status(conversation_id, from_bot)
 
 
@@ -159,7 +161,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -170,7 +172,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "caption": caption,
                             "content_type": content_type,
                             "from_bot": from_bot,
-                            "wamid": message_wamid,
+                            "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
                             "front_id": front_id
                         }
@@ -218,7 +220,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_image)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -229,7 +231,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "caption": caption,
                             "content_type": content_type,
                             "from_bot": from_bot,
-                            "wamid": message_wamid,
+                            "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
                             "front_id": front_id
                         }
@@ -275,7 +277,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_video)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -286,7 +288,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "caption": caption,
                             "content_type": content_type,
                             "from_bot": from_bot,
-                            "wamid": message_wamid,
+                            "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
                             "front_id": front_id
                         }
@@ -331,7 +333,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_document)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
                         self.room_group_name, {
@@ -341,7 +343,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "caption": caption,
                             "content_type": content_type,
                             "from_bot": from_bot,
-                            "wamid": message_wamid,
+                            "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
                             "front_id": front_id
                         }
@@ -394,7 +396,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         question='statment'
                     )
                     front_id = text_data_json['front_id']
-                    message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, message_wamid)
+                    message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, message_wamid['messages'][0]['id'])
                     await self.channel_layer.group_send(
                         self.room_group_name, {
                             "type": "chat_message",
@@ -402,7 +404,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "content": content,
                             "content_type": content_type,
                             "from_bot":from_bot,
-                            "wamid":message_wamid,
+                            "wamid":message_wamid['messages'][0]['id'],
                             "message_id":message_id,
                             "created_at": created_at,
                             "front_id": front_id
@@ -852,13 +854,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             conversation_id = Conversation.objects.get(conversation_id=conv),
                             content_type = r_type,
                             content = message,
-                            from_message = contact_name,
+                            from_message = 'bot',
                             wamid = wamid
                         )
-                        return Response(
-                            {"Message" : "BOT has interacted successfully."},
-                            status=status.HTTP_200_OK
-                        )
+                        return True
                         
                     else:
                         try:
@@ -879,11 +878,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
-                            
-                            return Response(
-                                {"Message" : "BOT has interacted successfully."},
-                                status=status.HTTP_200_OK
+                            chat_message = ChatMessage.objects.create(
+                                conversation_id = Conversation.objects.get(conversation_id=conv),
+                                content_type = r_type,
+                                content = error_message,
+                                from_message = 'bot',
+                                wamid = wamid
                             )
+                            return True
                         
                         else:
                             next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
@@ -903,10 +905,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     chat_id=chat.id,
                                     platform=platform,
                                     question=question)
-                        return Response(
-                            {"Message" : "BOT has interacted successfully."},
-                            status=status.HTTP_200_OK
+                        chat_message = ChatMessage.objects.create(
+                            conversation_id = Conversation.objects.get(conversation_id=conv),
+                            content_type = r_type,
+                            content = message,
+                            from_message = 'bot',
+                            wamid = wamid
                         )
+                        return True
                     
                     else:
                         try:
@@ -1179,11 +1185,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         chat_id=chat.id,
                                         platform=platform,
                                         question=question)
-                
-                        return Response(
-                            {"Message" : "BOT has interacted successfully."},
-                            status=status.HTTP_200_OK
-                        )
+                        chat_message = ChatMessage.objects.create(
+                            conversation_id = Conversation.objects.get(conversation_id=conv),
+                            content_type = r_type,
+                            content = message,
+                            from_message = 'bot',
+                            wamid = wamid
+                        )            
+                        return True
                 
                     else:
                         user_reply = ''
@@ -1215,10 +1224,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
-                            return Response(
-                                {"Message" : "BOT has interacted successfully."},
-                                status=status.HTTP_200_OK
-                            )
+                            chat_message = ChatMessage.objects.create(
+                                conversation_id = Conversation.objects.get(conversation_id=conv),
+                                content_type = r_type,
+                                content = error_message,
+                                from_message = 'bot',
+                                wamid = wamid
+                            )                        
+                            return True
                         
                         elif r_type == 'phone' and not validate_phone_number(user_reply):
                             error_message = question['message']['error']
@@ -1229,10 +1242,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
-                            return Response(
-                                {"Message" : "BOT has interacted successfully."},
-                                status=status.HTTP_200_OK
-                            )
+                            chat_message = ChatMessage.objects.create(
+                                conversation_id = Conversation.objects.get(conversation_id=conv),
+                                content_type = r_type,
+                                content = error_message,
+                                from_message = 'bot',
+                                wamid = wamid
+                            ) 
+                            return True
                         
                         elif r_type == 'email' and not validate_email(user_reply):
                             error_message = question['message']['error']
@@ -1243,10 +1260,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
-                            return Response(
-                                {"Message" : "BOT has interacted successfully."},
-                                status=status.HTTP_200_OK
-                            )
+                            chat_message = ChatMessage.objects.create(
+                                conversation_id = Conversation.objects.get(conversation_id=conv),
+                                content_type = r_type,
+                                content = error_message,
+                                from_message = 'bot',
+                                wamid = wamid
+                            ) 
+                            return True
                         
                         elif r_type == 'number' and not str(user_reply).isdigit():
                             error_message = question['message']['error']
@@ -1257,10 +1278,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             chat_id=chat.id,
                                             platform=platform,
                                             question=question)
-                            return Response(
-                                {"Message" : "BOT has interacted successfully."},
-                                status=status.HTTP_200_OK
-                            )
+                            chat_message = ChatMessage.objects.create(
+                                conversation_id = Conversation.objects.get(conversation_id=conv),
+                                content_type = r_type,
+                                content = error_message,
+                                from_message = 'bot',
+                                wamid = wamid
+                            ) 
+                            return True
                         
                         else:
                             # add attribute name 
@@ -1271,13 +1296,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             chat.isSent = False
                             attr.save()
                             chat.save()
-                    chat_message = ChatMessage.objects.create(
-                        conversation_id = self.get_conversation(conv),
-                        content_type = r_type,
-                        content = message,
-                        from_message = contact_name,
-                        wamid = wamid
-                    )
+                    # chat_message = ChatMessage.objects.create(
+                    #     conversation_id = self.get_conversation(conv),
+                    #     content_type = r_type,
+                    #     content = message,
+                    #     from_message = contact_name,
+                    #     wamid = wamid
+                    # )
                 elif r_type == 'document':
                     send_message(message_content=message,
                                     to=chat.conversation_id,
@@ -1357,7 +1382,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     platform=platform,
                                     question=question,
                                     )
-                
+                    chat_message = ChatMessage.objects.create(
+                        conversation_id = Conversation.objects.get(conversation_id=conv),
+                        content_type = r_type,
+                        content = message,
+                        from_message = 'bot',
+                        wamid = wamid
+                    ) 
                 chat.update_state(next_question_id)
                 if not next_question_id or next_question_id == 'end':
                     return True

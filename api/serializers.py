@@ -287,8 +287,11 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr =  super().to_representation(instance)
-        repr['user_id'] = instance.user_id.username
-        return repr
+        try :
+            repr['user_id'] = instance.user_id.username
+            return repr
+        except:
+            return repr
         
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)

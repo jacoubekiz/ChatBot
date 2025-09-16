@@ -77,12 +77,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     source_id = data.get('entry')[0]['changes'][0]['value']['messages'][0]['from']
                     platform = 'beam'
 
-                value = await self.chat_bot(data, source_id, platform, wamid, contact_name, conversation_id)
-                if value == True:   
+                conv_id, r_type, message, wamid, message_id, created_at, from_message= await self.chat_bot(data, source_id, platform, wamid, contact_name, conversation_id)
+                if r_type == 'text':   
                     await self.channel_layer.group_send(
                         self.room_group_name, {
-                            "type": "bot_integration",
-                            "Message": "bot_integration_succesfully",
+                            "type": "chat_message",
+                            "content": message,
+                            "content_type": r_type,
+                            "wamid": wamid,
+                            "conversation_id": conversation_id,
+                            "from_bot": "True",
+                            "message_id": message_id,
+                            "created_at":f"{created_at}",
+                            "front_id":"dfsfsfafasfaf"
                         }
                     )
                 else:
@@ -573,7 +580,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -857,7 +864,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             from_message = 'bot',
                             wamid = wamid
                         )
-                        return True
+                        return self.get_conversation(conv), chat_message.content_type, message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                     else:
                         try:
@@ -885,7 +892,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 from_message = 'bot',
                                 wamid = wamid
                             )
-                            return True
+                            return self.get_conversation(conv), chat_message.content_type, error_message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                         else:
                             next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
@@ -907,12 +914,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     question=question)
                         chat_message = ChatMessage.objects.create(
                             conversation_id = Conversation.objects.get(conversation_id=conv),
-                            content_type = r_type,
+                            content_type = 'text',
                             content = message,
                             from_message = 'bot',
                             wamid = wamid
                         )
-                        return True
+                        return self.get_conversation(conv), chat_message.content_type, message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                     
                     else:
                         try:
@@ -1192,7 +1199,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             from_message = 'bot',
                             wamid = wamid
                         )            
-                        return True
+                        return self.get_conversation(conv), chat_message.content_type, message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                 
                     else:
                         user_reply = ''
@@ -1231,7 +1238,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 from_message = 'bot',
                                 wamid = wamid
                             )                        
-                            return True
+                            return self.get_conversation(conv), chat_message.content_type, error_message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                         elif r_type == 'phone' and not validate_phone_number(user_reply):
                             error_message = question['message']['error']
@@ -1249,7 +1256,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 from_message = 'bot',
                                 wamid = wamid
                             ) 
-                            return True
+                            return self.get_conversation(conv), chat_message.content_type, error_message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                         elif r_type == 'email' and not validate_email(user_reply):
                             error_message = question['message']['error']
@@ -1267,7 +1274,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 from_message = 'bot',
                                 wamid = wamid
                             ) 
-                            return True
+                            return self.get_conversation(conv), chat_message.content_type, error_message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                         elif r_type == 'number' and not str(user_reply).isdigit():
                             error_message = question['message']['error']
@@ -1285,7 +1292,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 from_message = 'bot',
                                 wamid = wamid
                             ) 
-                            return True
+                            return self.get_conversation(conv), chat_message.content_type, error_message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
                         
                         else:
                             # add attribute name 
@@ -1443,13 +1450,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     )
                     chat_message = ChatMessage.objects.create(
                         conversation_id = Conversation.objects.get(conversation_id=conv),
-                        content_type = r_type,
+                        content_type = 'text',
                         content = message,
                         from_message = 'bot',
                         wamid = wamid
                     ) 
                 chat.update_state(next_question_id)
                 if not next_question_id or next_question_id == 'end':
-                    return True
+                    return self.get_conversation(conv), chat_message.content_type, message, wamid,  chat_message.message_id, chat_message.created_at, chat_message.from_message
         else:
             return False

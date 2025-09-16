@@ -236,7 +236,6 @@ def send_message(version = '18.0',
 
         elif type == 'document':
             filename = os.path.basename(urlparse(source).path)
-            print("this is file name " + filename)
             payload = json.dumps({
                     "messaging_product": "whatsapp",
                     "recipient_type": "individual",
@@ -250,7 +249,6 @@ def send_message(version = '18.0',
                 })
 
         elif type == 'image':
-            print('this is imaage ' + source)
             payload = json.dumps({
                 "messaging_product": f"{messaging_product}",
                 "recipient_type": "individual",
@@ -263,7 +261,6 @@ def send_message(version = '18.0',
             })
 
         elif type == 'video':
-            print('this is video ' + source)
             payload = json.dumps({
                 "messaging_product": f"{messaging_product}",
                 "recipient_type": "individual",
@@ -277,7 +274,6 @@ def send_message(version = '18.0',
 
         
         elif type == 'contact':
-            # print('im contantnct')
             payload = json.dumps(
             {
                 "messaging_product": "whatsapp",
@@ -376,9 +372,6 @@ def send_message(version = '18.0',
         response = requests.request("POST", url, headers=headers, data=payload)
 
         data = json.loads(response.content.decode())
-        print(data)
-        # message_id = data['messages'][0]['id']
-        # return message_id
         return data
 
         
@@ -458,7 +451,6 @@ def send_message(version = '18.0',
                     )
 
         elif type == 'document' or type =='image':
-            print(beem_media_id)
             payload = json.dumps({
                 "to": f"{to}",
                 "type": "media",
@@ -498,9 +490,9 @@ def send_message(version = '18.0',
             'Content-Type': 'application/json',
             'Authorization': f'{bearer_token}'
         }
-        # print(buttons)
+
         response = requests.request("POST", url, headers=headers, data=payload)
-        # print(response)
+
         
 def validate_email(email):
   return bool(re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", email))
@@ -752,8 +744,8 @@ def handel_request_redis(data, account_id):
         error_redis.write(f"your get the error: {e}\n")
     
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -875,7 +867,6 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
-    print(url_ws)
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -900,7 +891,6 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
 def read_receipt(channel_id, message_id, conversation_id, status):
     url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
-    print(url_ws)
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

@@ -542,10 +542,11 @@ def handel_request_redis(data, account_id):
                 chatmessage.status_message = status_message
                 chatmessage.save()
                 read_receipt(channel.channle_id, chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
-            if value: 
+            if value:
+                contact_phonenumber = value.get('messages', '')[0].get('from', '')
+                content_ = value.get('messages', '')[0].get('text', '').get('body','')
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')
-                contact_phonenumber = value.get('messages', '')[0].get('from', '')
                 display_phone_number = value.get('metadata', '').get('display_phone_number', '')
                 contacts = value.get('contacts', '')
                 if contacts:
@@ -554,17 +555,25 @@ def handel_request_redis(data, account_id):
                     contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
+                    restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(channel_id=channel.channle_id)]
+                    if content_ in restart_keywords:
+                        chat = Chat.objects.get(conversation_id=contact_phonenumber)
+                        chat.isSent = False
+                        chat.save
+                        chat.update_state('start')
+                        conversation.state = 'start_bot'
+                        conversation.save()
                     if conversation.state == 'start_bot':
                         match content_type:
                             case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body','')
-                                chat_message = ChatMessage.objects.create(
-                                    conversation_id = conversation,
-                                    content_type = 'text',
-                                    content = content,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid
-                                )
+                                # chat_message = ChatMessage.objects.create(
+                                #     conversation_id = conversation,
+                                #     content_type = 'text',
+                                #     content = content,
+                                #     from_message = conversation.contact_id.name,
+                                #     wamid = wamid
+                                # )
                             case "button":
                                 content = value.get('messages', '')[0].get('button', '').get('text','')
                                 chat_message = ChatMessage.objects.create(
@@ -744,8 +753,8 @@ def handel_request_redis(data, account_id):
         error_redis.write(f"your get the error: {e}\n")
     
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

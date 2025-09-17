@@ -208,7 +208,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     await database_sync_to_async(chat.save)()
 
                                     if r_type == 'list':
-                                        await sync_to_async(send_message)(
+                                        message_wamid = await sync_to_async(send_message)(
                                             message_content=message,
                                             choices=choices,
                                             type='interactive', 
@@ -223,7 +223,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             question=question
                                         )
                                     else:
-                                        await sync_to_async(send_message)(
+                                        message_wamid = await sync_to_async(send_message)(
                                             message_content=message,
                                             choices=choices,
                                             type='interactive', 
@@ -241,7 +241,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                     
                                     # Send message through WebSocket
@@ -250,7 +250,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": 'text',
-                                                "wamid": wamid,
+                                                "wamid": message,
                                                 "conversation_id": conversation_id,
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
@@ -269,7 +269,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     if user_reply not in choices or user_reply == '':
                                         error_message = question['message']['error']
                                         
-                                        await sync_to_async(send_message)(
+                                        message_wamid = await sync_to_async(send_message)(
                                             message_content=error_message,
                                             to=chat.conversation_id,
                                             bearer_token=channel.tocken,
@@ -284,7 +284,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=error_message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                         
                                         # Send error message through WebSocket
@@ -314,7 +314,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 if not chat.isSent:
                                     chat.isSent = True
                                     await database_sync_to_async(chat.save)()
-                                    send_message(message_content=message,
+                                    message_wamid = send_message(message_content=message,
                                                 to = chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 wa_id=channel.phone_number_id,
@@ -363,7 +363,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     chat.isSent = True
                                     await database_sync_to_async(chat.save)()
                             
-                                    send_message(message_content=message,
+                                    message_wamid = send_message(message_content=message,
                                                     to=chat.conversation_id,
                                                     bearer_token=channel.tocken,
                                                     wa_id=channel.phone_number_id,
@@ -375,14 +375,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                     await self.channel_layer.group_send(
                                         self.room_group_name, {
                                             "type": "chat_message",
                                             "content": message,
                                             "content_type": r_type,
-                                            "wamid": wamid,
+                                            "wamid": message_wamid['messages'][0]['id'],
                                             "conversation_id": conversation_id,
                                             "from_bot": "True",
                                             "message_id": chat_message.message_id,
@@ -415,7 +415,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                                     elif r_type == 'name' and len(user_reply) > question['maxRange']:
                                         error_message = question['message']['error']
-                                        send_message(message_content=error_message,
+                                        message_wamid = send_message(message_content=error_message,
                                                         to=chat.conversation_id,
                                                         bearer_token=channel.tocken,
                                                         wa_id=channel.phone_number_id,
@@ -427,14 +427,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                         await self.channel_layer.group_send(
                                             self.room_group_name, {
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": r_type,
-                                                "wamid": wamid,
+                                                "wamid": message_wamid['messages'][0]['id'],
                                                 "conversation_id": conversation_id,
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
@@ -445,7 +445,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                     elif r_type == 'phone' and not validate_phone_number(user_reply):
                                         error_message = question['message']['error']
-                                        send_message(message_content=error_message,
+                                        message_wamid = send_message(message_content=error_message,
                                                         to=chat.conversation_id,
                                                         bearer_token=channel.tocken,
                                                         wa_id=channel.phone_number_id,
@@ -457,14 +457,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                         await self.channel_layer.group_send(
                                             self.room_group_name, {
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": r_type,
-                                                "wamid": wamid,
+                                                "wamid": message_wamid['messages'][0]['id'],
                                                 "conversation_id": conversation_id,
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
@@ -475,7 +475,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                     elif r_type == 'email' and not validate_email(user_reply):
                                         error_message = question['message']['error']
-                                        send_message(message_content=error_message,
+                                        message_wamid = send_message(message_content=error_message,
                                                         to=chat.conversation_id,
                                                         bearer_token=channel.tocken,
                                                         wa_id=channel.phone_number_id,
@@ -487,7 +487,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
 
                                         await self.channel_layer.group_send(
@@ -495,7 +495,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": r_type,
-                                                "wamid": wamid,
+                                                "wamid": message_wamid['messages'][0]['id'],
                                                 "conversation_id": conversation_id,
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
@@ -506,7 +506,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                     elif r_type == 'number' and not str(user_reply).isdigit():
                                         error_message = question['message']['error']
-                                        send_message(message_content=error_message,
+                                        message_wamid = send_message(message_content=error_message,
                                                         to=chat.conversation_id,
                                                         bearer_token=channel.tocken,
                                                         wa_id=channel.phone_number_id,
@@ -518,14 +518,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=wamid
+                                            wamid=message_wamid['messages'][0]['id']
                                         )
                                         await self.channel_layer.group_send(
                                             self.room_group_name, {
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": r_type,
-                                                "wamid": wamid,
+                                                "wamid": message_wamid['messages'][0]['id'],
                                                 "conversation_id": conversation_id,
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
@@ -563,7 +563,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         await database_sync_to_async(attr.save)()
                                         await database_sync_to_async(chat.save)()
                             elif r_type == 'document':
-                                send_message(message_content=message,
+                                message_wamid = send_message(message_content=message,
                                                 to=chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 type='document',
@@ -579,7 +579,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     media_url = question['source'],
                                     caption=message,
                                     from_message='bot',
-                                    wamid=wamid
+                                    wamid=message_wamid['messages'][0]['id']
                                 )
                                 
                                 await self.channel_layer.group_send(
@@ -590,13 +590,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "caption": message,
                                         "content_type": r_type,
                                         "from_bot": "True",
-                                        "wamid": wamid,
+                                        "wamid": message_wamid['messages'][0]['id'],
                                         "message_id": chat_message.message_id,
                                         "front_id": "auto_generated"
                                     }
                                 )
                             elif r_type == 'image':
-                                send_message(message_content=message,
+                                message_wamid = send_message(message_content=message,
                                                 to=chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 wa_id=channel.phone_number_id,
@@ -610,7 +610,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             
                             elif r_type == 'audio' or r_type == 'sticker' or r_type == 'video':
 
-                                send_message(message_content=message,
+                                message_wamid = send_message(message_content=message,
                                                 to=chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 wa_id=channel.phone_number_id,
@@ -622,7 +622,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                 
                             elif r_type == 'contact' or r_type == 'location':
-                                send_message(message_content=message,
+                                message_wamid = send_message(message_content=message,
                                                 to=chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 wa_id=channel.phone_number_id,
@@ -652,7 +652,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             elif r_type == 'detect_language':
                                 pass    
                             else:
-                                send_message(message_content=message,
+                                message_wamid = send_message(message_content=message,
                                                 to=chat.conversation_id,
                                                 bearer_token=channel.tocken,
                                                 wa_id=channel.phone_number_id,
@@ -665,14 +665,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     content_type='text',
                                     content=message,
                                     from_message='bot',
-                                    wamid=wamid
+                                    wamid=message_wamid['messages'][0]['id']
                                 )
                                 await self.channel_layer.group_send(
                                     self.room_group_name, {
                                         "type": "chat_message",
                                         "content": message,
                                         "content_type": r_type,
-                                        "wamid": wamid,
+                                        "wamid": message_wamid['messages'][0]['id'],
                                         "conversation_id": conversation_id,
                                         "from_bot": "True",
                                         "message_id": chat_message.message_id,
@@ -1026,6 +1026,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
+                    "from_bot":"False",
                     "is_successfully":"true"
                 }))
         else:
@@ -1037,6 +1038,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "from_bot":"True",
                     "is_successfully": "true",
                 }))
             
@@ -1060,6 +1062,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
+                    "from_bot":"False",
                     "is_successfully":"true"
                 }))
         else:
@@ -1071,6 +1074,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "from_bot":"True",
                     "is_successfully": "true",
                 }))
             
@@ -1094,6 +1098,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
+                    "from_bot":"False",
                     "is_successfully":"true"
                 }))
         else:
@@ -1105,6 +1110,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "from_bot":"True",
                     "is_successfully": "true",
                 }))      
                 
@@ -1128,6 +1134,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
+                    "from_bot":"False",
                     "is_successfully":"true"
                 }))
         else:
@@ -1139,6 +1146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "from_bot":"True",
                     "is_successfully": "true",
                 }))
             
@@ -1161,6 +1169,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "conversation_id": conversation_id,
                 "wamid":wamid,
                 "created_at":created_at,
+                "from_bot":"False",
                 "is_successfully":"true"
             }))
         else:
@@ -1173,6 +1182,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "from_bot":"True",
                     "is_successfully": "true",
                 }))
 

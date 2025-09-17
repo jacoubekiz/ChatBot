@@ -582,20 +582,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     wamid=wamid
                                 )
                                 
-                                # Send message through WebSocket
-                                # await self.channel_layer.group_send(
-                                #     self.room_group_name, {
-                                #         "type": "chat_message",
-                                #         "caption": message,
-                                #         "content_type": r_type,
-                                #         "wamid": wamid,
-                                #         "conversation_id": conversation_id,
-                                #         "from_bot": "True",
-                                #         "message_id": chat_message.message_id,
-                                #         "created_at": f"{chat_message.created_at}",
-                                #         "front_id": "auto_generated"
-                                #     }
-                                # )
                                 await self.channel_layer.group_send(
                                     self.room_group_name, {
                                         "type": "chat_message_document",

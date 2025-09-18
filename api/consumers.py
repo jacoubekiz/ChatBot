@@ -12,7 +12,6 @@ import langid
 from .utils import *
 from django.utils import timezone
 import urllib.parse as up
-import socket
 
 # from pydub import AudioSegment
 
@@ -118,7 +117,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             "from_bot": "True",
                                             "message_id": chat_message.message_id,
                                             "created_at": f"{chat_message.created_at}",
-                                            "conversation_status":"start_bot",
                                             "front_id": "auto_generated"
                                         }
                                     )
@@ -258,7 +256,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -302,7 +299,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -392,7 +388,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             "from_bot": "True",
                                             "message_id": chat_message.message_id,
                                             "created_at": f"{chat_message.created_at}",
-                                            "conversation_status":"start_bot",
                                             "front_id": "auto_generated"
                                         }
                                     )
@@ -445,7 +440,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -476,7 +470,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -508,7 +501,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -539,7 +531,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -563,7 +554,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "from_bot": "True",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
-                                                "conversation_status":"start_bot",
                                                 "front_id": "auto_generated"
                                             }
                                         )
@@ -603,7 +593,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "from_bot": "True",
                                         "wamid": message_wamid['messages'][0]['id'],
                                         "message_id": chat_message.message_id,
-                                        "conversation_status":"start_bot",
                                         "front_id": "auto_generated"
                                     }
                                 )
@@ -689,7 +678,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "from_bot": "True",
                                         "message_id": chat_message.message_id,
                                         "created_at": f"{chat_message.created_at}",
-                                        "conversation_status":"start_bot",
                                         "front_id": "auto_generated"
                                     }
                                 )
@@ -739,7 +727,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "wamid":template_wamid,
                         "front_id":front_id,
                         "message_id":message_id,
-                        "conversation_status":"end_bot",
                         "created_at": created_at
                     }
                 )
@@ -782,7 +769,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
-                            "conversation_status":"end_bot",
                             "front_id": front_id
                         }
                     )
@@ -800,8 +786,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'message_wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
-                            "created_at": created_at,
-                            "conversation_status":"end_bot",
+                            "created_at": created_at
                         }
                     )
 
@@ -843,8 +828,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
-                            "front_id": front_id,
-                            "conversation_status":"end_bot",
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -861,8 +845,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
-                            "created_at": created_at,
-                            "conversation_status":"end_bot"
+                            "created_at": created_at
                         }
                     )
             # handel receive video
@@ -902,8 +885,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
-                            "front_id": front_id,
-                            "conversation_status":"end_bot"
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -920,8 +902,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
-                            "created_at": created_at,
-                            "conversation_status":"end_bot"
+                            "created_at": created_at
                         }
                     )
             # Send document to room group
@@ -959,8 +940,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot": from_bot,
                             "wamid": message_wamid['messages'][0]['id'],
                             "message_id": message_id,
-                            "front_id": front_id,
-                            "conversation_status":"end_bot"
+                            "front_id": front_id
                         }
                     )
                 else:
@@ -977,8 +957,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
-                            "created_at": created_at,
-                            "conversation_status":"end_bot"
+                            "created_at": created_at
                         }
                     )
             # Send message to room group
@@ -996,8 +975,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot":from_bot,
                             "wamid":'wamid',
                             "message_id":message_id,
-                            "created_at": created_at,
-                            "conversation_status":"end_bot"
+                            "created_at": created_at
                         }
                     )
                 else:
@@ -1024,7 +1002,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "message_id":message_id,
                             "created_at": created_at,
                             "front_id": front_id,
-                            "conversation_status":"end_bot"
                         }
                     )
 
@@ -1035,7 +1012,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
-        conversation_status = event["conversation_status"]
         
 
         if from_bot == "False":
@@ -1051,7 +1027,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message_id":message_id,
                     "created_at":created_at,
                     "from_bot":"False",
-                    "conversation_status":conversation_status,
                     "is_successfully":"true"
                 }))
         else:
@@ -1064,7 +1039,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "from_bot":"True",
-                    "conversation_status":conversation_status,
                     "is_successfully": "true",
                 }))
             
@@ -1074,8 +1048,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event["message_id"]
         from_bot = event["from_bot"]
         caption = event["caption"]
-        conversation_id = event["conversation_id"]
-        conversation_status = event["conversation_status"]        
+        conversation_id = event["conversation_id"]       
         if from_bot == "False":
             created_at = event["created_at"]
             media_url = event["media_url"]
@@ -1089,7 +1062,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message_id":message_id,
                     "created_at":created_at,
                     "from_bot":"False",
-                    "conversation_status":conversation_status,
                     "is_successfully":"true"
                 }))
         else:
@@ -1102,7 +1074,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "from_bot":"True",
-                    "conversation_status":conversation_status,
                     "is_successfully": "true",
                 }))
             
@@ -1113,7 +1084,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
-        conversation_status = ["conversation_status"]
         
         if from_bot == "False":
             created_at = event["created_at"]
@@ -1128,7 +1098,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message_id":message_id,
                     "created_at":created_at,
                     "from_bot":"False",
-                    "conversation_status":conversation_status,
                     "is_successfully":"true"
                 }))
         else:
@@ -1141,7 +1110,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "from_bot":"True",
-                    "conversation_status":conversation_status,
                     "is_successfully": "true",
                 }))      
                 
@@ -1152,7 +1120,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
-        conversation_status = ["conversation_status"]
 
         if from_bot == "False":
             created_at = event["created_at"]
@@ -1167,7 +1134,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message_id":message_id,
                     "created_at":created_at,
                     "from_bot":"False",
-                    "conversation_status":conversation_status,
                     "is_successfully":"true"
                 }))
         else:
@@ -1180,7 +1146,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "from_bot":"True",
-                    "conversation_status":conversation_status,
                     "is_successfully": "true",
                 }))
             
@@ -1191,7 +1156,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         wamid = event['wamid']
         conversation_id = event["conversation_id"]
-        conversation_status = ["conversation_status"]
 
         message_id_ = event["message_id"]
         created_at = event["created_at"]
@@ -1205,7 +1169,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "wamid":wamid,
                 "created_at":created_at,
                 "from_bot":"False",
-                "conversation_status":conversation_status,
                 "is_successfully":"true"
             }))
         else:
@@ -1219,7 +1182,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "from_bot":"True",
-                    "conversation_status":conversation_status,
                     "is_successfully": "true",
                 }))
 
@@ -1350,7 +1312,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def update_state_conversation(self, conversation_id):
         c =Conversation.objects.get(conversation_id=conversation_id)
-        c.state = "user"
+        c.state = "end_bot"
         return c.save()
 
     async def bot_integration_error(self, event):

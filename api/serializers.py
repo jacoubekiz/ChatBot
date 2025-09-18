@@ -300,7 +300,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'contact_id', 'status', 'last_message']
+        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message']
 
     def get_last_message(self, obj):
             last_message = obj.chatmessage_set.order_by('-created_at').first()

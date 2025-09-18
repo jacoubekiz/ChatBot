@@ -209,7 +209,12 @@ STATUS = (
     ('open', 'open'),
     ('closed', 'closed'),
     ('pending', 'pending'),
-    ('lock', 'lock')
+    ('lock', 'lock'),
+)
+
+STATUS_CONVERSATION = (
+    ('end_bot', 'end_bot'),
+    ('start_bot', 'start_bot')
 )
 
 CONTENT_TYPE = (
@@ -381,7 +386,7 @@ class Conversation(models.Model):
     contact_id = models.ForeignKey(Contact, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(choices=STATUS, max_length=20, default='open')
-    state = models.CharField(max_length=100, blank=True, null=True, default='start_bot')
+    state = models.CharField(choices=STATUS_CONVERSATION, max_length=100, blank=True, null=True, default='start_bot')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     # last_state_change = models.DateTimeField(default=timezone.now)

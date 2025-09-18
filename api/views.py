@@ -1281,10 +1281,18 @@ class RetrieveFlow(RetrieveAPIView):
 
     def get_object(self):
         obj = super().get_object()
-        print(obj.flow)
         file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
-        print(file_path)
         # with open(file_path, 'r') as file:
         #     data = json.load(file)
         # print(data)
         return obj
+
+class InitiateLiveChat(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, conversations_id):
+        state = request.datat['state']
+        conversation = Conversation.objects.get(conversations_id=conversations_id)
+        conversation.state = state
+        conversation.save()
+        return Response(status=status.HTTP_200_OK)

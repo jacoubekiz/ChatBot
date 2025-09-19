@@ -306,6 +306,7 @@ class ConversationSerializer(serializers.ModelSerializer):
             last_message = obj.chatmessage_set.order_by('-created_at').first()
             return ChatMessageSerializer(last_message).data if last_message else None
 
+
 class ConverstionSerializerCreate(serializers.ModelSerializer):
     class Meta:
         model = Conversation

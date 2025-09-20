@@ -53,9 +53,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data):
-        print(text_data)
         text_data_json = json.loads(text_data)
-        print(text_data_json)
         conversation_id = text_data_json["conversation_id"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']

@@ -749,6 +749,7 @@ def handel_request_redis(data, account_id):
                     message.status_updated_at = status_updated_at
                     message.save()
     except Exception as e:
+        print(e)
         error_redis = open('error_redis.txt', 'a')
         error_redis.write(f"your get the error: {e}\n")
     

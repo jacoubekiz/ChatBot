@@ -1029,6 +1029,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_flow = event["from_flow"]
         if from_flow == "True":
             content_type = event["content_type"]
+            created_at = event["created_at"]
         else:
             content_type = "message_status"
         wamid = event["wamid"]
@@ -1062,6 +1063,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "created_at":created_at,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
@@ -1070,6 +1072,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_flow = event["from_flow"]
         if from_flow == "True":
             content_type = event["content_type"]
+            created_at = event["created_at"]
         else:
             content_type = "message_status"
         wamid = event["wamid"]
@@ -1101,6 +1104,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "created_at":created_at,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
@@ -1109,6 +1113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_flow = event["from_flow"]
         if from_flow == "True":
             content_type = event["content_type"]
+            created_at = event["created_at"]
         else:
             content_type = "message_status"
         wamid = event["wamid"]
@@ -1141,6 +1146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "created_at":created_at,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))      
@@ -1149,6 +1155,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_flow = event["from_flow"]
         if from_flow == "True":
             content_type = event["content_type"]
+            created_at = event["created_at"]
         else:
             content_type = "message_status"
         wamid = event["wamid"]
@@ -1181,6 +1188,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "created_at":created_at,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
@@ -1188,6 +1196,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from room group
     async def chat_message(self, event):
         from_flow = event["from_flow"]
+        created_at = event["created_at"]
         if from_flow == "True":
             content_type = event["content_type"]
         else:
@@ -1221,6 +1230,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "conversation_id": conversation_id,
                     "front_id": front_id,
+                    "created_at":created_at,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))

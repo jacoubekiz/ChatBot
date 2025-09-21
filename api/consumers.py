@@ -1032,6 +1032,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             created_at = event["created_at"]
         else:
             content_type = "message_status"
+            created_at = ""
         wamid = event["wamid"]
         message_id = event["message_id"]
         from_bot = event["from_bot"]
@@ -1075,6 +1076,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             created_at = event["created_at"]
         else:
             content_type = "message_status"
+            created_at = ""
         wamid = event["wamid"]
         message_id = event["message_id"]
         from_bot = event["from_bot"]
@@ -1116,6 +1118,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             created_at = event["created_at"]
         else:
             content_type = "message_status"
+            created_at = ""
         wamid = event["wamid"]
         message_id = event["message_id"]
         from_bot = event["from_bot"]
@@ -1158,6 +1161,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             created_at = event["created_at"]
         else:
             content_type = "message_status"
+            created_at = ""
         wamid = event["wamid"]
         message_id = event["message_id"]
         from_bot = event["from_bot"]
@@ -1201,6 +1205,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = event["content_type"]
         else:
             content_type = "message_status"
+            created_at = ""
         content = event["content"]
         from_bot = event["from_bot"]
         wamid = event['wamid']

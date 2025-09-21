@@ -1031,7 +1031,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -1066,7 +1066,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -1102,7 +1102,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -1138,7 +1138,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
                     "conversation_id": conversation_id,
@@ -1174,7 +1174,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     "type": "message",
                     "content":content,
-                    "content_type":"message_status",
+                    "content_type":content_type,
                     "message_id": message_id_,
                     "wamid": wamid,
                     "conversation_id": conversation_id,

@@ -544,7 +544,10 @@ def handel_request_redis(data, account_id):
                 read_receipt(channel.channle_id, chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
             if value:
                 contact_phonenumber = value.get('messages', '')[0].get('from', '')
-                content_ = value.get('messages', '')[0].get('text', '').get('body','')
+                try:
+                    content_ = value.get('messages', '')[0].get('text', '').get('body','')
+                except:
+                    content_ = ''
                 wamid = value.get('messages', '')[0].get('id', '')
                 content_type = value.get('messages', '')[0].get('type', '')
                 display_phone_number = value.get('metadata', '').get('display_phone_number', '')

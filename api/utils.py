@@ -782,8 +782,8 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         pass
 
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber,channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
+    # url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

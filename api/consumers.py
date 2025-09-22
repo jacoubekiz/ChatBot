@@ -57,8 +57,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = text_data_json["conversation_id"]
         content_type = text_data_json["content_type"]
         from_bot = text_data_json['from_bot']
-        if from_bot == "True":
-            await self.update_state_conversation(conversation_id)
+            
         await self.change_status(conversation_id, from_bot)
 
     
@@ -711,6 +710,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             # handel receive template message
             case "template":
+                await self.update_state_conversation(conversation_id)
                 front_id = text_data_json['front_id']
                 content = text_data_json["content"]
                 template_info = text_data_json['template_info']
@@ -743,6 +743,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # handel receive voice message
             case "audio":
+                await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
@@ -804,6 +805,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # handel receive image
             case 'image':
+                await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
                 media_name = text_data_json["media_name"]
                 if from_bot == "True":
@@ -864,6 +866,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
             # handel receive video
             case 'video':
+                await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
@@ -923,6 +926,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
             # Send document to room group
             case 'document':
+                await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
@@ -980,6 +984,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
             # Send message to room group
             case 'text':
+                await self.update_state_conversation(conversation_id)
                 content = text_data_json["content"]
                 created_at = text_data_json['created_at']
                 if from_bot == "False":

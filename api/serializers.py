@@ -176,6 +176,23 @@ class AddAccountSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+class UpdateAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields  = ['id', 'username', 'email']
+        # extra_kwargs = {
+        #     'password':{'read_only':True},
+        # }
+    def update(self, instance, validated_data):
+        user_id = self.context.get('user_id')
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        account = Account.objects.get(user_id=user_id)
+        account.name = instance.username
+        account.save()
+        return instance
     
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:

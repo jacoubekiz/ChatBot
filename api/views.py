@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1008,6 +1008,18 @@ class CreateListAccount(GenericAPIView):
         accounts = Account.objects.filter(user__role_user='admin')
         serializer = AccontSerializer(accounts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class RetrieveUpdateDeleteAccount(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UpdateAccountSerializer
+    queryset = CustomUser.objects.all()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # print(self.args)
+        context['user_id'] = self.kwargs.get('pk')
+        return context
+
 
 class ListCreateChannelView(ListCreateAPIView):
     

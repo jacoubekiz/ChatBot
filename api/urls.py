@@ -9,27 +9,21 @@ router = DefaultRouter()
 
 urlpatterns = [
     path('bot-api/', BotAPI.as_view(), name = 'bot_api'),
-    # path('', include(router.urls)),
-
-    # path('get-redis/', GetData.as_view()),
-
     path('create-calander/', CreateCalenderView.as_view(), name='create-calander'),
     path('get-calander/<str:user_id>/', GetCalenderView.as_view(), name='get-calander'),
     path('get-hours-free/', GetHoursFree.as_view(), name='get-hours-free'),
     path('create-working-time/', CreateWorkingTimeView.as_view(), name='create-working-time'),
     path('create-book-an-appointment/', CreateBookAnAppointmentView.as_view(), name='create-an-appointment'),
     path('lsit-calendar-for-user/<str:calender_key>/', GetCalendarForUserView.as_view(), name='lsit-days-work-for-user'),
-
     path('get-first-ten-days/', GetFirstTenDays.as_view(), name='get-first-ten-days'),
     # path('get-doctors/', GetDoctorsView.as_view(), name='get-doctors'),
     path('get-doctors-calander/<str:doctor_id>/', GetDoctorsCalanderView.as_view(), name='get-doctors-calander'),
-    
-
     path('send-email/', SendEmailView.as_view(), name='send-email'),
 
 # add new api
     path('assign-role/<user_id>/', AssigningPermissions.as_view(), name='assign_role'),
     path('add-account/', CreateListAccount.as_view(), name='add_account'),
+    path('update-delete-account/<str:pk>/', RetrieveUpdateDeleteAccount.as_view(), name='update_delete_account'),
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
     path('add-team-member/<str:team_id>/', ListCreateTeamMemberView.as_view(), name='users'),
     path('list-all-members/<str:account_id>/', ListAllTeamMembers.as_view(), name='List_all_team_members'),

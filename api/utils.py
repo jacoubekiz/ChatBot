@@ -565,6 +565,7 @@ def handel_request_redis(data, account_id):
                         chat.save
                         chat.update_state('start')
                         conversation.state = 'start_bot'
+                        conversation.status =  'open'
                         conversation.save()
                     if conversation.state == 'start_bot':
                         match content_type:

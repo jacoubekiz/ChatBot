@@ -1346,9 +1346,9 @@ class RetrieveFlow(RetrieveAPIView):
 class InitiateLiveChat(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, conversations_id):
+    def post(self, request, conversation_id):
         state = request.datat['state']
-        conversation = Conversation.objects.get(conversations_id=conversations_id)
+        conversation = Conversation.objects.get(conversations_id=conversation_id)
         conversation.state = state
         conversation.save()
         return Response(status=status.HTTP_200_OK)

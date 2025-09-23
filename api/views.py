@@ -940,6 +940,19 @@ class ListCreateTeamView(ListCreateAPIView):
         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
         return account_id.team_set.all()
 
+class RetrieveUpdateDeleteTeamView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeamSerializer
+    lookup_field = 'team_id'
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        team_id = self.kwargs['team_id']
+        return Team.objects.filter(account_id=account_id, team_id=team_id)
+    
+    def perform_update(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account_id=account_id)
+    
 class AssigningPermissions(APIView):
     def post(self, request, user_id):
         user = CustomUser.objects.get(id=user_id)
@@ -988,6 +1001,25 @@ class ListCreateTeamMemberView(GenericAPIView):
         serializer = AddUserSerializer(team_id.members, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AddUserSerializer
+    lookup_field = 'pk'
+    def get_queryset(self):
+        team_id = self.kwargs['team_id']
+        user_id = self.kwargs['pk']
+        team = Team.objects.get(team_id=team_id)
+        return team.members.filter(id=user_id)
+    
+    def perform_update(self, serializer):
+        team_id = Team.objects.get(team_id=self.kwargs['team_id'])
+        serializer.save(team_id=team_id)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # context['team_id'] = self.kwargs['team_id']
+        context['role'] = self.request.data.get('role')
+        return context
 
 class CreateListAccount(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -1016,7 +1048,6 @@ class RetrieveUpdateDeleteAccount(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        # print(self.args)
         context['user_id'] = self.kwargs.get('pk')
         return context
 
@@ -1033,6 +1064,19 @@ class ListCreateChannelView(ListCreateAPIView):
         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
     
+class RetrieveUpdateDeleteChannelView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated,]
+    serializer_class = ChannleSerializer
+    lookup_field = 'account_id'
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        channel = self.kwargs['channel_id']
+        return Channle.objects.filter(account_id=account_id, channle_id=channel)
+
+    def perform_update(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account_id=account_id)
+
 class CreateNewContact(GenericAPIView):
     def post(self, request, account_id, channel_id):
         data = request.data

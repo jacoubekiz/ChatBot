@@ -25,7 +25,9 @@ urlpatterns = [
     path('add-account/', CreateListAccount.as_view(), name='add_account'),
     path('update-delete-account/<str:pk>/', RetrieveUpdateDeleteAccount.as_view(), name='update_delete_account'),
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
+    path('update-delete-channel/<str:account_id>/<str:channel_id>/', RetrieveUpdateDeleteChannelView.as_view(), name='update_delete_channel'),
     path('add-team-member/<str:team_id>/', ListCreateTeamMemberView.as_view(), name='users'),
+    path('update-delete-team-member/<str:pk>/<str:team_id>/', RetrieveUpdateDeleteTeamMemberView.as_view(), name='update_delete_team_member'),
     path('list-all-members/<str:account_id>/', ListAllTeamMembers.as_view(), name='List_all_team_members'),
     path('create-flow/<str:channel_id>/', AddListFlows.as_view(), name='create_flow'),
     path('set-default-flow/<str:channel_id>/', SetDefaultFlow.as_view(), name='set_default_flow'),
@@ -34,6 +36,7 @@ urlpatterns = [
     path('auth/logout/', LogoutAPIView.as_view()),
 
     path('add-team/<account_id>/', ListCreateTeamView.as_view(), name='teams'),
+    path('update-delete-team/<str:team_id>/<str:account_id>/', RetrieveUpdateDeleteTeamView.as_view(), name='update_delete_team'),
     path('create-contact/<account_id>/<channel_id>/', CreateNewContact.as_view(), name='create_contact'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),

@@ -316,7 +316,7 @@ class Trigger(models.Model):
 class Flow(models.Model):
     flow_name = models.CharField(max_length=100, default="flow_1")
     flow = models.FileField(upload_to='flows/')
-    trigger = models.ManyToManyField(Trigger, null=True, blank=True)
+    trigger = models.ManyToManyField(Trigger, blank=True)
     is_default = models.BooleanField(default=False)
 
     def __str__(self) -> str:
@@ -332,7 +332,7 @@ class Channle(models.Model):
     phone_number_id = models.PositiveBigIntegerField()
     organization_id = models.PositiveBigIntegerField(default=1)
     name = models.CharField(max_length=50)
-    flows = models.ManyToManyField(Flow)
+    flows = models.ManyToManyField(Flow, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

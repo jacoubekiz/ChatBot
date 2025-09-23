@@ -117,7 +117,11 @@ class AddUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields  = ['id', 'username', 'phonenumber', 'email', 'password', 'role_user']
         extra_kwargs = {
-            'password':{'write_only':True},
+            'password':{
+                'write_only':True,
+                'required':False,
+                'allow_null':False
+            },
         }
         
     def validate(self, attrs):
@@ -142,6 +146,24 @@ class AddUserSerializer(serializers.ModelSerializer):
         user.save()
         team.members.add(user)
         return user
+    
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
+        instance.role_user = validated_data.get('role_user', instance.role_user)
+        instance.save()
+        roles = self.context.get('role')
+        instance.user_permissions.clear()
+        user = CustomUser.objects.get(email=instance.email)
+        for role in roles:
+            content_type = ContentType.objects.get_for_model(CustomUser)
+            permission = Permission.objects.get(
+                codename= role,
+                content_type=content_type
+            )
+            user.user_permissions.add(permission)
+        return instance
     
 class AccontSerializer(serializers.ModelSerializer):
     channel_id = serializers.SerializerMethodField(read_only=True)
@@ -249,6 +271,11 @@ class TeamSerializer(serializers.ModelSerializer):
         validated_data['account_id'] = account
         team = Team.objects.create(**validated_data)
         return team
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        return instance
 
 class ChannleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -258,6 +285,16 @@ class ChannleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'account_id':{'read_only':True},
         }
+
+        def update(self, instance, validated_data):
+            instance.type_channle = validated_data.get('type_channle', instance.type_channle)
+            instance.tocken = validated_data.get('tocken', instance.tocken)
+            instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+            instance.phone_number_id = validated_data.get('phone_number_id', instance.phone_number_id)
+            instance.organization_id = validated_data.get('organization_id', instance.organization_id)
+            instance.name = validated_data.get('name', instance.name)
+            instance.save()
+            return instance
 
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)

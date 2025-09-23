@@ -1347,7 +1347,7 @@ class InitiateLiveChat(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, conversation_id):
-        state = request.datat['state']
+        state = request.data['state']
         conversation = Conversation.objects.get(conversations_id=conversation_id)
         conversation.state = state
         conversation.save()

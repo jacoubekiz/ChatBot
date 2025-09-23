@@ -1348,7 +1348,7 @@ class InitiateLiveChat(APIView):
 
     def post(self, request, conversation_id):
         state = request.data['state']
-        conversation = Conversation.objects.get(conversations_id=conversation_id)
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
         conversation.state = state
         conversation.save()
         return Response(status=status.HTTP_200_OK)

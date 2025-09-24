@@ -553,10 +553,10 @@ def handel_request_redis(data, account_id):
                 display_phone_number = value.get('metadata', '').get('display_phone_number', '')
                 contacts = value.get('contacts', '')
                 if contacts:
-                    account = Account.objects.get(account_id=account_id)
+                    channel = Channle.objects.filter(phone_number=display_phone_number).first()
+                    account = Account.objects.get(account_id=channel.account_id.account_id)
                     contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')
                     contact, created = Contact.objects.get_or_create(name=contact_name, phone_number=contact_phonenumber, account_id= account)
-                    channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                     restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(channel_id=channel.channle_id)]
                     if content_ in restart_keywords:

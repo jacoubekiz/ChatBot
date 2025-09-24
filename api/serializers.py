@@ -167,6 +167,7 @@ class AddUserSerializer(serializers.ModelSerializer):
     
 class AccontSerializer(serializers.ModelSerializer):
     channel_id = serializers.SerializerMethodField(read_only=True)
+    email = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Account
         fields = '__all__'
@@ -176,6 +177,12 @@ class AccontSerializer(serializers.ModelSerializer):
 
         try:
             return obj.channle_set.all().first().channle_id
+        except:
+            return None
+        
+    def get_email(self, obj):
+        try:
+            return obj.user.email
         except:
             return None
         
@@ -200,17 +207,22 @@ class AddAccountSerializer(serializers.ModelSerializer):
         return user
 
 class UpdateAccountSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='username')  # Map 'name' to 'username' field
+
     class Meta:
         model = CustomUser
-        fields  = ['id', 'username', 'email']
-        # extra_kwargs = {
-        #     'password':{'read_only':True},
-        # }
+        fields = ['id', 'name', 'email']  # Use 'name' instead of 'username'
+
     def update(self, instance, validated_data):
         user_id = self.context.get('user_id')
-        instance.username = validated_data.get('username', instance.username)
+        
+        # Handle the username update (coming from 'name' field)
+        if 'username' in validated_data:
+            instance.username = validated_data['username']
+        
         instance.email = validated_data.get('email', instance.email)
         instance.save()
+        
         account = Account.objects.get(user_id=user_id)
         account.name = instance.username
         account.save()

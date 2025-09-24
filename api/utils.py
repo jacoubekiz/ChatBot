@@ -552,7 +552,7 @@ def handel_request_redis(data, account_id):
                 content_type = value.get('messages', '')[0].get('type', '')
                 display_phone_number = value.get('metadata', '').get('display_phone_number', '')
                 contacts = value.get('contacts', '')
-                if contacts:
+                if contacts: 
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     account = Account.objects.get(account_id=channel.account_id.account_id)
                     contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')

@@ -38,6 +38,7 @@ urlpatterns = [
     path('add-team/<account_id>/', ListCreateTeamView.as_view(), name='teams'),
     path('update-delete-team/<str:team_id>/<str:account_id>/', RetrieveUpdateDeleteTeamView.as_view(), name='update_delete_team'),
     path('create-contact/<account_id>/<channel_id>/', CreateNewContact.as_view(), name='create_contact'),
+    path('update-delete-contact/<str:contact_id>/', RetrieveUpdateDestroyContactView.as_view(), name='update_delete_contact'),
     path('contacts/', ListContactView.as_view(), name='contacts'),
     path('conversations/<str:channel_id>/', ListConversationView.as_view(), name='conversations'),
     path('reassign-conversation/<str:conversation_id>/', ReasignConversation.as_view(), name='reassign_conversation'),

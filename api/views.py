@@ -1087,6 +1087,12 @@ class CreateNewContact(GenericAPIView):
         contact.save()
         return Response(contact.data, status=status.HTTP_200_OK)
     
+class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Contact.objects.all()
+    lookup_field = 'contact_id'
+    
 class ViewLogin(GenericAPIView):
 
     def post(self, request):

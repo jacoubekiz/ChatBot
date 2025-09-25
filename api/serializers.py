@@ -314,7 +314,15 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = ['contact_id', 'account_id', 'name', 'phone_number', 'email', "conversation_id"]
         extra_kwargs ={
-            'account_id':{'read_only':True}
+            'account_id':{
+                # 'read_only':True,
+                'required':False,
+                'allow_null':False
+            },
+            'conversation_id':{
+                'required':False,
+                'allow_null':False
+            }
         }
     def create(self, validated_data):
         account_id = self.context.get('account_id')
@@ -323,6 +331,14 @@ class ContactSerializer(serializers.ModelSerializer):
         contact = Contact.objects.create(**validated_data)
         conversation = Conversation.objects.create(account_id=account_id, channle_id=channel_id, contact_id=contact)
         return contact
+    
+    def update(self, instance, validated_data):
+        instance.account_id = validated_data.get('account_id', instance.account_id)
+        instance.name = validated_data.get('name', instance.name)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        return instance
     
     def get_conversation_id(self, obj):
         contact = Contact.objects.get(contact_id=obj.contact_id)

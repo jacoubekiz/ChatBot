@@ -52,6 +52,7 @@ urlpatterns = [
     path('register-response-client/', RegisterResponseClient.as_view()),
 
     path('create-template/<str:channel_id>/', ListCreateTemplate.as_view(), name='create-template'),
+    path('handle-file-upload/<str:channel_id>/', HandleFileUpload.as_view(), name='handle-file-upload'),
     path('get-template/', GetTemplate.as_view(), name='get-template'),
 
     path('send-template/<str:channel_id>/', SendTemplate.as_view(), name='send_template'),

@@ -615,7 +615,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 platform=platform,
                                                 question=question)
 
-                            
+                                chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                                    conversation_id=await database_sync_to_async(Conversation.objects.get)(conversation_id=conversation_id),
+                                    content_type=r_type,
+                                    media_url = question['source'],
+                                    caption=message,
+                                    from_message='bot',
+                                    wamid=message_wamid['messages'][0]['id']
+                                )
+                                
+                                await self.channel_layer.group_send(
+                                    self.room_group_name, {
+                                        "type": "chat_message_document",
+                                        "conversation_id": conversation_id,
+                                        "content": '',
+                                        "caption": message,
+                                        "content_type": r_type,
+                                        "from_bot": "True",
+                                        "wamid": message_wamid['messages'][0]['id'],
+                                        "message_id": chat_message.message_id,
+                                        "from_flow":"True",
+                                        "front_id": "auto_generated"
+                                    }
+                                )
                             elif r_type == 'audio' or r_type == 'sticker' or r_type == 'video':
 
                                 message_wamid = send_message(message_content=message,
@@ -627,6 +649,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 chat_id=chat.id,
                                                 platform=platform,
                                                 question=question)
+                                chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                                    conversation_id=await database_sync_to_async(Conversation.objects.get)(conversation_id=conversation_id),
+                                    content_type=r_type,
+                                    media_url = question['source'],
+                                    caption=message,
+                                    from_message='bot',
+                                    wamid=message_wamid['messages'][0]['id']
+                                )
+                                
+                                await self.channel_layer.group_send(
+                                    self.room_group_name, {
+                                        "type": "chat_message_document",
+                                        "conversation_id": conversation_id,
+                                        "content": '',
+                                        "caption": message,
+                                        "content_type": r_type,
+                                        "from_bot": "True",
+                                        "wamid": message_wamid['messages'][0]['id'],
+                                        "message_id": chat_message.message_id,
+                                        "from_flow":"True",
+                                        "front_id": "auto_generated"
+                                    }
+                                )
 
                 
                             elif r_type == 'contact' or r_type == 'location':

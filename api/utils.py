@@ -11,6 +11,7 @@ from django_redis import get_redis_connection
 import websocket
 from django.core.files.base import ContentFile
 from bot.settings import TOKEN_ACCOUNTS
+import mimetypes
 
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
@@ -1024,20 +1025,71 @@ def resolve_app_id_from_token(access_token: str) -> str:
         "No META_APP_ID/META_APP_SECRET set or second attempt failed."
     )
 
-def upload_audio_to_whatsapp(file_path, phone_number_id, bearer_token):
-    url = f"https://graph.facebook.com/v21.0/{phone_number_id}/media"
+# import os
+# import requests
+# from mimetypes import guess_type
+
+def upload_audio_to_whatsapp(file_path, access_token, phone_number_id):
+    """
+    Upload audio file to WhatsApp Business API
+    """
+    # Verify file exists
+    if not os.path.exists(file_path):
+        raise Exception(f"Audio file not found: {file_path}")
+    
+    # Get file extension and MIME type
+    file_extension = os.path.splitext(file_path)[1].lower()
+    mime_type, _ = mimetypes.guess_type(file_path)
+    
+    # Map file extensions to WhatsApp-supported MIME types
+    mime_type_mapping = {
+        '.mp3': 'audio/mpeg',
+        '.aac': 'audio/aac',
+        '.mp4': 'audio/mp4',
+        '.amr': 'audio/amr',
+        '.ogg': 'audio/ogg',
+        '.opus': 'audio/opus',
+        '.m4a': 'audio/mp4',
+        '.wav': 'audio/ogg',  # Convert WAV to OGG or use MP3
+    }
+    
+    # Use mapped MIME type or detected type
+    if file_extension in mime_type_mapping:
+        mime_type = mime_type_mapping[file_extension]
+    elif not mime_type or mime_type == 'application/octet-stream':
+        raise Exception(f"Unsupported audio format: {file_extension}. Supported: {list(mime_type_mapping.keys())}")
+    
+    # Prepare upload request
+    upload_url = f"https://graph.facebook.com/v21.0/{phone_number_id}/media"
+    
     headers = {
-        'Authorization': f'{bearer_token}'
+        "Authorization": f"{access_token}",
     }
-
-    files = {
-        'file': open(file_path, 'rb'),
-        'type': (None, 'audio/ogg'),
-        'messaging_product': (None, 'whatsapp')
+    
+    data = {
+        "type": "audio",  # Important: specify this is audio
+        "messaging_product": "whatsapp",
     }
-
-    response = requests.post(url, headers=headers, files=files)
-    if response.status_code == 200:
-        return response.json().get('id')
-    else:
-        raise Exception(f"Failed to upload audio. Status code: {response.status_code}, Response: {response.text}")
+    
+    try:
+        with open(file_path, 'rb') as audio_file:
+            files = {
+                "file": (os.path.basename(file_path), audio_file, mime_type)
+            }
+            
+            response = requests.post(
+                upload_url,
+                headers=headers,
+                data=data,
+                files=files,
+                timeout=30
+            )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result.get('id')  # Return media ID
+        else:
+            raise Exception(f"Failed to upload audio. Status code: {response.status_code}, Response: {response.text}")
+            
+    except Exception as e:
+        raise Exception(f"Error uploading audio: {str(e)}")

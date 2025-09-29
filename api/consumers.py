@@ -798,8 +798,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     token = await self.get_token(conversation_id)
                     content = text_data_json["content"]
                     decoded_audio = base64.b64decode(content)
-                    # output_folder = 'media/chat_message/'
-                    output_folder = f'/var/www/html/media/chat_message/'
+                    output_folder = 'media/chat_message/'
+                    # output_folder = f'/var/www/html/media/chat_message/'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)

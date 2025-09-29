@@ -1070,13 +1070,13 @@ def upload_audio_to_whatsapp(file_path, access_token, phone_number_id):
         "type": "audio",  # Important: specify this is audio
         "messaging_product": "whatsapp",
     }
-    
+    print(mime_type)
     try:
         with open(file_path, 'rb') as audio_file:
             files = {
                 "file": (os.path.basename(file_path), audio_file, mime_type)
             }
-            
+            print(files)
             response = requests.post(
                 upload_url,
                 headers=headers,

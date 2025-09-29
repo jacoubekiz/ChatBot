@@ -320,7 +320,7 @@ def send_message(version = '18.0',
                 "to": f"{to}",
                 "type": type,
                 "audio": {
-                    "link": source
+                    "id": source
                 }
                 }
             )
@@ -1023,3 +1023,21 @@ def resolve_app_id_from_token(access_token: str) -> str:
         f"Self-introspection error: {first_err or 'n/a'}; "
         "No META_APP_ID/META_APP_SECRET set or second attempt failed."
     )
+
+def upload_audio_to_whatsapp(file_path, phone_number_id, bearer_token):
+    url = f"https://graph.facebook.com/v21.0/{phone_number_id}/media"
+    headers = {
+        'Authorization': f'{bearer_token}'
+    }
+
+    files = {
+        'file': open(file_path, 'rb'),
+        'type': (None, 'audio/ogg'),
+        'messaging_product': (None, 'whatsapp')
+    }
+
+    response = requests.post(url, headers=headers, files=files)
+    if response.status_code == 200:
+        return response.json().get('id')
+    else:
+        raise Exception(f"Failed to upload audio. Status code: {response.status_code}, Response: {response.text}")

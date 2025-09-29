@@ -793,17 +793,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
                     front_id = text_data_json['front_id']
-                    message_wamid = send_message(
-                        message_content= '',
-                        to= await self.get_phonenumber(conversation_id),
-                        wa_id= await self.get_waid(conversation_id),
-                        bearer_token= await self.get_token(conversation_id),
-                        chat_id=conversation_id,
-                        platform="whatsapp",
-                        # question={"label":caption},
-                        type="audio",
-                        source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
-                    )
+                    phonenumber_id =await self.get_waid(conversation_id)
+                    phonenumber = await self.get_phonenumber(conversation_id)
+                    token = await self.get_token(conversation_id)
                     content = text_data_json["content"]
                     decoded_audio = base64.b64decode(content)
                     # output_folder = 'media/chat_message'
@@ -811,6 +803,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)
+                    audio_id = sync_to_async(upload_audio_to_whatsapp)(token, phonenumber_id, file_path)
+                    message_wamid = send_message(
+                        message_content= '',
+                        to= phonenumber,
+                        wa_id= phonenumber_id,
+                        bearer_token= token,
+                        chat_id=conversation_id,
+                        platform="whatsapp",
+                        # question={"label":caption},
+                        type="audio",
+                        source=audio_id,
+                    )
                     conversation_id = await self.get_conversation(conversation_id)
                     message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
@@ -1367,6 +1371,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         file = UploadImage.objects.create(image_file=file_name)
         return file.get_absolute_url
 
+    @database_sync_to_async
+    def get_phonenumber_id(self, conversation_id):
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        phonenumber_id = conversation.channle_id.phone_number_id
+        return phonenumber_id
+          
     @database_sync_to_async
     def get_conversation(self, conversation_id):
         conversation = Conversation.objects.get(conversation_id=conversation_id)

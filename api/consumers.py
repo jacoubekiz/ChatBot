@@ -310,7 +310,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                             content_type='text',
                                             content=message,
                                             from_message='bot',
-                                            wamid=message_wamid['messages'][0]['id']
+                                            wamid=wamid
                                         )
                                     
                                     # Send message through WebSocket

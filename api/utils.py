@@ -1033,15 +1033,6 @@ TIMEOUT = 60  # seconds
 class WhatsAppApiError(Exception):
     pass
 
-def _raise_for_api_error(resp):
-    if 200 <= resp.status_code < 300:
-        return
-    try:
-        body = resp.json()
-    except Exception:
-        body = resp.text
-    raise WhatsAppApiError("HTTP {}: {}".format(resp.status_code, body))
-
 def which(cmd):
     return shutil.which(cmd)
 

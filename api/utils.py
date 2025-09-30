@@ -74,7 +74,7 @@ def show_response(question, questions):
 
     r_type = question['type']
     try:
-        question_attribute = question['attribute_name']
+        question_attribute = question['attributeName']
     except:
         question_attribute = ''
     if current_response:

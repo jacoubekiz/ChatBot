@@ -305,6 +305,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                         
                                     else:
+                                        attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id)
+                                        attr.value = user_reply
+                                        await database_sync_to_async(attr.save)()
                                         next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
                                         await database_sync_to_async(chat.update_state)(next_question_id)
                                         chat.isSent = False

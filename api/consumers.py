@@ -305,6 +305,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                         
                                     else:
+                                        message_wamid = await sync_to_async(send_message)(
+                                            message_content=message,
+                                            choices=choices,
+                                            type='interactive', 
+                                            interaction_type='button',
+                                            to=chat.conversation_id,
+                                            bearer_token=channel.tocken,
+                                            wa_id=channel.phone_number_id,
+                                            chat_id=chat.id,
+                                            platform=platform,
+                                            question=question
+                                        )
+                                    
+                                        chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                                            conversation_id=await database_sync_to_async(Conversation.objects.get)(conversation_id=conversation_id),
+                                            content_type='text',
+                                            content=message,
+                                            from_message='bot',
+                                            wamid=message_wamid['messages'][0]['id']
+                                        )
+                                    
+                                    # Send message through WebSocket
+                                        await self.channel_layer.group_send(
+                                            self.room_group_name, {
+                                                "type": "chat_message",
+                                                "content": message,
+                                                "content_type": 'text',
+                                                "wamid": message,
+                                                "conversation_id": conversation_id,
+                                                "from_bot": "True",
+                                                "message_id": chat_message.message_id,
+                                                "created_at": f"{chat_message.created_at}",
+                                                "from_flow":"True",
+                                                "front_id": "auto_generated"
+                                            }
+                                        )
                                         attr, created = await database_sync_to_async(Attribute.objects.get_or_create)(key=attribute_name, chat_id=chat.id)
                                         attr.value = user_reply
                                         await database_sync_to_async(attr.save)()

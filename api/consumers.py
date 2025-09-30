@@ -600,6 +600,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "wamid": message_wamid['messages'][0]['id'],
                                         "message_id": chat_message.message_id,
                                         "created_at": f"{chat_message.created_at}",
+                                        "media_url":chat_message.media_url,
                                         "from_flow":"True",
                                         "front_id": "auto_generated"
                                     }
@@ -636,6 +637,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "wamid": message_wamid['messages'][0]['id'],
                                         "message_id": chat_message.message_id,
                                         "created_at": f"{chat_message.created_at}",
+                                        "media_url":chat_message.media_url,
                                         "from_flow":"True",
                                         "front_id": "auto_generated"
                                     }
@@ -671,6 +673,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         "wamid": message_wamid['messages'][0]['id'],
                                         "message_id": chat_message.message_id,
                                         "created_at": f"{chat_message.created_at}",
+                                        "media_url":chat_message.media_url,
                                         "from_flow":"True",
                                         "front_id": "auto_generated"
                                     }

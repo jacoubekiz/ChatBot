@@ -305,19 +305,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         return True
                                         
                                     else:
-                                        message_wamid = await sync_to_async(send_message)(
-                                            message_content=message,
-                                            choices=choices,
-                                            type='interactive', 
-                                            interaction_type='button',
-                                            to=chat.conversation_id,
-                                            bearer_token=channel.tocken,
-                                            wa_id=channel.phone_number_id,
-                                            chat_id=chat.id,
-                                            platform=platform,
-                                            question=question
-                                        )
-                                    
                                         chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                                             conversation_id=await database_sync_to_async(Conversation.objects.get)(conversation_id=conversation_id),
                                             content_type='text',

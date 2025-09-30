@@ -845,8 +845,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case 'image':
                 await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
-                media_name = text_data_json["media_name"]
                 if from_bot == "True":
+                    media_name = text_data_json["media_name"]
                     message_wamid = send_message(
                         message_content= caption,
                         to= await self.get_phonenumber(conversation_id),

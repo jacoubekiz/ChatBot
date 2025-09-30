@@ -592,13 +592,13 @@ def handel_request_redis(data, account_id):
                                 # )
                             case "interactive":
                                 content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
-                                chat_message = ChatMessage.objects.create(
-                                    conversation_id = conversation,
-                                    content_type = 'text',
-                                    content = content,
-                                    from_message = conversation.contact_id.name,
-                                    wamid = wamid
-                                )
+                                # chat_message = ChatMessage.objects.create(
+                                #     conversation_id = conversation,
+                                #     content_type = 'text',
+                                #     content = content,
+                                #     from_message = conversation.contact_id.name,
+                                #     wamid = wamid
+                                # )
                         connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)
                     else:        
                         match content_type:

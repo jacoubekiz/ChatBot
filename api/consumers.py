@@ -291,7 +291,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         await self.channel_layer.group_send(
                                             self.room_group_name, {
                                                 "type": "chat_message",
-                                                "content": error_message,
+                                                "content": user_reply,
                                                 "content_type": 'text',
                                                 "wamid": wamid,
                                                 "conversation_id": conversation_id,
@@ -308,8 +308,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                                             conversation_id=await database_sync_to_async(Conversation.objects.get)(conversation_id=conversation_id),
                                             content_type='text',
-                                            content=message,
-                                            from_message='bot',
+                                            content=user_reply,
+                                            from_message=contact_name,
                                             wamid=wamid
                                         )
                                     
@@ -319,9 +319,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "type": "chat_message",
                                                 "content": message,
                                                 "content_type": 'text',
-                                                "wamid": message,
+                                                "wamid": wamid,
                                                 "conversation_id": conversation_id,
-                                                "from_bot": "True",
+                                                "from_bot": "False",
                                                 "message_id": chat_message.message_id,
                                                 "created_at": f"{chat_message.created_at}",
                                                 "from_flow":"True",
@@ -1290,6 +1290,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         created_at = event["created_at"]
         if from_flow == "True":
             content_type = event["content_type"]
+            created_at = event["created_at"]
         else:
             content_type = "message_status"
             created_at = ""

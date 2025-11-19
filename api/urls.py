@@ -27,6 +27,7 @@ urlpatterns = [
     path('add-channel/<str:account_id>/', ListCreateChannelView.as_view(), name='add_channel'),
     path('update-delete-channel/<str:account_id>/<str:channel_id>/', RetrieveUpdateDeleteChannelView.as_view(), name='update_delete_channel'),
     path('add-team-member/<str:team_id>/', ListCreateTeamMemberView.as_view(), name='users'),
+    path('list-team-member/<str:account_id>/', ListTeamMember.as_view(), name='team_members'),
     path('update-delete-team-member/<str:pk>/<str:team_id>/', RetrieveUpdateDeleteTeamMemberView.as_view(), name='update_delete_team_member'),
     path('list-all-members/<str:account_id>/', ListAllTeamMembers.as_view(), name='List_all_team_members'),
     path('create-flow/<str:channel_id>/', AddListFlows.as_view(), name='create_flow'),

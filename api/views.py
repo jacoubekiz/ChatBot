@@ -986,6 +986,21 @@ class AssigningPermissions(APIView):
 #         team_id = Team.objects.get(team_id=self.kwargs['team_id'])
 #         return team_id.members
 
+class ListTeamMember(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        members = account.team_set.all()
+        team_member = []
+        for member in members:
+            m = member.members.all()
+            for i in m:
+                team_member.append(i.username)
+        data = {
+            'members': team_member
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
 
 class ListCreateTeamMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]

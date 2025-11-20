@@ -996,7 +996,7 @@ class ListTeamMember(GenericAPIView):
         for member in members:
             m = member.members.all()
             for i in m:
-                team_member.append(i.username)
+                team_member.append(({"username": i.username, "id": i.id}))
         data = {
             'members': team_member
         }

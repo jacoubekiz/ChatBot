@@ -996,7 +996,7 @@ class ListTeamMember(GenericAPIView):
         for member in members:
             m = member.members.all()
             for i in m:
-                team_member.append(({"username": i.username, "id": i.id}))
+                team_member.append(({"username": i.username, "id": i.id, "account":account_id}))
         data = {
             'members': team_member
         }
@@ -1120,12 +1120,17 @@ class ViewLogin(GenericAPIView):
             permissions = list(user.get_all_permissions())
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
+            team = Team.objects.filter(members__id=user.id).first()
+            account_id = team.account_id.account_id
+            channel_id = Channle.objects.filter(account_id__account_id = account_id).first()
             data = {
                 'tokens':tokens,
                 'user': {
                     'id':user.id,
                     'name':user.username,
                     'role':user.role_user,
+                    'account_id': account_id,
+                    'channel_id': channel_id.channle_id,
                     'permissions': list(user.get_all_permissions())
                 }
             }

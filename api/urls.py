@@ -47,17 +47,16 @@ urlpatterns = [
     path('initite-live-chat/<str:conversation_id>/', InitiateLiveChat.as_view(), name='initite_live_chat'),
     # path('get-data-from-redis/', GetDataFromRedis.as_view(), name='get-data-from-reis'),
     path('webhook/', WebhookView.as_view(), name='webhook'),
-
     path('convert-image-base64/', ImageToBase64View.as_view(), name='image_to_base64'),
-
     path('register-response-client/', RegisterResponseClient.as_view()),
-
     path('create-template/<str:channel_id>/', ListCreateTemplate.as_view(), name='create-template'),
     path('handle-file-upload/<str:channel_id>/', HandleFileUpload.as_view(), name='handle-file-upload'),
     path('get-template/', GetTemplate.as_view(), name='get-template'),
-
     path('send-template/<str:channel_id>/', SendTemplate.as_view(), name='send_template'),
-
     path('file-upload/<str:channel_id>/', FileUploadView.as_view(), name='file-upload'),
+    path('change-conversation-status/<str:conversation_id>/', ChangeConversationStatus.as_view(), name='change_conversation_status'),
+    path('tags/<str:account_id>/', CreateTagView.as_view(), name='create_tag'),
+    path('add-tag-to-conversation/<str:conversation_id>/', AddTagToConversation.as_view(), name='add_tag_to_conversation'),
+    path('change-password/<str:user_id>/', ChangePasswordView.as_view(), name='change_password'),
 ]
 

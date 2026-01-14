@@ -423,3 +423,30 @@ class SerializerFlows(serializers.ModelSerializer):
     class Meta:
         model = Flow
         fields = '__all__'
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+class ChangePasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        new_password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+        if new_password != confirm_password:
+            raise serializers.ValidationError("كلمات المرور غير متطابقة.")
+        validate_password(new_password)
+        return attrs
+    
+    def save(self, **kwargs):
+        user = self.context.get('user')
+        # user_login = CustomUser.objects.get(id=)
+        if self.context.get('user_login').role_user != 'admin':
+            raise serializers.ValidationError("ليس لديك الصلاحية للقيام بهذا الإجراء")
+        new_password = self.validated_data.get('new_password')
+        user.set_password(new_password)
+        user.save()
+        return user

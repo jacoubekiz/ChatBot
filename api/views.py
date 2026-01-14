@@ -1378,3 +1378,57 @@ class InitiateLiveChat(APIView):
         conversation.state = state
         conversation.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class ChangeConversationStatus(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, conversation_id):
+        status_ = request.data['status']
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation.status = status_
+        conversation.save()
+        return Response(status=status.HTTP_200_OK)
+
+class AddTagToConversation(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, conversation_id):
+        tag_ids = request.data.get('tag_ids', [])
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        for tag_id in tag_ids:
+            tag = Tag.objects.get(tag_id=tag_id)
+            conversation.tags.add(tag)
+        conversation.save()
+        return Response(status=status.HTTP_200_OK)
+
+class CreateTagView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, account_id):
+        name = request.data['name']
+        account = Account.objects.get(account_id=account_id)
+        tag = Tag.objects.create(
+            name=name,
+            account_id=account
+        )
+        return Response({'tag_id': tag.tag_id, 'name': tag.name}, status=status.HTTP_201_CREATED)
+    
+    def get(self, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        tags = account.tag_set.all()
+        data = []
+        for tag in tags:
+            data.append({'tag_id': tag.tag_id, 'name': tag.name})
+        return Response(data, status=status.HTTP_200_OK)
+
+class ChangePasswordView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, user_id):
+        data = request.data
+        user = CustomUser.objects.get(id=user_id)
+        serializer = ChangePasswordSerializer(data=data, context={'user': user, 'user_login': request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)

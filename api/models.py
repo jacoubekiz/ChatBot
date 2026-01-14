@@ -376,7 +376,13 @@ class Attribute(models.Model):
         return f'{self.key} - {self.value}'
 # _____________________________________________________________________________________________________________________
 
+class Tag(models.Model):
+    tag_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
 
+    def __str__(self) -> str:
+        return self.name
 
 
 class Conversation(models.Model):
@@ -389,6 +395,7 @@ class Conversation(models.Model):
     state = models.CharField(choices=STATUS_CONVERSATION, max_length=100, blank=True, null=True, default='start_bot')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+    tags = models.ManyToManyField(Tag, blank=True)
     # last_state_change = models.DateTimeField(default=timezone.now)
 
     # def update_state(self, new_state):

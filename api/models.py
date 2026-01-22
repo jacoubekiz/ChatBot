@@ -241,9 +241,11 @@ STATUS_MESSAGE_STATUS = (
 )
 
 STATUS_CAMPAIGN = (
-    ('active', 'active'),
-    ('inactive', 'inactive'),
-    ('complated', 'complated')
+    ('draft', 'Draft'),
+    ('scheduled', 'Scheduled'),
+    ('processing', 'Processing'),
+    ('completed', 'Completed'),
+    ('failed', 'Failed'),
 )
 
 TYPE_SETTTING = (
@@ -251,6 +253,14 @@ TYPE_SETTTING = (
     ('integrations', 'integrations'),
     ('labels', 'labels'),
     ('quick_replies', 'quick_replies')
+)
+
+
+METHOD_CHOICES = (
+    ('GET', 'GET'),
+    ('POST', 'POST'),
+    ('PUT', 'PUT'),
+    ('DELETE', 'DELETE'),
 )
 
 class Account(models.Model):
@@ -454,19 +464,52 @@ class MediaManagement(models.Model):
     def __str__(self) -> str:
         return f'media management for message id {self.message_id.message_id}'
     
-class Campaign(models.Model):
+class WhatsAppCampaign(models.Model):
     campaign_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50, null=True, blank=True)
-    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20, default='active')
-    start_date = models.DateField(auto_now_add=False)   
-    end_date = models.DateField(auto_now_add=False)
+    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20, default='draft')
+    csv_file = models.FileField(upload_to='campaigns/csv/')
+    template_name = models.CharField(max_length=100)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    total_recipients = models.IntegerField(default=0)
+    sent_count = models.IntegerField(default=0)
+    failed_count = models.IntegerField(default=0)
+    scheduled_time = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self) -> str:
+        return f'campaign for account {self.account_id.name}'
+    
+class API(models.Model):
+    api_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    api_name = models.CharField(max_length=50, null=True, blank=True)
+    endpoint = models.URLField(max_length=200, null=True, blank=True)
+    method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
+    body = models.TextField(null=True, blank=True)
+    headers = models.TextField(null=True, blank=True)
+    tocken = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'campaign for account {self.account_id.name}'
+        return f'api for account {self.account_id.name}'
     
+class Parameter(models.Model):
+    parameter_id = models.AutoField(primary_key=True)
+    api = models.ForeignKey(API, on_delete=models.CASCADE, null=True, blank=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    key = models.CharField(max_length=100, null=True, blank=True)
+    value = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f'parameter {self.key}'
 class InternalChat(models.Model):
     caht_id = models.AutoField(primary_key=True)
     team_id = models.ForeignKey(Team, on_delete=models.CASCADE)

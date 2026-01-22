@@ -263,6 +263,10 @@ class LogoutSerializer(serializers.Serializer):
             self.fail('bad_token')
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'phonenumber', 'role_user']
 # class TeamAccountSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Account
@@ -403,7 +407,7 @@ class ConverstionSerializerCreate(serializers.ModelSerializer):
 
 class CampaignsSerilizer(serializers.ModelSerializer):
     class Meta:
-        model = Campaign
+        model = WhatsAppCampaign
         fields = ['campaign_id', 'name', 'status', 'start_date', 'end_date']
 
         extra_kwargs = {
@@ -450,3 +454,30 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+    
+
+class APISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = API
+        fields = ['api_name', 'endpoint', 'method', 'body']
+
+    def create(self, validated_data):
+        parameters = self.context.get('parameters', [])
+        account = self.context.get('account')
+        validated_data['account_id'] = account
+        api = API.objects.create(**validated_data)
+        if parameters:
+            for param in parameters:
+                for key, value in param.items():
+                    param_obj = Parameter.objects.create(
+                        account_id=account,
+                        api = api,
+                        key=key,
+                        value=value
+                    )
+        return api
+
+class ParameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Parameter
+        fields = '__all__'

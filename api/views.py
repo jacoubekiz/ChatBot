@@ -11,7 +11,6 @@ from django.core.files.storage import default_storage
 from .models import *
 from .configure_api import *
 from .handel_time import *
-from rest_framework import viewsets
 import hashlib
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
@@ -29,6 +28,8 @@ from .send_email import *
 import openpyxl
 from .pagination import *
 from django.http import HttpResponse
+import pandas as pd
+import csv
 
 def write_inside_excel(data):
         response = data['response']
@@ -1204,24 +1205,107 @@ class ReasignConversation(GenericAPIView):
 
         return Response(status=status.HTTP_200_OK)
 
+class HandelCSView(GenericAPIView):
+    def post(self, request):
+        data = request.data
+        try:
+            df = pd.read_csv(data['file'])
+            for index, row in df.iterrows():
+                if row.get('Status') != 'Open':
+                    filename = f'media/error_2.csv'
+                    file_exists = os.path.isfile(filename)
+                    with open(filename, 'a', encoding='utf-8') as file:
+                        writer = csv.writer(file)
+                        if not file_exists:
+                            writer.writerow(['Phone Number', 'Name', 'Error'])
+                        writer.writerow([row.get('Phone Number'), row.get('Name'), 'Invalid Status Open'])
+                elif type(row.get('Phone Number')) != int :
+                    filename = f'media/error_2.csv'
+                    file_exists = os.path.isfile(filename)
+                    with open(filename, 'a', encoding='utf-8') as file:
+                        writer = csv.writer(file)
+                        if not file_exists:
+                            writer.writerow(['Phone Number', 'Name', 'Error'])
+                        writer.writerow([row.get('Phone Number'), row.get('Name'), 'Invalid Phone Number'])
+                elif type(row.get('Phone Dial Code')) != int :
+                    filename = f'media/error_2.csv'
+                    file_exists = os.path.isfile(filename)
+                    with open(filename, 'a', encoding='utf-8') as file:
+                        writer = csv.writer(file)
+                        if not file_exists:
+                            writer.writerow(['Phone Number', 'Name', 'Error'])
+                        writer.writerow([row.get('Phone Number'), row.get('Name'), 'Invalid Phone Number']) 
+
+        except:
+            return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
+
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerilizer
-    pagination_class = [IsAuthenticated]
+    # pagination_class = [IsAuthenticated]
 
     def get(self, request):
-        campaigns = Campaign.objects.all()
+        campaigns = WhatsAppCampaign.objects.all()
         serializer_campaigns = self.get_serializer(campaigns, many=True)
         data = serializer_campaigns.data
 
         return Response(data, status=status.HTTP_200_OK)
     
-    def post(self, request):
+    def post(self, request, channel_id):
+        channel_id = Channle.objects.get(channle_id=channel_id)
         data = request.data
-        campaigs = self.get_serializer(data=data, many=False)
-        campaigs.is_valid(raise_exception=True)
-        campaigs.save()
+        template_info = data.get('template_info')
+        print(template_info)
+        file = data.get('file')
+        if file:
+            try:
+                df = pd.read_csv(file)
+                contacts = []
+                for index, row in df.iterrows():
+                    url = f"https://graph.facebook.com/v22.0/{channel_id.phone_number_id}/messages"
+                    headers = {
+                        "Content-Type": "application/json",
+                        "Authorization": f"{channel_id.tocken}"
+                    }
+                    template_data = json.dumps(template_info)
+                    # print(template_data)
+                    response = requests.post(url, headers=headers, data=template_data)
+                    data_ = json.loads(response.content.decode())
+                    print(data_)
+                    contact = {
+                        'name': row.get('Name'),
+                        'phone_dial_code': str(row.get('Phone Dial Code')),
+                        'phone_number': str(row.get('Phone Number'))
+                    }
+                    contacts.append(contact)
+                data['contacts'] = contacts
+            except:
+                return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_201_CREATED)
 
-        return Response(campaigs.data, status=status.HTTP_201_CREATED)
+class UserProfileView(RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+class ListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
+        data = request.data
+        parameters = data.get('parameters', [])
+        serializer = APISerializer(data=data, context={'account':account, 'parameters':parameters})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED)
+    
+    def get(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
+        api_objects = API.objects.filter(account_id=account)
+        serializer = APISerializer(api_objects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class ListReportView(ListAPIView):
     queryset = Report.objects.all()

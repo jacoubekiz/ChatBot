@@ -35,6 +35,7 @@ urlpatterns = [
     path('retrieve-flow/<str:pk>', RetrieveFlow.as_view(), name='retrieve_flow'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
+    path('user-profile/<str:id>/', UserProfileView.as_view(), name='user_profile'),
 
     path('add-team/<account_id>/', ListCreateTeamView.as_view(), name='teams'),
     path('update-delete-team/<str:team_id>/<str:account_id>/', RetrieveUpdateDeleteTeamView.as_view(), name='update_delete_team'),
@@ -58,5 +59,9 @@ urlpatterns = [
     path('tags/<str:account_id>/', CreateTagView.as_view(), name='create_tag'),
     path('add-tag-to-conversation/<str:conversation_id>/', AddTagToConversation.as_view(), name='add_tag_to_conversation'),
     path('change-password/<str:user_id>/', ChangePasswordView.as_view(), name='change_password'),
+
+    path('handle-csv-file/', HandelCSView.as_view(), name='handle_csv_file'),
+    path('Campaigns/<str:channel_id>/', CreateListCampaignsView.as_view(), name='create_compaingn'),
+    path('apis/<str:account_id>/', ListCreateAPIView.as_view(), name='create_api')
 ]
 

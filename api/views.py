@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1306,6 +1306,18 @@ class ListCreateAPIView(APIView):
         api_objects = API.objects.filter(account_id=account)
         serializer = APISerializer(api_objects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class DeleteAPIView(DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = APISerializer
+    queryset = API.objects.all()
+    lookup_field = 'api_id'
+
+class DeleteParameterAPIView(DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ParameterSerializer
+    queryset = Parameter.objects.all()
+    lookup_field = 'parameter_id'
     
 class ListReportView(ListAPIView):
     queryset = Report.objects.all()

@@ -315,23 +315,23 @@ class Contact(models.Model):
 
 # _____________________________________________________________________________________________________________________
 
-# new
+# new        
+class Flow(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    flow_name = models.CharField(max_length=100, default="flow_1")
+    flow = models.FileField(upload_to='flows/')
+    is_default = models.BooleanField(default=False)
 
+    def __str__(self) -> str:
+        return f'{self.flow}'
+    
 class Trigger(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, null=True, blank=True)
     trigger = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.trigger
-        
-class Flow(models.Model):
-    flow_name = models.CharField(max_length=100, default="flow_1")
-    flow = models.FileField(upload_to='flows/')
-    trigger = models.ManyToManyField(Trigger, blank=True)
-    is_default = models.BooleanField(default=False)
-
-    def __str__(self) -> str:
-        return f'{self.flow}-{self.trigger}'
-
 
 class Channle(models.Model):
     channle_id = models.AutoField(primary_key=True)
@@ -421,6 +421,18 @@ class Conversation(models.Model):
     #     message = self.chatmessage_set.filter().first().order_by('-created_at')
     #     return message.content
     
+class QuickReply(models.Model):
+    quickreply_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    payload = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='quick_replies/', null=True, blank=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.name
+    
 class ChatMessage(models.Model):
     message_id = models.AutoField(primary_key=True)
     # message_key = wamid = models.CharField(max_length=500, default='123')
@@ -486,6 +498,7 @@ class WhatsAppCampaign(models.Model):
     def __str__(self) -> str:
         return f'campaign for account {self.account_id.name}'
     
+
 class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)

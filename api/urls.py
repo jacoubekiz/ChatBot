@@ -65,5 +65,10 @@ urlpatterns = [
     path('apis/<str:account_id>/', ListCreateAPIView.as_view(), name='create_api'),
     path('delete-api/<str:api_id>/', DeleteAPIView.as_view(), name='delete_api'),
     path('delete-parameter/<str:parameter_id>/', DeleteParameterAPIView.as_view(), name='delete_parameter'),
+    # path('quick-replies/<str:account_id>/', ggg.as_view(), name='quick_replies'),
+    path('quick-reply/<str:account_id>/', CreateListQuickReplyView.as_view(), name='quick_replies'),
+    path('delete-retriev-update-quick-reply/<str:quickreply_id>/<str:account_id>/', RetrieveUpdateDeleteQuickReplyView.as_view(), name='delete_quick_reply'),
+    path('triggers/<str:account_id>/', ListCreateTriggerView.as_view(), name='triggers'),
+    path('delete-retriev-update-trigger/<str:id>/<str:account_id>/', RetrieveUpdateDeleteTriggerView.as_view(), name='delete_trigger'),
 ]
 

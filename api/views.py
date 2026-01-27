@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1319,6 +1319,67 @@ class DeleteParameterAPIView(DestroyAPIView):
     queryset = Parameter.objects.all()
     lookup_field = 'parameter_id'
     
+class CreateListQuickReplyView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, account_id):
+        data = request.data
+        serializer = QuickReplySerializer(data=data, context={'account_id':account_id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def get(self, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        quick_replies = QuickReply.objects.filter(account_id=account)
+        serializer = QuickReplySerializer(quick_replies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = QuickReplySerializer
+    lookup_field = 'quickreply_id'
+
+    def get_queryset(self):
+        account = self.kwargs['account_id']
+        quick_reply_id = self.kwargs['quickreply_id']
+        return QuickReply.objects.filter(account_id=account, quickreply_id=quick_reply_id)
+    
+    def perform_update(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account_id=account_id)
+
+class ListCreateTriggerView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, account_id):
+        data = request.data
+        serializer = TriggerSerializer(data=data, context={'account_id':account_id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def get(self, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        triggers = Trigger.objects.filter(account_id=account)
+        serializer = TriggerSerializer(triggers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class RetrieveUpdateDeleteTriggerView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TriggerSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        trigger_id = self.kwargs['id']
+        account = self.kwargs['account_id']
+        return Trigger.objects.filter(id=trigger_id, account_id=account)
+
+    def perform_update(self, serializer):
+        account = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account=account)
+
+
 class ListReportView(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer

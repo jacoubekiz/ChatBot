@@ -382,15 +382,21 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
+    timer = serializers.SerializerMethodField(read_only=True)
+
     
     
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user']
+        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer']
 
     def get_last_message(self, obj):
             last_message = obj.chatmessage_set.order_by('-created_at').first()
             return ChatMessageSerializer(last_message).data if last_message else None
+    
+    def get_timer(self, obj):
+        timer = obj.chatmessage_set.exclude(from_message='bot').order_by('-created_at').first()
+        return timer.created_at if timer else None
 
 
 class ConverstionSerializerCreate(serializers.ModelSerializer):

@@ -396,7 +396,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     def get_timer(self, obj):
         timer = obj.chatmessage_set.exclude(from_message='bot').order_by('-created_at').first()
-        return timer.created_at if timer else None
+        return ChatMessageSerializer(timer).data["created_at"] if timer else None
 
 
 class ConverstionSerializerCreate(serializers.ModelSerializer):

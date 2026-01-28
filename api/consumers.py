@@ -801,22 +801,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 template_data = json.dumps(template_info)   
                 response = requests.post(url, headers=headers, data=template_data)
                 data = json.loads(response.content.decode())
-                template_wamid = data['messages'][0]['id']
-                message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, template_wamid)
-                await self.channel_layer.group_send(
-                    self.room_group_name, {
-                        "type": "chat_message",
-                        "conversation_id": conversation_id,
-                        "content": content,
-                        "content_type": content_type,
-                        "from_bot":from_bot,
-                        "wamid":template_wamid,
-                        "front_id":front_id,
-                        "message_id":message_id,
-                        "from_flow":"False",
-                        "created_at": created_at
-                    }
-                )
+                try:
+                    template_wamid = data['messages'][0]['id']
+                    message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, template_wamid)
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "chat_message",
+                            "conversation_id": conversation_id,
+                            "content": content,
+                            "content_type": content_type,
+                            "from_bot":from_bot,
+                            "wamid":template_wamid,
+                            "front_id":front_id,
+                            "message_id":message_id,
+                            "from_flow":"False",
+                            "created_at": created_at
+                        }
+                    )
+                except:
+                    await self.channel_layer.group_send(
+                        self.room_group_name, {
+                            "type": "error_message",
+                            "error": f"Template message not sent{response.content.decode()}"
+                        }
+                    )
 
             # handel receive voice message
             case "audio":
@@ -1327,7 +1335,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
+    async def error_message(self, event):
+        error = event["error"]
 
+        await self.send(text_data=json.dumps({
+            "type":"message",
+            "error": error,
+            "is_successfully":"False"
+        }))
     async def chat_message_status(self, event):
         content_type = event["content_type"] 
         conversation_id = event["conversation_id"]

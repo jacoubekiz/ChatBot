@@ -211,6 +211,8 @@ STATUS = (
     ('in_progress', 'in_progress'),
     ('review', 'review'),
     ('pending', 'pending'),
+    ('onhold', 'onhold'),
+    ('dependency', 'dependency'),
     ('lock', 'lock'),
 )
 

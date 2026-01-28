@@ -1554,8 +1554,11 @@ class AddTagToConversation(APIView):
         tag_ids = request.data.get('tag_ids', [])
         conversation = Conversation.objects.get(conversation_id=conversation_id)
         for tag_id in tag_ids:
-            tag = Tag.objects.get(tag_id=tag_id)
-            conversation.tags.add(tag)
+            try:
+                tag = Tag.objects.filter(tag_id=tag_id).first()
+                conversation.tags.add(tag)
+            except:
+                return Response({'error':f'Tag with id {tag_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
         conversation.save()
         return Response(status=status.HTTP_200_OK)
 

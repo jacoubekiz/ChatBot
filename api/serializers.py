@@ -314,9 +314,11 @@ class ChannleSerializer(serializers.ModelSerializer):
 
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
+    assigned_user = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Contact
-        fields = ['contact_id', 'account_id', 'name', 'phone_number', 'email', "conversation_id"]
+        fields = ['contact_id', 'assigned_user',     'account_id', 'name', 'phone_number', 'email', "conversation_id"]
         extra_kwargs ={
             'account_id':{
                 # 'read_only':True,
@@ -328,6 +330,14 @@ class ContactSerializer(serializers.ModelSerializer):
                 'allow_null':False
             }
         }
+
+    def get_assigned_user(self, obj):
+        try:
+            conversation = Conversation.objects.get(contact_id=obj.contact_id)
+            return conversation.user.username if conversation.user else None
+        except Conversation.DoesNotExist:
+            return None
+        
     def create(self, validated_data):
         account_id = self.context.get('account_id')
         channel_id = self.context.get('channel_id')

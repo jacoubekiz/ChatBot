@@ -208,6 +208,8 @@ TYPE_CHANNLE = (
 STATUS = (
     ('open', 'open'),
     ('closed', 'closed'),
+    ('in_progress', 'in_progress'),
+    ('review', 'review'),
     ('pending', 'pending'),
     ('lock', 'lock'),
 )

@@ -197,9 +197,6 @@ class TestWebhook(models.Model):
         return self.test_text
 
 
-# models.py
-
-
 
 TYPE_CHANNLE = (
     ('WhatsApp', 'WhatsApp'),
@@ -247,7 +244,7 @@ STATUS_MESSAGE_STATUS = (
 STATUS_CAMPAIGN = (
     ('draft', 'Draft'),
     ('scheduled', 'Scheduled'),
-    ('processing', 'Processing'),
+    ('ongoing', 'ongoing'),
     ('completed', 'Completed'),
     ('failed', 'Failed'),
 )
@@ -305,15 +302,17 @@ class Team(models.Model):
 class Contact(models.Model):
     contact_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, null=True, blank=True)
     phone_number = models.BigIntegerField()
     email = models.EmailField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return self.name
-    
+        if self.name:
+            return self.name
+        else:
+            return str(self.phone_number)
 
     
 
@@ -484,13 +483,13 @@ class WhatsAppCampaign(models.Model):
     campaign_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50, null=True, blank=True)
-    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20, default='draft')
+    status = models.CharField(choices=STATUS_CAMPAIGN, max_length=20, default='ongoing')
     csv_file = models.FileField(upload_to='campaigns/csv/')
     template_name = models.CharField(max_length=100)
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     total_recipients = models.IntegerField(default=0)
-    sent_count = models.IntegerField(default=0)
-    failed_count = models.IntegerField(default=0)
+    sent_count = models.IntegerField(default=0, blank=True, null=True)
+    failed_count = models.IntegerField(default=0, blank=True, null=True)
     scheduled_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -502,7 +501,18 @@ class WhatsAppCampaign(models.Model):
     def __str__(self) -> str:
         return f'campaign for account {self.account_id.name}'
     
+class AnalyticsCamaign(models.Model):
+    analytics_id = models.AutoField(primary_key=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    campaign_id = models.ForeignKey(WhatsAppCampaign, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20)
+    error_message = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) -> str:
+        return f'Analytics for campaign {self.campaign_id.name}'
+    
 class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)

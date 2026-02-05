@@ -35,12 +35,25 @@ INSTALLED_APPS = [
     'django_redis',
     'webhook',
     'corsheaders',
+    'celery',
     
 ]
 
 GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = 'sound-folder-441907-g6-42c246a1319f.json'
 AUTH_USER_MODEL = "api.CustomUser"
 
+
+# set the celery broker url
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# set the celery result backend
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+# set the celery timezone
+CELERY_TIMEZONE = 'UTC'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=10),

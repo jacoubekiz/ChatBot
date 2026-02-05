@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from django.core.files.storage import default_storage
+
+from api.tasks import send_whatsapp_campaign
 from .models import *
 from .configure_api import *
 from .handel_time import *
@@ -1109,6 +1111,15 @@ class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
     queryset = Contact.objects.all()
     lookup_field = 'contact_id'
     
+class RefreshTokenView(GenericAPIView):
+    def post(self, request):
+        refresh_token = request.data['refresh']
+        token = RefreshToken(refresh_token)
+        data = {
+            'access': str(token.access_token)
+        }
+        return Response(data, status=status.HTTP_200_OK)
+    
 class ViewLogin(GenericAPIView):
 
     def post(self, request):
@@ -1239,10 +1250,10 @@ class HandelCSView(GenericAPIView):
         except:
             return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
-
+from .tasks import *
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerilizer
-    # pagination_class = [IsAuthenticated]
+    permission_class = [IsAuthenticated]
 
     def get(self, request):
         campaigns = WhatsAppCampaign.objects.all()
@@ -1252,35 +1263,19 @@ class CreateListCampaignsView(GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
-        channel_id = Channle.objects.get(channle_id=channel_id)
+        channel = Channle.objects.get(channle_id=channel_id)
         data = request.data
-        template_info = data.get('template_info')
-        print(template_info)
         file = data.get('file')
-        if file:
-            try:
-                df = pd.read_csv(file)
-                contacts = []
-                for index, row in df.iterrows():
-                    url = f"https://graph.facebook.com/v22.0/{channel_id.phone_number_id}/messages"
-                    headers = {
-                        "Content-Type": "application/json",
-                        "Authorization": f"{channel_id.tocken}"
-                    }
-                    template_data = json.dumps(template_info)
-                    # print(template_data)
-                    response = requests.post(url, headers=headers, data=template_data)
-                    data_ = json.loads(response.content.decode())
-                    print(data_)
-                    contact = {
-                        'name': row.get('Name'),
-                        'phone_dial_code': str(row.get('Phone Dial Code')),
-                        'phone_number': str(row.get('Phone Number'))
-                    }
-                    contacts.append(contact)
-                data['contacts'] = contacts
-            except:
-                return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+        content_template = data.get('content_template')
+        campaign_name = data.get('campaign_name')
+        WhatsAppCampaign.objects.create(
+                    account_id=channel.account_id,
+                    name=campaign_name,
+                    template_name=data.get('template_name'),
+                    csv_file = data.get('file'),
+                    created_by=request.user,
+                )
+        send_whatsapp_campaign.delay(channel.channle_id, data, file, content_template, request)
         return Response(status=status.HTTP_201_CREATED)
 
 class UserProfileView(RetrieveAPIView):

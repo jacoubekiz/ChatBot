@@ -4,10 +4,10 @@ from .models import *
 import requests 
 import json
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 5})
-def send_whatsapp_campaign(self, channel_id, data, file, content_template, phone_number_id, tocken, account, user_id):
+@shared_task
+def send_whatsapp_campaign(channel_id, data, file, content_template, phone_number_id, tocken, account, user_id):
     user = CustomUser.objects.get(id=user_id)
-    account_id = Account.objects.get(id=account)
+    account_id = Account.objects.get(account_id=account)
     print("Starting WhatsApp campaign task...")
     try:
         df = pd.read_csv(file)
@@ -66,5 +66,6 @@ def send_whatsapp_campaign(self, channel_id, data, file, content_template, phone
                 'phone_dial_code': str(row.get('Phone Dial Code')),
                 'phone_number': str(row.get('Phone Number'))
             }
+            return contact
     except:
         return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)

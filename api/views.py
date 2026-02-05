@@ -1268,14 +1268,22 @@ class CreateListCampaignsView(GenericAPIView):
         file = data.get('file')
         content_template = data.get('content_template')
         campaign_name = data.get('campaign_name')
+        user = request.user
         WhatsAppCampaign.objects.create(
                     account_id=channel.account_id,
                     name=campaign_name,
                     template_name=data.get('template_name'),
                     csv_file = data.get('file'),
-                    created_by=request.user,
+                    created_by=user,
                 )
-        send_whatsapp_campaign.delay(channel.channle_id, data, file, content_template, request)
+        info = {
+            "channel":channel,
+            "data":data,
+            "file":file,
+            "content_template":content_template,
+            "user":user
+        }
+        send_whatsapp_campaign.delay(channel.channle_id, data, file, content_template, channel.phone_number_id, channel.tocken, channel.account_id.account_id, user.id)
         return Response(status=status.HTTP_201_CREATED)
 
 class UserProfileView(RetrieveAPIView):

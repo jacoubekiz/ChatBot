@@ -355,7 +355,6 @@ def send_message(version = '18.0',
             )
 
         else:
-
             payload = json.dumps({
             "messaging_product": f"{messaging_product}",
             # "preview_url": question.get('previewUrl'),
@@ -614,6 +613,7 @@ def handel_request_redis(data, account_id):
                                 sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
                             case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body','')
+                                print(conversation.contact_id.name)
                                 chat_message = ChatMessage.objects.create(
                                     conversation_id = conversation,
                                     # user_id = CustomUser1.objects.filter(id=15).first(),

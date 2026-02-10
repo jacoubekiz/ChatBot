@@ -796,7 +796,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 url = f"https://graph.facebook.com/v22.0/{channel_id.phone_number_id}/messages"
                 headers = {
                     "Content-Type": "application/json",
-                    "Authorization": f"{channel_id.tocken}"
+                    "Authorization": f"Bearer {channel_id.tocken}"
                 }
                 template_data = json.dumps(template_info)   
                 response = requests.post(url, headers=headers, data=template_data)

@@ -1,0 +1,159 @@
+﻿Template Name,Text,id
+invoice,"J39/F' AJ E1C2 1J,HAJ1' 'D7(J %1A'B A'*H1) ./E'*CE E9 .'D5 4C1F' D+B*CE 'D:'DJ) (F' >
+F39/ (./E*CE /'&EK' HAJ -'D H,H/ #J '3*A3'1 #H ED'-8) A1JBF' AJ ./E*CE (CD *1-J(.
+F*EFI DCE /H'E 'D5-) H'D,E'D <?
+920017403  -  0553999514",696f1cf3c8714b167ab2dec2
+"	
+deposit_required","-15' 9DI HB*C HHB*F' 3J*E *#CJ/ 'DEH9/ 'DB'/E (91(HF.
+J39/F' ./E*C H*-/J/ 'DEH9/ 'DEF'3( DC.",69440a87d78a0a685b61c7f3
+missed_appointment,"#GD' {{1}}
+D'-8F' 9/E -6H1C DEH9/C 'DJHE.
+J39/F' %9'/) ,/HD) 'DEH9/ AJ 'DHB* 'D0J JF'3(C <8
+
+",694406f607164b51dea88b44
+callback_no_response,"E1-('K {{1}}
+-'HDF' 'D*H'5D E9C AJ 'DHB* 'DE*AB 9DJG HDE F*ECF EF 'DH5HD.
+J39/F' *-/J/ HB* .1 JF'3(C.",
+,,
+",694405acd78a0a685b61869a
+callback_reminder,*0CJ1 <8",,
+3FBHE ('D*H'5D E9C .D'D BDJD CE' *E 'D'*A'B.,,
+AJ -'D 1:(* (*:JJ1 'DHB* J1,I '(D':F'.,
+,,
+",69440573d78a0a685b6183e4
+callback_confrmaton,4C1'K DC {{1}}<8 *E *3",JD 7D(C H3FBHE ('D*H'5D E9C AJ,
+=� {{2}},,
+� {{3}},,
+J39/F' ./E*C.,,
+,,
+",6944053a5f39adb52f5722ba
+pre_deferred_notce,E1-('K {{1}}",,
+-'HDF' 'D*H'5D E9C 9/) E1'* HDE F*CEF EF 'DH5HD.,,
+3F9'H/ 'DE-'HD) D'-B'K HJ39/F' *H'5DC E9F' AJ #J HB*.,,
+,,
+",694403cef839ccba5116c1d7
+repeated_no_answer,E1-('K {{1}}",,
+D' J2'D J39/F' ./E*C (.5H5 '3*A3'1C.,,
+J1,I %(D':F' ('DHB* 'DEF'3( DD*H'5D,
+,,
+",6944038207164b51dea8625d
+friendly_no_answer,#GD'K {{1}} <8",,
+-'HDF' 'D'*5'D (C (.5H5 '3*A3'1C E*I JF'3(C F1,9 F*H'5D=,
+,,
+,,
+",6944035bf839ccba5116bbfb
+first_no_answer,E1-('K {{1}}",,
+-'HDF' 'D*H'5D E9C (.5H5 '3*A3'1C 9F ./E'* {{2}} HDE F*ECF EF 'DH5HD %DJC.,,
+J39/F' 'D*H'5D AJ 'DHB* 'DEF'3( DC.,,
+,,
+",69440326d78a0a685b616618
+reminder_3h,*0CJ1 (EH9/C 'DJHE AJ {{1}}",,
+� {{2}},,
+('F*8'1C <8,,
+,,
+",69440223f839ccba5116abcc
+reminder_24h",,
+",*0CJ1 (EH9/C :/'K AJ {{1}}",,
+=� {{2}},,
+� {{3}},,
+=�{{4}},,
+F1,H 'D-6H1 B(D 'DEH9/ ( 10 /B'&B <8,
+,,
+",694401ead78a0a685b614e40
+friendly_confrmaton",,
+",#GD'K {{1}}<8",,
+*E *#CJ/ EH9/C E9F' AJ {{2}},,
+=�{{3}} _ � {{4}},,
+('F*8'1C(,,
+,,
+",694401945f39adb52f56ed46
+appointment_confrmaton",,
+",E1-('K # {{1}} =K",,
+FH/ *#CJ/ EH9/CE AJ {{2}},,
+=� {{3}},,
+� {{4}},,
+=�{{5}},,
+AJ -'D H,H/ #J '3*A3'1 J39/F' ./E*C,
+,,
+",694401285f39adb52f56e836
+cancelled_by_practitioner_en,We sincerely apologize", {{1}} ����. Your appointment with Dr. {{2}} had to be cancelled due to an urgent matter. We���ll arrange a new time that works best for you soon. Contact us: 0114999959 ��� 0553999514 ��� 0533054999,
+"Rejuvera Medical """,6943ef3ad78a0a685b600df6,
+cancelled_by_practitioner_ar,"F9*01 J' {{1}} <8 '671JF' FD:J EH9/C E9 /.{{2}} (3(( 81A 7'1&. F1*( DC EH9/ (/JD JF'3(C (#319 HB*. DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6943ee9bd78a0a685b600776
+cancelled_appointment_en,"Your appointment has been cancelled as requested, {{1}} ��� We hope to see you soon and arrange the best time for you. Contact us: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical Te",6943edeef839ccba51158cfb
+cancelled_appointment_ar,"*E %D:'! EH9/C -3( 1:(*C J' {{1}} ( F*EFI F4HAC B1J( HF,G2 DC #A6D HB* JF'3(C. DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6943ed88d78a0a685b5ff521
+after_missed_appointment_en,"Hi {{1}} ����, we noticed you missed today���s {{2}} appointment. We���d love to reschedule at a time that suits you ���� Contact us: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medi",6943ec6507164b51dea6e2db
+after_missed_appointment_ar,"GD' {{1}} <8 D'-8F' %FC E' -61* EH9/C {{2}} 'DJHE. E' H/J JAH*C 'D,E'D 'DDJ *3*-BG > .DJF' F1*( DC HB* +'FJ JF'3(C. DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6943ec065f39adb52f55bd91
+general_offer_en,"<� Rejuvera is delighted to bring you exclusive offers on {{1}} ( Available for a limited time only. Dont miss out  book your spot today > For inquiries: 0114999959  0553999514  0533054999
+Rejuvera Medical Team=�
+
+",6943e98b07164b51dea67e0b
+general_offer_ar,"<� -'(JF F(G1CE (91H6 1J,HAJ1' 'D.'5) 9DI {{1}} ( 'D91H6 DA*1) E-/H/) AB7. D' *AH*J 'DA15) H'-,2J 'DF >",
+ DD'3*A3'1: 0114999959  0553999514  0533054999,,
+=� A1JB 1J,HAJ1' 'D7(J,
+,,
+",6943e92e5f39adb52f5589d0
+follow_up_after_procedure_en,Dear {{1}} ����", how are you feeling after your {{2}}? A little sensitivity is normal and usually goes away within a few days. If you have any concerns, don���t hesitate to contact us ��� we���re always here ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+"Rejuvera Me""",6943e53d07164b51dea642b3,
+follow_up_after_procedure_ar,"J' {{1}} <8 CJAC (9/ %,1'! {{2}} 7(J9J *-3JF (*-3Q3 (3J7 H(J.A .D'D CE JHE. #J ED'-8) #H BDB D' **1//JF **H'5DJF E9F' %-F' /HE (./E*C > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942b909a97683dbb4c9b1c7
+consultation_reminder_en,"Hi {{1}} ���, just a kind reminder that your consultation with Dr. {{2}} regarding {{3}} is tomorrow at {{4}}. If you prefer a female doctor or wish to bring an escort, you���re always welcome ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical",6942b771a97683dbb4c9a261
+consultation_reminder_ar,"*0CJ1 (3J7 {{1}} ( '3*4'1*C E9 /.{{2}} (.5H5 {{3}} (C1) 'D3'9) {{4}}. %0' -(J*J 7(J() #H E1'AB) *1'-J(F' (C (#J HB* > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942b6e73275267e8da03905
+private_consultation_en,"Hi {{1}} ����, your private consultation with Dr. {{2}} regarding {{3}} is confirmed for {{4}} at {{5}} at Rejuvera Medical Center. Your comfort and privacy are our top priority ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical T",6942b64611fb218eb39b8f32
+private_consultation_ar,"GD' H:D' {{1}} > F-( F(D:C %F '3*4'1*C 'D.'5) E9 /.{{2}} (.5H5 {{3}} *#C/* JHE{{4}} 'D3'9) {{5}} AJ E1C2 1J,HAJ1'. FG*E (1'-*C H.5H5J*C <8 DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942b5b7a97683dbb4c99483
+follow_up_after_the_session_en,"Hi {{1}} ���, how���s your skin feeling after your {{2}} session? Don���t forget your sunscreen today and try to avoid direct heat. If you have any questions, the Rejuvera team is always here for you ���� Contact us: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medic",6942b4e43275267e8da02bcc
+follow_up_after_the_session_ar,"CJA -'D (41*C J' {{1}} (9/ ,D3) {{2}} ( *0C1J *-7JF H'BJ 4E3 H**,F(J 'D-1'1) 'DE('41) 'DJHE. #J '3*A3'1 #H ED'-8) A1JB 1J,HAJ1' /HE -'61 D./E*C > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942b485a97683dbb4c98a29
+reminder_and_preparation_en,"Good evening {{1}} ���, just a reminder that you have your {{2}} session with Dr. {{3}} tomorrow. Please come with clean skin and no makeup for the best results. We���re excited to see you ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical",6942b18f3275267e8da00a05
+reminder_and_preparation_ar,"E3'! 'D.J1 {{1}} ( D' *F3JF %F 9F/C (C1) ,D3) {{2}} E9 /.{{3}}. JA6QD *,JF ((41) F8JA) H(/HF ECJ', 94'F F3*AJ/ #C+1 EF 'D,D3). FF*81C (CD 4HB > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942b10a3275267e8da000fa
+session_confirmation_en,"Hello {{1}} ����, your {{2}} session with Dr. {{3}} on {{4}} at {{5}} is confirmed at Rejuvera Medical Center. Today���s session will leave your skin glowing and refreshed ��� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical",6942b06811fb218eb39b559e
+session_confirmation_ar,"E1-(' {{1}} > *E *#CJ/ ,D3*C E9 /.{{2}} D,D3) {{3}} JHE {{4}} 'D3'9) {{5}} AJ 1J,HAJ1'. ,D3) 'DJHE (*.DJ (41*C #5AI H#-DI ( DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942aefa6c4b8e59786074d0
+after_the_operation_en,"Hello {{1}} ����, how are you feeling after your {{2}} with Dr. {{3}}? If you notice any unusual pain or swelling, please don���t hesitate to reach out to our team right away. Your health matters, and we���re always here for you. Contact us: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical",6942ae3a6c4b8e5978606c98
+after_the_operation_ar,"7EFJF'/7EFQ' 9DJC {{1}} =� CJAC (9/ 9EDJ) {{2}} E9 /.{{3}} DH -3J* (#J #DE #H *H1QE :J1 E9*'/ D' **1// **H'5D E9 A1JBF' E('41). 5-*C *GEF' H-F' E9C /HE. DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942ada86c4b8e59786066cb
+appointment_reminder_en,"Good evening {{1}} ��� Just a kind reminder that your appointment with Dr. {{2}} for {{3}} is tomorrow, {{4}} at {{5}}, at Rejuvera Medical Center. We can���t wait to see you ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+Rejuvera Medical",6942ac33a97683dbb4c92c29
+appointment_reminder_ar,"E3'! 'D.J1 {{1}} ( -'(JF F0C1C %F EH9/C E9 /.{{2}} (.5H5 {{3}} (JCHF (C1) {{4}} 'D3'9) {{5}} AJ E1C2 1J,HAJ1'. H,H/C J39/F' > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942ab5311fb218eb39b1ab3
+surgery_procedure_appointment_en,"Hi {{1}} ����, we���re happy to confirm your appointment with Dr. {{2}} for {{3}} on {{4}} at {{5}} at Rejuvera Medical Center. We look forward to welcoming you ���� For inquiries: 0114999959 ��� 0553999514 ��� 0533054999
+���� Rejuvera Me",6942aa0d3275267e8d9faf27
+surgery_procedure_appointment_ar,"#GDJF {{1}} <8 -'(JF F(D:C %F EH9/C E9 /.{{2}} D9EDJ)/%,1'! {{3}} *#C/ JHE {{4}} 'D3'9) {{5}} AJ E1C2 1J,HAJ1' 'D7(J. FH1*F' H(J39/F' F4HAC > DD'3*A3'1: 0114999959  0553999514  0533054999
+=� A1JB 1J,HAJ1' 'D7(J
+
+",6942a8f1a97683dbb4c8e54c

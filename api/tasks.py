@@ -5,36 +5,47 @@ import requests
 import json
 
 @shared_task
-def send_whatsapp_campaign(channel_id, data, file, content_template, phone_number_id, tocken, account, user_id):
+def send_whatsapp_campaign(
+        channel, 
+        df, 
+        account, 
+        content_template, user_id, 
+        language_code, 
+        template_parameters, 
+        template_name, 
+        whatsappcampaign
+    ):
     user = CustomUser.objects.get(id=user_id)
     account_id = Account.objects.get(account_id=account)
-    print("Starting WhatsApp campaign task...")
+    channel_id = Channle.objects.get(channle_id=channel)
+    whatsappcampaign_ = WhatsAppCampaign.objects.get(campaign_id=whatsappcampaign)
+    # print("Starting WhatsApp campaign task...")
+    df_ = json.loads(df)
+    print(df_)
     try:
-        df = pd.read_csv(file)
-        for index, row in df.iterrows():
+        for row in df_:
             template_info = {
                 "messaging_product": "whatsapp",
                 "recipient_type": "individual",
                 "to": f"{row.get('Phone Dial Code')}{row.get('Phone Number')}",
                 "type": "template",
                 "template": {
-                    "name": f"{data.get('template_name')}",
+                    "name": f"{template_name}",
                     "language": {
-                        "code": f"{data.get('language_code')}"
+                        "code": f"{language_code}"
                     },
                     "components": 
-                            f"{data.get('template_parameters')}"
+                            f"{template_parameters}"
                 }
             }
-            url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+            url = f"https://graph.facebook.com/v22.0/{channel_id.phone_number_id}/messages"
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"{tocken}"
+                "Authorization": f"{channel_id.tocken}"
             }
             template_data = json.dumps(template_info)
             response = requests.post(url, headers=headers, data=template_data)
             data_ = json.loads(response.content.decode())
-            print(data_)
             try:
                 template_wamid = data_['messages'][0]['id']
                 contact = Contact.objects.get_or_create(
@@ -53,19 +64,21 @@ def send_whatsapp_campaign(channel_id, data, file, content_template, phone_numbe
                     content=content_template,
                     wamid=template_wamid
                 )
+                AnalyticsCamaign.objects.create(
+                    account_id=account_id,
+                    campaign_id=whatsappcampaign_,
+                    contact=contact[0],
+                    status_message='sent',
+                    error_message = None
+                )
             except KeyError:
-                pass
-                # AnalyticsCamaign.objects.create(
-                #     account_id=channel_id.account_id,
-                #     channel_id=channel_id,
-                #     contact=contact[0],
-                #     status_message='failed'
-                # )
-            contact = {
-                'name': row.get('Name'),
-                'phone_dial_code': str(row.get('Phone Dial Code')),
-                'phone_number': str(row.get('Phone Number'))
-            }
-            return contact
+                error_message_ = data_['error'].get('message')
+                AnalyticsCamaign.objects.create(
+                    account_id=account_id,
+                    campaign_id=whatsappcampaign_,
+                    contact=contact[0],
+                    status_message='failed',
+                    error_message = error_message_
+                )
     except:
         return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)

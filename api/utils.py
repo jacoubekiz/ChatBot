@@ -369,7 +369,7 @@ def send_message(version = '18.0',
 
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'{bearer_token}'
+            'Authorization': f'Bearer {bearer_token}'
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
@@ -491,7 +491,7 @@ def send_message(version = '18.0',
 
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'{bearer_token}'
+            'Authorization': f'Bearer {bearer_token}'
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
@@ -627,7 +627,7 @@ def handel_request_redis(data, account_id):
                             case "image":
                                 headers = {
                                     'Content-Type': 'application/json',
-                                    'Authorization': f'{channel.tocken}'
+                                    'Authorization': f'Bearer {channel.tocken}'
                                 }
                                 mime_type = value.get('messages', '')[0].get('image', {}).get('mime_type', '')
                                 sha256 = value.get('messages', '')[0].get('image', {}).get('sha256', '')
@@ -657,7 +657,7 @@ def handel_request_redis(data, account_id):
                             case "video":
                                 headers = {
                                     'Content-Type': 'application/json',
-                                    'Authorization': f'{channel.tocken}'
+                                    'Authorization': f'Bearer {channel.tocken}'
                                 }
                                 mime_type = value.get('messages', '')[0].get('video', {}).get('mime_type', '')
                                 sha256 = value.get('messages', '')[0].get('video', {}).get('sha256', '')
@@ -687,7 +687,7 @@ def handel_request_redis(data, account_id):
                             case "audio":
                                 headers = {
                                     'Content-Type': 'application/json',
-                                    'Authorization': f'{channel.tocken}'
+                                    'Authorization': f'Bearer {channel.tocken}'
                                 }
                                 mime_type = value.get('messages', '')[0].get('audio', {}).get('mime_type', '')
                                 sha256 = value.get('messages', '')[0].get('audio', {}).get('sha256', '')
@@ -718,7 +718,7 @@ def handel_request_redis(data, account_id):
                             case 'document':
                                 headers = {
                                     'Content-Type': 'application/json',
-                                    'Authorization': f'{channel.tocken}'
+                                    'Authorization': f'Bearer {channel.tocken}'
                                 }
                                 mime_type = value.get('messages', '')[0].get('document', {}).get('mime_type', '')
                                 sha256 = value.get('messages', '')[0].get('document', {}).get('sha256', '')

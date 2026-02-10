@@ -1265,25 +1265,29 @@ class CreateListCampaignsView(GenericAPIView):
     def post(self, request, channel_id):
         channel = Channle.objects.get(channle_id=channel_id)
         data = request.data
-        file = data.get('file')
+        file = request.data['file']
         content_template = data.get('content_template')
         campaign_name = data.get('campaign_name')
         user = request.user
-        WhatsAppCampaign.objects.create(
+        whatsappcampaign = WhatsAppCampaign.objects.create(
                     account_id=channel.account_id,
                     name=campaign_name,
                     template_name=data.get('template_name'),
-                    csv_file = data.get('file'),
+                    # csv_file = request.data['file'],
                     created_by=user,
                 )
-        info = {
-            "channel":channel,
-            "data":data,
-            "file":file,
-            "content_template":content_template,
-            "user":user
-        }
-        send_whatsapp_campaign.delay(channel.channle_id, data, file, content_template, channel.phone_number_id, channel.tocken, channel.account_id.account_id, user.id)
+        df = pd.read_csv(file)
+        send_whatsapp_campaign.delay(
+            channel=channel.channle_id, 
+            df=df.to_json(orient='records'), 
+            account=channel.account_id.account_id,
+            content_template = content_template,
+            user_id = user.id,
+            language_code=data.get('language_code'),
+            template_name = data.get('template_name'),
+            template_parameters = data.get('template_parameters'),
+            whatsappcampaign = whatsappcampaign.campaign_id
+        )
         return Response(status=status.HTTP_201_CREATED)
 
 class UserProfileView(RetrieveAPIView):

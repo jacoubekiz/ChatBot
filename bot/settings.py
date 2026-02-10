@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'webhook',
     'corsheaders',
     'celery',
+    # 'django_celery_results',
     
 ]
 
@@ -44,14 +45,14 @@ AUTH_USER_MODEL = "api.CustomUser"
 
 
 # set the celery broker url
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 
 # set the celery result backend
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-
+# CELERY_RESULT_BACKEND = 'django-db'
 # set the celery timezone
 CELERY_TIMEZONE = 'UTC'
 

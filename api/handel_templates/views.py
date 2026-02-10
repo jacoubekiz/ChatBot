@@ -16,7 +16,7 @@ class ListCreateTemplate(APIView):
         url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"{channel.tocken}"
+            "Authorization": f"Bearer {channel.tocken}"
         }
         response = requests.get(url, headers=headers)
         responses = []
@@ -39,53 +39,9 @@ class ListCreateTemplate(APIView):
         url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"{channel.tocken}"
+            "Authorization": f"Bearer {channel.tocken}"
         }
         data = request.data
-        # if data['type_template'] == "with_header":
-        #     file_path = data["template_info"].get('components', [])[0].get('example', {}).get('header_handle', [])[0]
-        #     if not os.path.exists(file_path):
-        #         raise FileNotFoundError(f"PDF file does not exist: {file_path}")
-        #     file_name = os.path.basename(file_path)
-        #     with open(file_path, "rb") as f:
-        #         file_bytes = f.read()
-        #     file_size = len(file_bytes)
-        #     file_type = mimetypes.guess_type(file_path)[0]
-        #     # 1) Resolve App ID
-        #     app_id = resolve_app_id_from_token(f"{channel.tocken[7:]}")
-        #     # 2) Start resumable upload session
-        #     init_url = f"https://graph.facebook.com/v22.0/{app_id}/uploads"
-        #     init_params = {
-        #         "file_name": file_name,
-        #         "file_length": str(file_size),
-        #         "file_type": file_type,
-        #         "access_token": f"{channel.tocken[7:]}",
-        #     }
-        #     init_resp = _http_post(init_url, params=init_params)
-        #     init_json = init_resp.json()
-        #     upload_session_id = init_json.get("id")
-        #     if not upload_session_id:
-        #         raise MetaApiError(f"Upload session init did not return id: {init_json}")
-        #     # 3) Upload the bytes to the session to obtain the file handle
-        #     upload_url = f"https://graph.facebook.com/v22.0/{upload_session_id}"
-        #     upload_headers = {
-        #         # For the upload step, Meta expects OAuth here (not Bearer)
-        #         "Authorization": f"{channel.tocken}",
-        #         "file_offset": "0",
-        #         # CHANGED: use octet-stream and remove 'Expect' header to avoid HTTP 417
-        #         "Content-Type": "application/octet-stream",
-        #         "Content-Length": str(file_size),  # requests sets this anyway; harmless to keep
-        #     }
-        #     upload_resp = _http_post(upload_url, headers=upload_headers, data=file_bytes)
-        #     try:
-        #         upload_json = upload_resp.json()
-        #     except Exception:
-        #         raise MetaApiError(f"Upload returned non-JSON (status {upload_resp.status_code}): {upload_resp.text}")
-
-        #     file_handle = upload_json.get("h")
-        #     data["template_info"].get('components', [])[0].get('example', {}).update({"header_handle": [file_handle]})
-        #     if not file_handle:
-        #         raise MetaApiError(f"Upload did not return a file handle: {upload_json}")
         template_data = json.dumps(request.data)
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
@@ -122,7 +78,7 @@ class HandleFileUpload(APIView):
         upload_url = f"https://graph.facebook.com/v22.0/{upload_session_id}"
         upload_headers = {
             # For the upload step, Meta expects OAuth here (not Bearer)
-            "Authorization": f"{channel.tocken}",
+            "Authorization": f"Bearer {channel.tocken}",
             "file_offset": "0",
             # CHANGED: use octet-stream and remove 'Expect' header to avoid HTTP 417
             "Content-Type": "application/octet-stream",
@@ -148,7 +104,7 @@ class GetTemplate(APIView):
         url = f"https://graph.facebook.com/v22.0/{template_id}"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"{channel.tocken}"
+            "Authorization": f"Bearer {channel.tocken}"
         }
 
         response = requests.get(url, headers=headers)
@@ -161,7 +117,7 @@ class SendTemplate(APIView):
         url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"{channel.tocken}"
+            "Authorization": f"Bearer {channel.tocken}"
         }
         data = request.data
         template_data = json.dumps(data)
@@ -211,7 +167,7 @@ class FileUploadView(APIView):
         upload_url = f"https://graph.facebook.com/v22.0/{upload_session_id}"
         upload_headers = {
             # For the upload step, Meta expects OAuth here (not Bearer)
-            "Authorization": f"{channel.tocken}",
+            "Authorization": f"Bearer {channel.tocken}",
             "file_offset": "0",
             # CHANGED: use octet-stream and remove 'Expect' header to avoid HTTP 417
             "Content-Type": "application/octet-stream",

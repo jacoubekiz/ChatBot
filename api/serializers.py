@@ -369,7 +369,7 @@ class ContactSerializer(serializers.ModelSerializer):
 class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ['name', 'phone_number']
+        fields = ['contact_id', 'name', 'phone_number']
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
@@ -475,7 +475,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class APISerializer(serializers.ModelSerializer):
     class Meta:
         model = API
-        fields = ['api_name', 'endpoint', 'method', 'body']
+        fields = ['api_id', 'api_name', 'endpoint', 'method', 'body']
 
     def create(self, validated_data):
         parameters = self.context.get('parameters', [])

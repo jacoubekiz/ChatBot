@@ -132,7 +132,7 @@ class AddUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # request = self.context.get('request')
         roles = self.context.get('role')
-        team = Team.objects.get(team_id = self.context.get('team_id', ' '))
+        # team = Team.objects.get(team_id = self.context.get('team_id', ' '))
         password = self.validated_data.pop('password')
         user = CustomUser.objects.create(**validated_data)
         for role in roles:
@@ -144,7 +144,7 @@ class AddUserSerializer(serializers.ModelSerializer):
             user.user_permissions.add(permission)
         user.set_password(password)
         user.save()
-        team.members.add(user)
+        # team.members.add(user)
         return user
     
     def update(self, instance, validated_data):

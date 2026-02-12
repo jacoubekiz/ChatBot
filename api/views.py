@@ -961,7 +961,6 @@ class AssigningPermissions(APIView):
         user = CustomUser.objects.get(id=user_id)
         role = request.data['role']
         add = request.GET.get('add')
-        print(add)
         content_type = ContentType.objects.get_for_model(CustomUser)
         permission = Permission.objects.get(
             codename= role,
@@ -1005,19 +1004,24 @@ class ListTeamMember(GenericAPIView):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
-class ListCreateTeamMemberView(GenericAPIView):
+class CreateTeamMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, team_id):
+    def post(self, request):
         data_request = request.data
-        serializer = AddUserSerializer(data = data_request, many=False, context={'role':request.data['role'], 'team_id':team_id})
+        serializer = AddUserSerializer(data = data_request, many=False, context={'role':request.data['role']})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def get(self, request, team_id):
-        team_id = Team.objects.get(team_id=team_id)
-        serializer = AddUserSerializer(team_id.members, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class AddUserForTeam(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, team_id):
+        team = Team.objects.filter(team_id=team_id).first()
+        users = request.data['users']
+        for user in users:
+            t_user = CustomUser.objects.filter(id=user)
+            team.members.add(t_user)
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
@@ -1504,8 +1508,11 @@ class SetDefaultFlow(GenericAPIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, channel_id):
         data = request.data
-        channel = Channle.objects.get(channle_id = channel_id)
-        flows = channel.flows.all()
+        try:
+            channel = Channle.objects.filter(channle_id = channel_id).first()
+            flows = channel.flows.all()
+        except:
+            return Response({"message":"Channel matching query dose not exist"})
         for flow in flows:
             if str(flow.id) == data['flow_id']:
                 
@@ -1516,6 +1523,7 @@ class SetDefaultFlow(GenericAPIView):
                 flow.save()
 
         return Response(status=status.HTTP_200_OK)
+
 
 import os
 from django.conf import settings

@@ -1022,6 +1022,8 @@ class AddUserForTeam(GenericAPIView):
         for user in users:
             t_user = CustomUser.objects.filter(id=user).first()
             team.members.add(t_user)
+            
+        return Response(status=status.HTTP_200_OK)
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]

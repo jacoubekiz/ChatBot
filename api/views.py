@@ -1020,7 +1020,7 @@ class AddUserForTeam(GenericAPIView):
         team = Team.objects.filter(team_id=team_id).first()
         users = request.data['users']
         for user in users:
-            t_user = CustomUser.objects.filter(id=user)
+            t_user = CustomUser.objects.filter(id=user).first()
             team.members.add(t_user)
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):

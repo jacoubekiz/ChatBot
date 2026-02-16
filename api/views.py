@@ -1019,10 +1019,13 @@ class AddUserForTeam(GenericAPIView):
     def post(self, request, team_id):
         team = Team.objects.filter(team_id=team_id).first()
         users = request.data['users']
+        keword = request.GET.get('keword')
         for user in users:
             t_user = CustomUser.objects.filter(id=user).first()
-            team.members.add(t_user)
-            
+            if keword == 'add':
+                team.members.add(t_user)
+            elif keword == 'delete':
+                team.members.remove(t_user)
         return Response(status=status.HTTP_200_OK)
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):

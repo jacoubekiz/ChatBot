@@ -501,7 +501,7 @@ class WhatsAppCampaign(models.Model):
     def __str__(self) -> str:
         return f'campaign for account {self.account_id.name}'
     
-class AnalyticsCamaign(models.Model):
+class AnalyticsCampaign(models.Model):
     analytics_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     campaign_id = models.ForeignKey(WhatsAppCampaign, on_delete=models.CASCADE)

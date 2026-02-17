@@ -421,15 +421,28 @@ class ConverstionSerializerCreate(serializers.ModelSerializer):
             'channle_id':{'write_only':True}
         }
 
+class AnalyticsCampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalyticsCampaign
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['account_id'] = instance.account_id.name
+        repre['campaign_id'] = instance.campaign_id.name
+        repre['contact'] = instance.contact.name
+        return repre
+    
 class CampaignsSerilizer(serializers.ModelSerializer):
+    analytics_campaign = AnalyticsCampaignSerializer(many=True, read_only=True, source='analyticscampaign_set')
     class Meta:
         model = WhatsAppCampaign
-        fields = ['campaign_id', 'name', 'status', 'start_date', 'end_date']
+        fields = ['campaign_id', 'name', 'status', 'analytics_campaign']
 
         extra_kwargs = {
             'status':{'read_only':True},
-            'start_date':{'write_only': True},
-            'end_date': {'write_only': True}
+            # 'start_date':{'write_only': True},
+            # 'end_date': {'write_only': True}
         }
 
 
@@ -538,3 +551,4 @@ class TriggerSerializer(serializers.ModelSerializer):
         repre = super().to_representation(instance)
         repre['account'] = instance.account.name
         return repre
+    

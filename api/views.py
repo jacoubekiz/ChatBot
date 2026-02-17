@@ -991,14 +991,17 @@ class AssigningPermissions(APIView):
 class ListTeamMember(GenericAPIView):
     permission_classes = [IsAuthenticated]
     
-    def get(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
-        members = account.team_set.all()
+    def get(self, request, team_id):
+        try:
+            team = Team.objects.get(team_id=team_id)
+        except:
+            return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
+        members = team.members.all()
         team_member = []
         for member in members:
-            m = member.members.all()
-            for i in m:
-                team_member.append(({"username": i.username, "id": i.id, "account":account_id}))
+            # m = member.members.all()
+            # for i in m:
+                team_member.append(({"username": member.username, "id": member.id, "account":team.account_id.account_id}))
         data = {
             'members': team_member
         }
@@ -1259,13 +1262,14 @@ class HandelCSView(GenericAPIView):
         except:
             return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
-from .tasks import *
+
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerilizer
     permission_class = [IsAuthenticated]
 
-    def get(self, request):
-        campaigns = WhatsAppCampaign.objects.all()
+    def get(self, request, channel_id):
+        channel = Channle.objects.get(channle_id=channel_id)
+        campaigns = WhatsAppCampaign.objects.filter(account_id=channel.account_id)
         serializer_campaigns = self.get_serializer(campaigns, many=True)
         data = serializer_campaigns.data
 

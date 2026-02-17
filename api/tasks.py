@@ -64,7 +64,7 @@ def send_whatsapp_campaign(
                     content=content_template,
                     wamid=template_wamid
                 )
-                AnalyticsCamaign.objects.create(
+                AnalyticsCampaign.objects.create(
                     account_id=account_id,
                     campaign_id=whatsappcampaign_,
                     contact=contact[0],
@@ -73,7 +73,7 @@ def send_whatsapp_campaign(
                 )
             except KeyError:
                 error_message_ = data_['error'].get('message')
-                AnalyticsCamaign.objects.create(
+                AnalyticsCampaign.objects.create(
                     account_id=account_id,
                     campaign_id=whatsappcampaign_,
                     contact=contact[0],

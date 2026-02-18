@@ -990,22 +990,15 @@ class AssigningPermissions(APIView):
 
 class ListTeamMember(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    
+    serializer_class = TeamMemberSerializer
     def get(self, request, team_id):
         try:
             team = Team.objects.get(team_id=team_id)
         except:
             return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
         members = team.members.all()
-        team_member = []
-        for member in members:
-            # m = member.members.all()
-            # for i in m:
-                team_member.append(({"username": member.username, "id": member.id, "account":team.account_id.account_id}))
-        data = {
-            'members': team_member
-        }
-        return Response(data, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(members, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class CreateTeamMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]

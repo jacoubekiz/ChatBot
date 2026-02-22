@@ -389,12 +389,16 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         except:
             return repr
         
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
     timer = serializers.SerializerMethodField(read_only=True)
-
-    
+    tags = TagSerializer(read_only=True)
     
     class Meta:
         model = Conversation
@@ -472,10 +476,7 @@ class SerializerFlows(serializers.ModelSerializer):
         model = Flow
         fields = '__all__'
 
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)

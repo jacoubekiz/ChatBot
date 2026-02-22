@@ -397,7 +397,7 @@ class TagSerializer(serializers.ModelSerializer):
 class TagConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ['tag_id', 'name']
 
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)

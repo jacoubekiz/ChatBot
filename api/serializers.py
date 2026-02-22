@@ -394,12 +394,17 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = '__all__'
 
+class TagConversationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
 class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
     timer = serializers.SerializerMethodField(read_only=True)
-    tags = TagSerializer(read_only=True)
-    
+    tags = TagConversationSerializer(read_only=True)
+
     class Meta:
         model = Conversation
         fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags']
@@ -412,10 +417,10 @@ class ConversationSerializer(serializers.ModelSerializer):
         timer = obj.chatmessage_set.exclude(from_message='bot').order_by('-created_at').first()
         return ChatMessageSerializer(timer).data["created_at"] if timer else None
     
-    def to_representation(self, instance):
-        repre = super().to_representation(instance)
-        repre['tags'] = instance.tags.name
-        return repre
+    # def to_representation(self, instance):
+    #     repre = super().to_representation(instance)
+    #     repre['tags'] = instance.tags.name
+    #     return repre
 
 
 class ConverstionSerializerCreate(serializers.ModelSerializer):

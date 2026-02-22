@@ -410,7 +410,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         repre = super().to_representation(instance)
-        repre['tags'] = instance.tags.name if instance.tags else None
+        repre['tags'] = instance.tags.name
         return repre
 
 

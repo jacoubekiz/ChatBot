@@ -403,7 +403,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     contact_id = ConversationContactSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
     timer = serializers.SerializerMethodField(read_only=True)
-    tags = TagConversationSerializer(read_only=True)
+    tags = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Conversation
@@ -417,6 +417,9 @@ class ConversationSerializer(serializers.ModelSerializer):
         timer = obj.chatmessage_set.exclude(from_message='bot').order_by('-created_at').first()
         return ChatMessageSerializer(timer).data["created_at"] if timer else None
     
+    def get_tags(self, obj):
+        tags = obj.tags.all()
+        return TagConversationSerializer(tags, many=True).data
     # def to_representation(self, instance):
     #     repre = super().to_representation(instance)
     #     repre['tags'] = instance.tags.name

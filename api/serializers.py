@@ -398,7 +398,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer']
+        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags']
 
     def get_last_message(self, obj):
             last_message = obj.chatmessage_set.order_by('-created_at').first()
@@ -407,6 +407,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_timer(self, obj):
         timer = obj.chatmessage_set.exclude(from_message='bot').order_by('-created_at').first()
         return ChatMessageSerializer(timer).data["created_at"] if timer else None
+    
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['tags'] = instance.tags.name if instance.tags else None
+        return repre
 
 
 class ConverstionSerializerCreate(serializers.ModelSerializer):

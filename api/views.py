@@ -1027,16 +1027,16 @@ class AddUserForTeam(GenericAPIView):
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AddUserSerializer
+    queryset = CustomUser.objects.all()
     lookup_field = 'pk'
-    def get_queryset(self):
-        team_id = self.kwargs['team_id']
-        user_id = self.kwargs['pk']
-        team = Team.objects.get(team_id=team_id)
-        return team.members.filter(id=user_id)
+
+    # def get_queryset(self):
+    #     user_id = self.kwargs['pk']
+    #     return CustomUser.objects.get(id=user_id)
     
-    def perform_update(self, serializer):
-        team_id = Team.objects.get(team_id=self.kwargs['team_id'])
-        serializer.save(team_id=team_id)
+    # def perform_update(self, serializer):
+    #     team_id = Team.objects.get(team_id=self.kwargs['team_id'])
+    #     serializer.save(team_id=team_id)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

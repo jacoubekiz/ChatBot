@@ -387,6 +387,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 api = API.objects.get(api_name=api_name)
                                 headers = {
                                         'Content-Type': 'application/json',
+                                        'Authorization': f'Bearer {api.tocken}'
                                 }
 
                                 data = api.body

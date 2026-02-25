@@ -381,6 +381,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     await database_sync_to_async(chat.update_state)(next_question_id)
                                     chat.isSent = False
                                     await database_sync_to_async(chat.save)()
+
+                            elif r_type == 'api':
+                                api_name = question['name']
+                                api = API.objects.get(api_name=api_name)
+                                headers = {
+                                        'Content-Type': 'application/json',
+                                }
+
+                                data = api.body
+                                for key, value in data.items():
+                                    if isinstance(value, (int, float)):
+                                        continue
+                                data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+
+                                response = requests.post(api.endpoint , headers=headers, json=data)
+                                for option in choices_with_next:
+                                    for state in option:
+                                        if str(response.status_code) == str(state):
+                                            next_question_id = option[2]
+                                            await database_sync_to_async(chat.update_state)(next_question_id)
+                                            chat.isSent = False
+                                            await database_sync_to_async(chat.save)()
                             elif r_type == 'name' or \
                                 r_type == 'phone' or \
                                 r_type == 'email' or \

@@ -1030,14 +1030,6 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
     lookup_field = 'pk'
 
-    # def get_queryset(self):
-    #     user_id = self.kwargs['pk']
-    #     return CustomUser.objects.get(id=user_id)
-    
-    # def perform_update(self, serializer):
-    #     team_id = Team.objects.get(team_id=self.kwargs['team_id'])
-    #     serializer.save(team_id=team_id)
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         # context['team_id'] = self.kwargs['team_id']

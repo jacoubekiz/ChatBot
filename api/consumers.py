@@ -384,19 +384,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                             elif r_type == 'api':
                                 api_name = question['name']
-                                api = database_sync_to_async(API.objects.get)(api_name=api_name)
+                                api_ = database_sync_to_async(API.objects.get)(api_name=api_name)
                                 headers = {
                                         'Content-Type': 'application/json',
-                                        'Authorization': f'Bearer {api.tocken}'
+                                        'Authorization': f'Bearer {api_.tocken}'
                                 }
 
-                                data = api.body
+                                data = api_.body
                                 for key, value in data.items():
                                     if isinstance(value, (int, float)):
                                         continue
                                 data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
 
-                                response = requests.post(api.endpoint , headers=headers, json=data)
+                                response = requests.post(api_.endpoint , headers=headers, json=data)
                                 for option in choices_with_next:
                                     for state in option:
                                         if str(response.status_code) == str(state):

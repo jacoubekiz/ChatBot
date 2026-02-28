@@ -392,11 +392,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                                 data = await self.get_body_api(api_name)
                                 endpoint = await self.get_endpoint_api(api_name)
-                                for key, value in data.items():
-                                    if isinstance(value, (int, float)):
-                                        continue
-                                data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-
+                                try:
+                                    for key, value in data.items():
+                                        if isinstance(value, (int, float)):
+                                            continue
+                                    data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                                except:
+                                    data = {}
                                 response = requests.post(endpoint , headers=headers, json=data)
                                 for option in choices_with_next:
                                     for state in option:

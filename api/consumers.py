@@ -387,16 +387,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 api_ = database_sync_to_async(API.objects.get)(api_name=api_name)
                                 headers = {
                                         'Content-Type': 'application/json',
-                                        'Authorization': f'Bearer {api_.tocken}'
+                                        'Authorization': f'Bearer {await self.get_token_api(api_name)}'
                                 }
 
-                                data = api_.body
+                                data = await self.get_body_api(api_name)
+                                endpoint = await self.get_endpoint_api(api_name)
                                 for key, value in data.items():
                                     if isinstance(value, (int, float)):
                                         continue
                                 data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
 
-                                response = requests.post(api_.endpoint , headers=headers, json=data)
+                                response = requests.post(endpoint , headers=headers, json=data)
                                 for option in choices_with_next:
                                     for state in option:
                                         if str(response.status_code) == str(state):
@@ -1380,6 +1381,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }))
 
            
+    @database_sync_to_async
+    def get_token_api(self, api_name):
+        api = API.objects.get(api_name=api_name)
+        return api.tocken
+
+    @database_sync_to_async
+    def get_body_api(self, api_name):
+        api = API.objects.get(api_name=api_name)
+        return api.body
+
+    @database_sync_to_async
+    def get_endpoint_api(self, api_name):
+        api = API.objects.get(api_name=api_name)
+        return api.endpoint
+    
     @database_sync_to_async
     def get_last_message(self, conversation_id):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()

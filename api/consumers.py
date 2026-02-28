@@ -384,7 +384,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                             elif r_type == 'api':
                                 api_name = question['name']
-                                api = API.objects.get(api_name=api_name)
+                                api = database_sync_to_async(API.objects.get)(api_name=api_name)
                                 headers = {
                                         'Content-Type': 'application/json',
                                         'Authorization': f'Bearer {api.tocken}'

@@ -565,8 +565,7 @@ def handel_request_redis(data, account_id):
                         flows = channel.flows.all()
                         for flow in flows:
                             if flow.is_default == 'True':
-                                flow_ = flow
-                        chat, created = Chat.objects.get_or_create(channe_id= channel, flow=flow_, conversation_id=contact_phonenumber)
+                                chat, created = Chat.objects.get_or_create(channe_id= channel, flow=flow, conversation_id=contact_phonenumber)
                         chat.isSent = False
                         chat.save()
                         chat.update_state('start')

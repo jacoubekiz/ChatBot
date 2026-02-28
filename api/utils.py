@@ -564,7 +564,7 @@ def handel_request_redis(data, account_id):
                     if content_ in restart_keywords:
                         flow = channel.flows.filter(is_default=True).first()
                         # flow = flows.filter(is_default=True).first()
-                        chat, created = Chat.objects.get_or_create(channe_id= channel, flow=flow, conversation_id=contact_phonenumber)
+                        chat, created = Chat.objects.get_or_create(channel_id= channel, flow=flow, conversation_id=contact_phonenumber)
                         chat.isSent = False
                         chat.save()
                         chat.update_state('start')

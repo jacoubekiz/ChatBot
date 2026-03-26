@@ -1509,8 +1509,9 @@ class AddListFlows(GenericAPIView):
     def post(self, request, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)
         flow = request.data['flow']
+        flow_name = request.data['flow_name']
         # print(flow)
-        flow_ = Flow.objects.create(flow=flow)
+        flow_ = Flow.objects.create(account=channel.account_id, flow=flow, flow_name=flow_name)
         channel.flows.add(flow_)
         channel.save()
 

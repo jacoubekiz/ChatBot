@@ -328,7 +328,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "front_id": "auto_generated"
                                             }
                                         )
-                                        account = await database_sync_to_async(Channle.objects.get)(Q(channel_id=self.channel_id))
+                                        account = await database_sync_to_async(Channle.objects.get)(Q(channle_id=self.channel_id))
                                         attr, created = await database_sync_to_async(Attribute.objects.get_or_create)(key=attribute_name, chat_id=chat.id, account = account.account_id)
                                         attr.value = user_reply
                                         await database_sync_to_async(attr.save)()
@@ -361,7 +361,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         except:
                                             user_reply = data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                                             
-                                    account = await database_sync_to_async(Channle.objects.get)(Q(channel_id=self.channel_id))
+                                    account = await database_sync_to_async(Channle.objects.get)(Q(channle_id=self.channel_id))
                                     attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id, account=account.account_id)
                                     attr.value = user_reply
                                     await database_sync_to_async(attr.save)()
@@ -616,7 +616,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "front_id": "auto_generated"
                                             }
                                         )
-                                        account = await database_sync_to_async(Channle.objects.get)(Q(channel_id=self.channel_id))
+                                        account = await database_sync_to_async(Channle.objects.get)(Q(channle_id=self.channel_id))
                                         attr, created = await database_sync_to_async(Attribute.objects.get_or_create)(key=attribute_name, chat_id=chat.id, account=account.account_id)
                                         attr.value = user_reply
                                         await database_sync_to_async(chat.update_state)(next_question_id)

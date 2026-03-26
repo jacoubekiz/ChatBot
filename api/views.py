@@ -1312,6 +1312,15 @@ class ListCreateAPIView(APIView):
         serializer = APISerializer(api_objects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+class SaveResponse(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, api_id):
+        response = request.data['response']
+        api = API.objects.get(api_id = api_id)
+        api.response = response
+        api.save()
+        return Response(status=status.HTTP_200_OK)
+
 class DeleteAPIView(DestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = APISerializer
@@ -1323,7 +1332,24 @@ class DeleteParameterAPIView(DestroyAPIView):
     serializer_class = ParameterSerializer
     queryset = Parameter.objects.all()
     lookup_field = 'parameter_id'
+
+class ListCreateAttributeView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
+        data = request.data
+        serializer = SerializerAttributes(data=data, context={'account':account})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+    def get(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
+        attributes = Attribute.objects.filter(account_id=account)
+        serializer = SerializerAttributes(attributes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+     
 class CreateListQuickReplyView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -1497,6 +1523,7 @@ class AddListFlows(GenericAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
 class SetDefaultFlow(GenericAPIView):
 
     permission_classes = [IsAuthenticated]

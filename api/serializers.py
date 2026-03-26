@@ -484,7 +484,17 @@ class SerializerFlows(serializers.ModelSerializer):
         model = Flow
         fields = '__all__'
 
+class SerializerAttributes(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = ['key', 'value']
 
+    def save(self, validated_data):
+        account = self.context.get('account')
+        validated_data['account'] = account
+        attribute = Attribute.objects.create(**validated_data)
+        return attribute
+        
 
 class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)

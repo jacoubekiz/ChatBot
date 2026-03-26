@@ -321,7 +321,7 @@ class Contact(models.Model):
 # new        
 class Flow(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
-    flow_name = models.CharField(max_length=100, default="flow_1")
+    flow_name = models.CharField(max_length=100)
     flow = models.FileField(upload_to='flows/')
     is_default = models.BooleanField(default=False)
 
@@ -379,15 +379,17 @@ class Chat(models.Model):
         return f"{self.conversation_id} Client -> {self.channel_id}, State -> {self.state}"
     
 class Attribute(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, default=1)
     key = models.CharField(max_length=255)
     value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f'{self.key} - {self.value}'
 # _____________________________________________________________________________________________________________________
+
 
 class Tag(models.Model):
     tag_id = models.AutoField(primary_key=True)
@@ -516,12 +518,14 @@ class AnalyticsCampaign(models.Model):
 class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    attribute = models.ManyToManyField(Attribute)
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
     body = models.TextField(null=True, blank=True)
     headers = models.TextField(null=True, blank=True)
     tocken = models.TextField(null=True, blank=True)
+    response = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

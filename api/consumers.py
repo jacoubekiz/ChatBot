@@ -18,6 +18,8 @@ import urllib.parse as up
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.channel_id= self.scope["url_route"]["kwargs"]["channel_id"]
+        # self.channel_id_account = self.scope["url_route"]["kwargs"]["channel_id"]
+        # self.account_id = 
         self.room_group_name = "chat_"
             # Join room group
         self.user = self.scope['user']
@@ -328,7 +330,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "front_id": "auto_generated"
                                             }
                                         )
-                                        account = await database_sync_to_async(Account.objects.get)(Q(account_id=channel))
+                                        account = await self.get_account(self.channel_id)
                                         attr, created = await database_sync_to_async(Attribute.objects.get_or_create)(key=attribute_name, chat_id=chat.id, account = account)
                                         attr.value = user_reply
                                         await database_sync_to_async(attr.save)()
@@ -361,7 +363,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                         except:
                                             user_reply = data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                                             
-                                    account = await database_sync_to_async(Account.objects.get)(Q(account_id=channel))
+                                    account = await self.get_account(self.channel_id)
                                     attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id, account=account)
                                     attr.value = user_reply
                                     await database_sync_to_async(attr.save)()
@@ -616,7 +618,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                 "front_id": "auto_generated"
                                             }
                                         )
-                                        account = await database_sync_to_async(Account.objects.get)(Q(account_id=channel))
+                                        account = await self.get_account(self.channel_id)
                                         attr, created = await database_sync_to_async(Attribute.objects.get_or_create)(key=attribute_name, chat_id=chat.id, account=account)
                                         attr.value = user_reply
                                         await database_sync_to_async(chat.update_state)(next_question_id)
@@ -1390,6 +1392,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         api = API.objects.get(api_name=api_name)
         return api.tocken
 
+    @database_sync_to_async
+    def get_account(self, channel_id):
+        channel = Channle.objects.get(channle_id=channel_id)
+        return channel.account_id
+    
     @database_sync_to_async
     def get_body_api(self, api_name):
         api = API.objects.get(api_name=api_name)

@@ -489,7 +489,7 @@ class SerializerAttributes(serializers.ModelSerializer):
         model = Attribute
         fields = ['key', 'value']
 
-    def save(self, validated_data):
+    def create(self, validated_data):
         account = self.context.get('account')
         validated_data['account'] = account
         attribute = Attribute.objects.create(**validated_data)

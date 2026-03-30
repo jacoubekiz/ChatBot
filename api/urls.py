@@ -72,7 +72,7 @@ urlpatterns = [
     # path('quick-replies/<str:account_id>/', ggg.as_view(), name='quick_replies'),
     path('quick-reply/<str:account_id>/', CreateListQuickReplyView.as_view(), name='quick_replies'),
     path('delete-retriev-update-quick-reply/<str:quickreply_id>/<str:account_id>/', RetrieveUpdateDeleteQuickReplyView.as_view(), name='delete_quick_reply'),
-    path('delete-retriev-update-attribute/<str:attribute_id>/<str:account_id>/', RetAupDelAttributeView.as_view(), name='delete_attribute'),
+    path('delete-retriev-update-attribute/<str:id>/<str:account_id>/', RetAupDelAttributeView.as_view(), name='delete_attribute'),
     path('triggers/<str:account_id>/', ListCreateTriggerView.as_view(), name='triggers'),
     path('delete-retriev-update-trigger/<str:id>/<str:account_id>/', RetrieveUpdateDeleteTriggerView.as_view(), name='delete_trigger'),
 ]

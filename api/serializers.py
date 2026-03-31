@@ -487,7 +487,7 @@ class SerializerFlows(serializers.ModelSerializer):
 class SerializerAttributes(serializers.ModelSerializer):
     class Meta:
         model = Attribute
-        fields = ['key', 'value']
+        fields = ['id', 'key', 'value']
 
     def create(self, validated_data):
         account = self.context.get('account')

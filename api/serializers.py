@@ -586,3 +586,23 @@ class TriggerSerializer(serializers.ModelSerializer):
         repre['account'] = instance.account.name
         return repre
     
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = '__all__'
+        extra_kwargs = {
+                'account':{'read_only':True},
+            }
+
+    def create(self, validated_data):
+        account_id = self.context.get('account_id')
+        account = Account.objects.filter(account_id=account_id).first()
+        validated_data['account'] = account
+        group = Group.objects.create(**validated_data)
+        return group
+    
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['account'] = instance.account.name
+        return repre

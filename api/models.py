@@ -425,6 +425,13 @@ class Conversation(models.Model):
     # def last_message(self):
     #     message = self.chatmessage_set.filter().first().order_by('-created_at')
     #     return message.content
+class Group(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    contact = models.ManyToManyField(Contact)
+
+    def __str__(self) -> str:
+        return self.name
     
 class QuickReply(models.Model):
     quickreply_id = models.AutoField(primary_key=True)

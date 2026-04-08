@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, CreateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1524,7 +1524,6 @@ class AddListFlows(GenericAPIView):
         channel = Channle.objects.get(channle_id = channel_id)
         flow = request.data['flow']
         flow_name = request.data['flow_name']
-        # print(flow)
         flow_ = Flow.objects.create(account=channel.account_id, flow=flow, flow_name=flow_name)
         channel.flows.add(flow_)
         channel.save()
@@ -1561,10 +1560,16 @@ class SetDefaultFlow(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-import os
-from django.conf import settings
-import json
-class RetrieveFlow(RetrieveAPIView):
+class UpdateFlowView(GenericAPIView):
+    def put(self, request, pk):
+        data = request.data
+        flow = Flow.objects.get(id=pk)
+        flow.flow_name = data['flow_name']
+        flow.flow = data['flow']
+        serializer = SerializerFlows(flow)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class RetrieveFlow(RetrieveDestroyAPIView):
     queryset = Flow.objects.all()
     serializer_class = SerializerFlows
     permission_classes = [IsAuthenticated]
@@ -1572,9 +1577,6 @@ class RetrieveFlow(RetrieveAPIView):
     def get_object(self):
         obj = super().get_object()
         file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
-        # with open(file_path, 'r') as file:
-        #     data = json.load(file)
-        # print(data)
         return obj
 
 class InitiateLiveChat(APIView):
@@ -1643,3 +1645,12 @@ class ChangePasswordView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+    
+
+class ListCreateGroupView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupSerializer
+    
+    def perform_create(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account=account_id)

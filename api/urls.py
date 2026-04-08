@@ -32,8 +32,9 @@ urlpatterns = [
     path('update-delete-team-member/<str:pk>/', RetrieveUpdateDeleteTeamMemberView.as_view(), name='update_delete_team_member'),
     path('list-all-members/<str:account_id>/', ListAllTeamMembers.as_view(), name='List_all_team_members'),
     path('create-flow/<str:channel_id>/', AddListFlows.as_view(), name='create_flow'),
+    path('update-flow/<str:pk>/', UpdateFlowView.as_view(), name='update_flow'),
     path('set-default-flow/<str:channel_id>/', SetDefaultFlow.as_view(), name='set_default_flow'),
-    path('retrieve-flow/<str:pk>', RetrieveFlow.as_view(), name='retrieve_flow'),
+    path('retrieve-flow/<str:pk>/', RetrieveFlow.as_view(), name='retrieve_flow'),
     path('auth/login/', ViewLogin.as_view(), name='log-in'),
     path('auth/logout/', LogoutAPIView.as_view()),
     path('user-profile/<str:id>/', UserProfileView.as_view(), name='user_profile'),
@@ -75,5 +76,6 @@ urlpatterns = [
     path('delete-retriev-update-attribute/<str:id>/<str:account_id>/', RetAupDelAttributeView.as_view(), name='delete_attribute'),
     path('triggers/<str:account_id>/', ListCreateTriggerView.as_view(), name='triggers'),
     path('delete-retriev-update-trigger/<str:id>/<str:account_id>/', RetrieveUpdateDeleteTriggerView.as_view(), name='delete_trigger'),
+    path('list-create-group/<str:account_id>/', ListCreateGroupView.as_view(), name='list_create_group'),
 ]
 

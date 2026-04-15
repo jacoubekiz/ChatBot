@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1311,6 +1311,26 @@ class ListCreateAPIView(APIView):
         api_objects = API.objects.filter(account_id=account)
         serializer = APISerializer(api_objects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class RetriveUpdateApiview(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = APISerializer
+    lookup_field = 'api_id'
+
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        api_id = self.kwargs['api_id']
+        return API.objects.filter(account_id=account_id, api_id=api_id)
+    
+    # def perform_update(self, serializer):
+    #     account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+    #     parameters = self.request.data.get('parameters', [])
+    #     serializer.save(account=account_id, parameters=parameters)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['parameters'] = self.request.data.get('parameters', [])
+        return context
     
 class SaveResponse(APIView):
     permission_classes = [IsAuthenticated]

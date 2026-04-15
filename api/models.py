@@ -521,11 +521,21 @@ class AnalyticsCampaign(models.Model):
 
     def __str__(self) -> str:
         return f'Analytics for campaign {self.campaign_id.name}'
-    
+
+class Parameter(models.Model):
+    parameter_id = models.AutoField(primary_key=True)
+    api = models.ForeignKey("API", on_delete=models.CASCADE, null=True, blank=True)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    key = models.CharField(max_length=100, null=True, blank=True)
+    value = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f'parameter {self.key}'
+     
 class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    attribute = models.ManyToManyField(Attribute)
+    parameters = models.ManyToManyField("Parameter", related_name='api_parameter')
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
@@ -538,16 +548,8 @@ class API(models.Model):
 
     def __str__(self) -> str:
         return f'api for account {self.account_id.name}'
-    
-class Parameter(models.Model):
-    parameter_id = models.AutoField(primary_key=True)
-    api = models.ForeignKey(API, on_delete=models.CASCADE, null=True, blank=True)
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    key = models.CharField(max_length=100, null=True, blank=True)
-    value = models.CharField(max_length=255, null=True, blank=True)
 
-    def __str__(self) -> str:
-        return f'parameter {self.key}'
+    
 class InternalChat(models.Model):
     caht_id = models.AutoField(primary_key=True)
     team_id = models.ForeignKey(Team, on_delete=models.CASCADE)

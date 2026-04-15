@@ -15,6 +15,7 @@ DEBUG = True
 
 #SECURE_SSL_REDIRECT = True
 
+
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -71,6 +72,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ]
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE': 20,
 
@@ -121,7 +125,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": ["redis://:LjlNkkYgE@127.0.0.1:6379/0"],
         },
     },
 }
@@ -137,15 +141,24 @@ CACHES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = ['https://*.chatbot.icsl.me', 'https://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = [
+    'https://chatapi.icsl.me', 
+    'http://127.0.0.1:443', 
+    'http://127.0.0.1', 
+    'http://localhost:5173', 
+    'https://wa.ics.com.sa'
+    ]
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173", # Also allow the IP version of localhost
+    "https://localhost:5173",
+    "https://127.0.0.1:5173", # Also allow the IP version of localhost
     "https://chatfe.dev.icsl.me",
+    "https://chatapi.icsl.me",
+    "http://localhost:5173",
+    "https://wa.ics.com.sa"
 ]
+
 # Database
-
-
 DATABASES = {
     'default': {
         'ENGINE': env('ENGINE'),
@@ -154,15 +167,6 @@ DATABASES = {
         'PASSWORD': env('PASSWORD'),
         'HOST': env('HOST'),
         'PORT': env('PORT'),
-    },
-
-    'webhook_db': {
-        'ENGINE': env('ENGINE_WEBHOOK'),
-        'NAME': env('NAME_WEBHOOK'),
-        'USER': env('USER_WEBHOOK'),
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': env('PORT_WEBHOOK'),
     }
 }
 

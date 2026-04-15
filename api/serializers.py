@@ -522,7 +522,10 @@ class ChangePasswordSerializer(serializers.Serializer):
 class APISerializer(serializers.ModelSerializer):
     class Meta:
         model = API
-        fields = ['api_id', 'api_name', 'endpoint', 'method', 'body']
+        fields = ['api_id', 'api_name', 'endpoint', 'method', 'body', 'parameters']
+        extra_kwargs = {
+            'parameters':{'read_only':True},
+        }
 
     def create(self, validated_data):
         parameters = self.context.get('parameters', [])
@@ -538,8 +541,31 @@ class APISerializer(serializers.ModelSerializer):
                         key=key,
                         value=value
                     )
+                    api.parameters.add(param_obj)
         return api
+    
+    def update(self, instance, validated_data):
+        parameters = self.context.get('parameters', [])
+        instance.api_name = validated_data.get('api_name', instance.api_name)
+        instance.endpoint = validated_data.get('endpoint', instance.endpoint)
+        instance.method = validated_data.get('method', instance.method)
+        instance.body = validated_data.get('body', instance.body)
+        instance.parameters.clear()
+        instance.save()
 
+        if parameters:
+            Parameter.objects.filter(api=instance).delete()
+            for param in parameters:
+                for key, value in param.items():
+                    param_obj = Parameter.objects.create(
+                        account_id=instance.account_id,
+                        api=instance,
+                        key=key,
+                        value=value
+                    )
+                    instance.parameters.add(param_obj)
+        return instance
+    
 class ParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parameter

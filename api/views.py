@@ -1294,7 +1294,7 @@ class UserProfileView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
-class ListCreateAPIView(APIView):
+class ListCreateApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, account_id):
@@ -1670,7 +1670,27 @@ class ChangePasswordView(GenericAPIView):
 class ListCreateGroupView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
+    queryset = Group.objects.all()
     
-    def perform_create(self, serializer):
-        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
-        serializer.save(account=account_id)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['account_id'] = self.kwargs['account_id']
+        tag = self.request.query_params.get('tag')
+        members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
+        context["members"] = members
+        return context
+    
+class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Group.objects.all()
+    lookup_field = 'id'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['account_id'] = self.kwargs['account_id']
+        tag = self.request.query_params.get('tag')
+        members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
+        context["members"] = members
+        return context
+    

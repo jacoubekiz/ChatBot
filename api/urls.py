@@ -65,7 +65,7 @@ urlpatterns = [
 
     path('handle-csv-file/', HandelCSView.as_view(), name='handle_csv_file'),
     path('campaigns/<str:channel_id>/', CreateListCampaignsView.as_view(), name='create_compaingn'),
-    path('apis/<str:account_id>/', ListCreateAPIView.as_view(), name='create_api'),
+    path('apis/<str:account_id>/', ListCreateApiView.as_view(), name='create_api'),
     path('retrive-update-api/<str:api_id>/<str:account_id>/', RetriveUpdateApiview.as_view(), name='retrive_update_api'),
     path('save-response/<str:api_id>/', SaveResponse.as_view(), name='save_response'),
     path('list-create-attribute/<str:account_id>/', ListCreateAttributeView.as_view(), name='list_create_attribute'),
@@ -78,5 +78,6 @@ urlpatterns = [
     path('triggers/<str:account_id>/', ListCreateTriggerView.as_view(), name='triggers'),
     path('delete-retriev-update-trigger/<str:id>/<str:account_id>/', RetrieveUpdateDeleteTriggerView.as_view(), name='delete_trigger'),
     path('list-create-group/<str:account_id>/', ListCreateGroupView.as_view(), name='list_create_group'),
+    path('ret-up-del-group/<str:id>/<str:account_id>/', RetrieveUpdateDeleteGroupView.as_view(), name='ret_up_del_group'),
 ]
 

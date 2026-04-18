@@ -619,16 +619,31 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
                 'account':{'read_only':True},
+                'contact':{'read_only':True},
             }
 
     def create(self, validated_data):
         account_id = self.context.get('account_id')
+        members = self.context.get('members', [])
         account = Account.objects.filter(account_id=account_id).first()
         validated_data['account'] = account
         group = Group.objects.create(**validated_data)
+        for member in members:
+            group.contact.add(member)
         return group
+    
+    def update(self, instance, validated_data):
+        members = self.context.get('members', [])
+        instance.name = validated_data.get('name', instance.name)
+        instance.contact.clear()
+
+        for member in members:
+            instance.contact.add(member)
+        return instance
+
     
     def to_representation(self, instance):
         repre = super().to_representation(instance)
         repre['account'] = instance.account.name
+        repre['contact'] = [contact.name for contact in instance.contact.all()]
         return repre

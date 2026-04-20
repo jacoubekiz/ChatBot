@@ -648,7 +648,7 @@ def handel_request_redis(data, account_id):
                                         content_type= content_type,
                                         from_message = conversation.contact_id.name,
                                         wamid = wamid,
-                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_url = f"https://chatapi.icsl.me/media/chat_message/{file_name}",
                                         media_sha256_hash = sha256,
                                         media_mime_type = mime_type,
                                         caption= caption
@@ -679,7 +679,7 @@ def handel_request_redis(data, account_id):
                                         content_type= content_type,
                                         from_message = conversation.contact_id.name,
                                         wamid = wamid,
-                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_url = f"https://chatapi.icsl.me/media/chat_message/{file_name}",
                                         media_sha256_hash = sha256,
                                         media_mime_type = mime_type,
                                         caption= caption
@@ -710,7 +710,7 @@ def handel_request_redis(data, account_id):
                                         content_type= content_type,
                                         from_message = conversation.contact_id.name,
                                         wamid = wamid,
-                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_url = f"https://chatapi.icsl.me/media/chat_message/{file_name}",
                                         media_sha256_hash = sha256,
                                         media_mime_type = mime_type,
                                         caption= caption
@@ -742,7 +742,7 @@ def handel_request_redis(data, account_id):
                                         content_type= content_type,
                                         from_message = conversation.contact_id.name,
                                         wamid = wamid,
-                                        media_url = f"https://chatbot.icsl.me/media/chat_message/{file_name}",
+                                        media_url = f"https://chatapi.icsl.me/media/chat_message/{file_name}",
                                         media_sha256_hash = sha256,
                                         media_mime_type = mime_type,
                                         caption= caption
@@ -762,7 +762,7 @@ def handel_request_redis(data, account_id):
         error_redis.write(f"your get the error: {e}\n")
     
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -791,7 +791,7 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         pass
 
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber,channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -813,7 +813,7 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         pass
 
 def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -836,7 +836,7 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
         pass
 
 def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -860,7 +860,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
 
 
 def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -883,7 +883,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
         pass
 
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
@@ -907,7 +907,7 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         pass
 
 def read_receipt(channel_id, message_id, conversation_id, status):
-    url_ws = f"wss://chatbot.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{channel_id}/?token=&from_bot=False"
     # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/"
     ws = websocket.WebSocket()
     ws.connect(url_ws)

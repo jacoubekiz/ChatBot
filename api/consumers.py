@@ -869,13 +869,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     content = text_data_json["content"]
                     decoded_audio = base64.b64decode(content)
                     # output_folder = 'media/chat_message/'
-                    output_folder = f'/var/www/html/media/chat_message/'
+                    output_folder = f'/www/wwwroot/chatapi.icsl.me/media/chat_message/'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)
                     message_wamid =  process_and_send_voice_note(file_path, phonenumber_id, token[7:], phonenumber, bitrate_kbps=24)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatapi.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -926,18 +926,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question='',
                         type="image",
-                        source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
+                        source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
                     )
                     content = text_data_json["content"]
                     front_id = text_data_json['front_id']
                     decoded_image = base64.b64decode(content)
                     # output_folder = 'media/chat_message'
-                    output_folder = '/var/www/html/media/chat_message'
+                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_image)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -987,17 +987,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question={"label":caption},
                         type="video",
-                        source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
+                        source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
                     )
                     front_id = text_data_json["front_id"]
                     content = text_data_json["content"]
                     decoded_video = base64.b64decode(content)
-                    output_folder = '/var/www/html/media/chat_message'
+                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_video)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
                     # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
@@ -1046,17 +1046,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         chat_id= conversation_id,
                         platform="whatsapp",
                         type="document",
-                        source=f"https://chatbot.icsl.me/media/chat_message/{media_name}",
+                        source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
                     )
                     content = text_data_json["content"]
                     front_id = text_data_json["front_id"]
                     decoded_document = base64.b64decode(content)
-                    output_folder = '/var/www/html/media/chat_message'
+                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_document)
                     conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatbot.icsl.me/media/chat_message/{media_name}")
+                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
                     # Send image to room group
                     await self.channel_layer.group_send(
                         self.room_group_name, {

@@ -21,7 +21,6 @@ class ListCreateTemplate(APIView):
         response = requests.get(url, headers=headers)
         responses = []
         results = response.json()
-        print(results)
         for result in results.get('data', []):
             responses.append(
                 {
@@ -108,7 +107,6 @@ class GetTemplate(APIView):
         }
 
         response = requests.get(url, headers=headers)
-        print(response.json())
         return Response(response.json(), status=status.HTTP_200_OK)
     
 class SendTemplate(APIView):

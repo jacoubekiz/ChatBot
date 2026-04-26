@@ -1298,7 +1298,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             created_at = event["created_at"]
             await self.send(text_data=json.dumps({
                     "type":"message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "conversation_id": conversation_id,
                     "media_url":media_url,
                     "caption":caption,
@@ -1315,7 +1315,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
@@ -1349,7 +1349,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             media_url = event["media_url"]
             await self.send(text_data=json.dumps({
                     "type":"message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "conversation_id": conversation_id,
                     "media_url":media_url,
                     "caption":caption,
@@ -1364,7 +1364,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
@@ -1397,7 +1397,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             media_url = event["media_url"]
             await self.send(text_data=json.dumps({
                     "type":"message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "conversation_id": conversation_id,
                     "media_url":media_url,
                     "caption":caption,
@@ -1412,7 +1412,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
@@ -1445,7 +1445,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             media_url = event["media_url"]
             await self.send(text_data=json.dumps({
                     "type":"message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "conversation_id": conversation_id,
                     "media_url":media_url,
                     "caption":caption,
@@ -1460,7 +1460,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event['front_id']
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "content_type":content_type,
                     "message_id": message_id,
                     "wamid": wamid,
@@ -1494,7 +1494,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if from_bot == "False":
             await self.send(text_data=json.dumps({
                 "type":"message",
-                "PhoneNumber":await self.get_phonenumber(conversation_id),
+                "phoneNumber":await self.get_phonenumber(conversation_id),
                 "message_id": message_id_,
                 "content":content,
                 "content_type":content_type,
@@ -1510,7 +1510,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             front_id = event["front_id"]
             await self.send(text_data=json.dumps({
                     "type": "message",
-                    "PhoneNumber":await self.get_phonenumber(conversation_id),
+                    "phoneNumber":await self.get_phonenumber(conversation_id),
                     "content":content,
                     "content_type":content_type,
                     "message_id": message_id_,
@@ -1539,7 +1539,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
                 "message_id": message_id_,
-                "PhoneNumber":await self.get_phonenumber(conversation_id),
+                "phoneNumber":await self.get_phonenumber(conversation_id),
                 "conversation_id": conversation_id,
                 "content_type": content_type,
                 "status_message" : status_message

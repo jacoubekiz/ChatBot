@@ -14,6 +14,7 @@ from bot.settings import TOKEN_ACCOUNTS
 import subprocess
 import tempfile
 import shutil
+from django.db.models import Q
 
 bearer_token = 'Bearer EAAJCCh5AS8gBOyUjN8UtrTa9p4apLsoMMOTmEJL3ur2TJbniZBOAPReVh6TrmZBMiwg7Ixdqr06H8VTQTNImcBNuZBmbBlcZCKYmMNZCjWFHIjnlQ7ByKZCMjxhLxaCYn7ZCf3U7VGgqyMi4chCfjb899WXV0HBFlEnPhWbZBQUaL54ZAikhNZCOP3pRuGu7YdUREv1WyZAc8w8vAc28gN6yObFeXmVCQL4ZBMxcM1ByZAvEZD'
 
@@ -558,10 +559,7 @@ def handel_request_redis(data, account_id):
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
                     account = Account.objects.get(account_id=channel.account_id.account_id)
                     contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')
-                    contact, created = Contact.objects.get_or_create(phone_number=contact_phonenumber, account_id= account)
-                    if created:
-                        contact.name = contact_name
-                        contact.save()
+                    contact, created = Contact.objects.get_or_create(phone_number = contact_phonenumber, account_id=account, defaults={'name': contact_name})
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                     restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(channel_id=channel.channle_id)]
                     if channel.flows.all():

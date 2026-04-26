@@ -561,46 +561,47 @@ def handel_request_redis(data, account_id):
                     contact, created = Contact.objects.get_or_create(phone_number=contact_phonenumber, account_id= account)
                     conversation, created = Conversation.objects.get_or_create(contact_id=contact, account_id=account, channle_id=channel)
                     restart_keywords = [r.keyword for r in RestartKeyword.objects.filter(channel_id=channel.channle_id)]
-                    if content_ in restart_keywords:
-                        flow = channel.flows.filter(is_default=True).first()
-                        # flow = flows.filter(is_default=True).first()
-                        chat, created = Chat.objects.get_or_create(channel_id= channel, flow=flow, conversation_id=contact_phonenumber)
-                        chat.isSent = False
-                        chat.save()
-                        chat.update_state('start')
-                        conversation.state = 'start_bot'
-                        conversation.status =  'open'
-                        conversation.save()
-                    if conversation.state == 'start_bot':
-                        match content_type:
-                            case "text":
-                                content = value.get('messages', '')[0].get('text', '').get('body','')
-                                # chat_message = ChatMessage.objects.create(
-                                #     conversation_id = conversation,
-                                #     content_type = 'text',
-                                #     content = content,
-                                #     from_message = conversation.contact_id.name,
-                                #     wamid = wamid
-                                # )
-                            case "button":
-                                content = value.get('messages', '')[0].get('button', '').get('text','')
-                                # chat_message = ChatMessage.objects.create(
-                                #     conversation_id = conversation,
-                                #     content_type = 'text',
-                                #     content = content,
-                                #     from_message = conversation.contact_id.name,
-                                #     wamid = wamid
-                                # )
-                            case "interactive":
-                                content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
-                                # chat_message = ChatMessage.objects.create(
-                                #     conversation_id = conversation,
-                                #     content_type = 'text',
-                                #     content = content,
-                                #     from_message = conversation.contact_id.name,
-                                #     wamid = wamid
-                                # )
-                        connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)
+                    if channel.flows.all():
+                        if content_ in restart_keywords:
+                            flow = channel.flows.filter(is_default=True).first()
+                            # flow = flows.filter(is_default=True).first()
+                            chat, created = Chat.objects.get_or_create(channel_id= channel, flow=flow, conversation_id=contact_phonenumber)
+                            chat.isSent = False
+                            chat.save()
+                            chat.update_state('start')
+                            conversation.state = 'start_bot'
+                            conversation.status =  'open'
+                            conversation.save()
+                        if conversation.state == 'start_bot':
+                            match content_type:
+                                case "text":
+                                    content = value.get('messages', '')[0].get('text', '').get('body','')
+                                    # chat_message = ChatMessage.objects.create(
+                                    #     conversation_id = conversation,
+                                    #     content_type = 'text',
+                                    #     content = content,
+                                    #     from_message = conversation.contact_id.name,
+                                    #     wamid = wamid
+                                    # )
+                                case "button":
+                                    content = value.get('messages', '')[0].get('button', '').get('text','')
+                                    # chat_message = ChatMessage.objects.create(
+                                    #     conversation_id = conversation,
+                                    #     content_type = 'text',
+                                    #     content = content,
+                                    #     from_message = conversation.contact_id.name,
+                                    #     wamid = wamid
+                                    # )
+                                case "interactive":
+                                    content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
+                                    # chat_message = ChatMessage.objects.create(
+                                    #     conversation_id = conversation,
+                                    #     content_type = 'text',
+                                    #     content = content,
+                                    #     from_message = conversation.contact_id.name,
+                                    #     wamid = wamid
+                                    # )
+                            connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)
                     else:        
                         match content_type:
                             case "button":

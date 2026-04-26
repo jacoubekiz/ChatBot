@@ -845,14 +845,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "front_id":front_id,
                             "message_id":message_id,
                             "from_flow":"False",
+                            "error_message":"",
+                            "status_message":"sent",
                             "created_at": created_at
                         }
                     )
                 except:
+                    error_message = data
+                    status_message = "failed"
+                    message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, "", error_message, status_message)
                     await self.channel_layer.group_send(
                         self.room_group_name, {
-                            "type": "error_message",
-                            "error": f"Template message not sent{response.content.decode()}"
+                            "type": "chat_message",
+                            "conversation_id": conversation_id,
+                            "content": content,
+                            "content_type": content_type,
+                            "from_bot":from_bot,
+                            "wamid":"None",
+                            "front_id":front_id,
+                            "message_id":message_id,
+                            "from_flow":"False",
+                            "error_message":"data",
+                            "status_message":"failed",
+                            "created_at": created_at
                         }
                     )
 
@@ -873,25 +888,47 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_audio)
-                    message_wamid =  process_and_send_voice_note(file_path, phonenumber_id, token[7:], phonenumber, bitrate_kbps=24)
-                    conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid, f"https://chatapi.icsl.me/media/chat_message/{media_name}")
-                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
-                    # Send image to room group
-                    await self.channel_layer.group_send(
-                        self.room_group_name, {
-                            "type": "chat_message_audio",
-                            "conversation_id": conversation_id,
-                            "content": content,
-                            "caption": caption,
-                            "content_type": content_type,
-                            "from_bot": from_bot,
-                            "wamid": message_wamid,
-                            "message_id": message_id,
-                            "from_flow":"False",
-                            "front_id": front_id
-                        }
-                    )
+                    try:
+                        message_wamid =  process_and_send_voice_note(file_path, phonenumber_id, token[7:], phonenumber, bitrate_kbps=24)
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_audio",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": message_wamid,
+                                "message_id": message_id,
+                                "error_message":"",
+                                "status_message":"sent",
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
+                    except:
+                        message_wamid =  process_and_send_voice_note(file_path, phonenumber_id, token[7:], phonenumber, bitrate_kbps=24)
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, "", f"https://chatapi.icsl.me/media/chat_message/{media_name}", message_wamid.get("error", {}).get("message", ""), status_message="failed")
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_audio",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": message_wamid,
+                                "message_id": message_id,
+                                "error_message":message_wamid.get("error", {}).get("message", ""),
+                                "status_message":"falied",
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
@@ -906,6 +943,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'message_wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
+                            "error_message":"",
+                            "status_message":"",
                             "from_flow":"True",
                             "created_at": created_at
                         }
@@ -917,6 +956,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 caption = text_data_json["caption"]
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
+                    content = text_data_json["content"]
+                    front_id = text_data_json['front_id']
+                    decoded_image = base64.b64decode(content)
+                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
+                    file_path = os.path.join(output_folder, media_name)
+                    with open(file_path, "wb") as image_file:
+                        image_file.write(decoded_image)
                     message_wamid = send_message(
                         message_content= caption,
                         to= await self.get_phonenumber(conversation_id),
@@ -928,32 +974,46 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         type="image",
                         source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
                     )
-                    content = text_data_json["content"]
-                    front_id = text_data_json['front_id']
-                    decoded_image = base64.b64decode(content)
-                    # output_folder = 'media/chat_message'
-                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
-                    file_path = os.path.join(output_folder, media_name)
-                    with open(file_path, "wb") as image_file:
-                        image_file.write(decoded_image)
-                    conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
-                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
-                    # Send image to room group
-                    await self.channel_layer.group_send(
-                        self.room_group_name, {
-                            "type": "chat_message_image",
-                            "conversation_id": conversation_id,
-                            "content": content,
-                            "caption": caption,
-                            "content_type": content_type,
-                            "from_bot": from_bot,
-                            "wamid": message_wamid['messages'][0]['id'],
-                            "message_id": message_id,
-                            "from_flow":"False",
-                            "front_id": front_id
-                        }
-                    )
+                    try:
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, message_wamid['messages'][0]['id'], caption, f"https://chatapi.icsl.me/media/chat_message/{media_name}")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_image",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": message_wamid['messages'][0]['id'],
+                                "message_id": message_id,
+                                "error_message":message_wamid,
+                                "status_message":"failed",
+                                "from_flow":"sent",
+                                "front_id": front_id
+                            }
+                        )
+                    except:
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, "", f"https://chatapi.icsl.me/media/chat_message/{media_name}",  message_wamid.get("error", {}).get("message", ""), status_message="failed")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_image",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": "",
+                                "message_id": message_id,
+                                "error_message":message_wamid.get("error", {}).get("message", ""),
+                                "status_message":"failed",
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
@@ -968,6 +1028,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
+                            "error_message":"",
+                            "status_message":"",
                             "from_flow":"True",
                             "created_at": created_at
                         }
@@ -977,6 +1039,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.update_state_conversation(conversation_id)
                 caption = text_data_json["caption"]
                 if from_bot == "True":
+                    front_id = text_data_json["front_id"]
+                    content = text_data_json["content"]
+                    decoded_video = base64.b64decode(content)
+                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
+                    file_path = os.path.join(output_folder, media_name)
+                    with open(file_path, "wb") as image_file:
+                        image_file.write(decoded_video)
                     media_name = text_data_json["media_name"]
                     message_wamid = send_message(
                         message_content= caption,
@@ -989,31 +1058,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         type="video",
                         source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
                     )
-                    front_id = text_data_json["front_id"]
-                    content = text_data_json["content"]
-                    decoded_video = base64.b64decode(content)
-                    output_folder = '/www/wwwroot/chatapi.icsl.me/media/chat_message'
-                    file_path = os.path.join(output_folder, media_name)
-                    with open(file_path, "wb") as image_file:
-                        image_file.write(decoded_video)
-                    conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
-                    # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
-                    # Send image to room group
-                    await self.channel_layer.group_send(
-                        self.room_group_name, {
-                            "type": "chat_message_video",
-                            "conversation_id": conversation_id,
-                            "content": content,
-                            "caption": caption,
-                            "content_type": content_type,
-                            "from_bot": from_bot,
-                            "wamid": message_wamid['messages'][0]['id'],
-                            "message_id": message_id,
-                            "from_flow":"False",
-                            "front_id": front_id
-                        }
-                    )
+                    try:
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
+                        # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_video",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": message_wamid['messages'][0]['id'],
+                                "error_message":"",
+                                "status_message":"sent",
+                                "message_id": message_id,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
+                    except Exception:
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, "", f"https://chatapi.icsl.me/media/chat_message/{media_name}", message_wamid.get("error", {}).get("message", ""), status_message="failed")
+                        # message_id = await self.create_chat_image(self.conversation_id, content_type, caption, wamid, f"http://127.0.0.1:8000/media/chat_message/{media_name}")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_video",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": "",
+                                "error_message":message_wamid.get("error", {}).get("message", ""),
+                                "status_message":"failed",
+                                "message_id": message_id,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
@@ -1028,6 +1114,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
+                            "error_message":"",
+                            "status_message":"",
                             "from_flow":"True",
                             "created_at": created_at
                         }
@@ -1038,16 +1126,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 caption = text_data_json["caption"]
                 if from_bot == "True":
                     media_name = text_data_json["media_name"]
-                    message_wamid = send_message(
-                        message_content= caption,
-                        to= await self.get_phonenumber(conversation_id),
-                        wa_id= await self.get_waid(conversation_id),
-                        bearer_token= await self.get_token(conversation_id),
-                        chat_id= conversation_id,
-                        platform="whatsapp",
-                        type="document",
-                        source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
-                    )
                     content = text_data_json["content"]
                     front_id = text_data_json["front_id"]
                     decoded_document = base64.b64decode(content)
@@ -1055,23 +1133,56 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     file_path = os.path.join(output_folder, media_name)
                     with open(file_path, "wb") as image_file:
                         image_file.write(decoded_document)
-                    conversation_id = await self.get_conversation(conversation_id)
-                    message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}")
-                    # Send image to room group
-                    await self.channel_layer.group_send(
-                        self.room_group_name, {
-                            "type": "chat_message_document",
-                            "conversation_id": conversation_id,
-                            "content": content,
-                            "caption": caption,
-                            "content_type": content_type,
-                            "from_bot": from_bot,
-                            "wamid": message_wamid['messages'][0]['id'],
-                            "message_id": message_id,
-                            "from_flow":"False",
-                            "front_id": front_id
-                        }
-                    )
+                    try:    
+                        message_wamid = send_message(
+                            message_content= caption,
+                            to= await self.get_phonenumber(conversation_id),
+                            wa_id= await self.get_waid(conversation_id),
+                            bearer_token= await self.get_token(conversation_id),
+                            chat_id= conversation_id,
+                            platform="whatsapp",
+                            type="document",
+                            source=f"https://chatapi.icsl.me/media/chat_message/{media_name}",
+                        )
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, message_wamid['messages'][0]['id'], f"https://chatapi.icsl.me/media/chat_message/{media_name}", "", "")
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_document",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": message_wamid['messages'][0]['id'],
+                                "error_message":"",
+                                "status_message":"sent",
+                                "message_id": message_id,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
+                    except:
+                        conversation_id = await self.get_conversation(conversation_id)
+                        message_id = await self.create_chat_image(conversation_id, self.user, content_type, caption, "", f"https://chatapi.icsl.me/media/chat_message/{media_name}", message_wamid.get("error", {}).get("message", ""), status_message='failed')
+                        # Send image to room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message_document",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "caption": caption,
+                                "content_type": content_type,
+                                "from_bot": from_bot,
+                                "wamid": "",
+                                "error_message":message_wamid.get("error", {}).get("message", ""),
+                                "status_message":"failed",
+                                "message_id": message_id,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
                 else:
                     media_url = text_data_json["media_url"]
                     created_at = text_data_json["created_at"]
@@ -1086,6 +1197,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": 'wamid',
                             "message_id": message_id,
                             "media_url" : media_url,
+                            "error_message":"",
+                            "status_message":"",
                             "from_flow":"True",
                             "created_at": created_at
                         }
@@ -1106,12 +1219,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "from_bot":from_bot,
                             "wamid":'wamid',
                             "message_id":message_id,
+                            "error_message":"",
+                            "status_message":"",
                             "from_flow":"True",
                             "created_at": created_at
                         }
                     )
                 else:
-                    # status = text_data_json['status']
+                    front_id = text_data_json['front_id']
                     message_wamid = send_message(
                         message_content=content,
                         to= await self.get_phonenumber(conversation_id),
@@ -1121,25 +1236,46 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         platform="whatsapp",
                         question='statment'
                     )
-                    front_id = text_data_json['front_id']
-                    message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, message_wamid['messages'][0]['id'])
-                    await self.channel_layer.group_send(
-                        self.room_group_name, {
-                            "type": "chat_message",
-                            "conversation_id": conversation_id,
-                            "content": content,
-                            "content_type": content_type,
-                            "from_bot":from_bot,
-                            "wamid":message_wamid['messages'][0]['id'],
-                            "message_id":message_id,
-                            "created_at": created_at,
-                            "from_flow":"False",
-                            "front_id": front_id
-                        }
-                    )
+                    try:
+                        message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, message_wamid['messages'][0]['id'], "", "")
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "content_type": content_type,
+                                "from_bot":from_bot,
+                                "wamid":message_wamid['messages'][0]['id'],
+                                "error_message":"",
+                                "status_message":"sent",
+                                "message_id":message_id,
+                                "created_at": created_at,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
+                    except:
+                        message_id = await self.create_chat_message(conversation_id, self.user, content_type, content, "", message_wamid.get("error", {}).get("message"), status_message="failed")
+                        await self.channel_layer.group_send(
+                            self.room_group_name, {
+                                "type": "chat_message",
+                                "conversation_id": conversation_id,
+                                "content": content,
+                                "content_type": content_type,
+                                "from_bot":from_bot,
+                                "wamid":"",
+                                "error_message":message_wamid,
+                                "status_message":"failed",
+                                "message_id":message_id,
+                                "created_at": created_at,
+                                "from_flow":"False",
+                                "front_id": front_id
+                            }
+                        )
 
     async def chat_message_image(self, event):
         from_flow = event["from_flow"]
+        
         if from_flow == "True":
             content_type = event["content_type"]
             created_at = event["created_at"]
@@ -1153,6 +1289,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         caption = event["caption"]
         conversation_id = event["conversation_id"]
+        error_message = event["error_message"]
+        status_message = event["status_message"]
         
 
         if from_bot == "False":
@@ -1167,6 +1305,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "wamid": wamid,
                     "message_id":message_id,
                     "created_at":created_at,
+                    "error_message":error_message,
+                    "status_message":status_message,
                     "from_bot":"False",
                     "is_successfully":"true"
                 }))
@@ -1181,6 +1321,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "front_id": front_id,
                     "created_at":created_at,
                     "media_url": media_url,
+                    "error_message":error_message,
+                    "status_message":status_message,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
@@ -1336,6 +1478,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from_bot = event["from_bot"]
         wamid = event['wamid']
         conversation_id = event["conversation_id"]
+        error_message = event["error_message"]
+        status_message = event["status_message"]
 
         message_id_ = event["message_id"]
         created_at = event["created_at"]
@@ -1348,6 +1492,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "conversation_id": conversation_id,
                 "wamid":wamid,
                 "created_at":created_at,
+                "error_message":error_message,
+                "status_message":status_message,
                 "from_bot":"False",
                 "is_successfully":"true"
             }))
@@ -1362,6 +1508,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversation_id": conversation_id,
                     "front_id": front_id,
                     "created_at":created_at,
+                    "error_message":error_message,
+                    "status_message":status_message,
                     "from_bot":"True",
                     "is_successfully": "true",
                 }))
@@ -1414,7 +1562,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return message
     
     @database_sync_to_async
-    def create_chat_message(self, conversation_id, user, content_type, content, wamid):
+    def create_chat_message(self, conversation_id, user, content_type, content, wamid="None", error_message=None, status_message="sent"):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
@@ -1422,12 +1570,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type = content_type,
             content = content,
             wamid = wamid,
+            error_message = error_message,
+            status_message = status_message
             # from_message = from_bot
         )
         return chat_message.message_id
     
     @database_sync_to_async
-    def create_chat_image(self, conversation_id, user, content_type, caption, wamid, media_url):
+    def create_chat_image(self, conversation_id, user, content_type, caption, wamid="None", media_url="None", error_message=None, status_message="sent"):
         conversation = Conversation.objects.filter(conversation_id=conversation_id).first()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
@@ -1436,6 +1586,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             caption = caption,
             wamid = wamid,
             media_url = media_url,
+            error_message = error_message,
+            status_message = status_message
         )
         return chat_message.message_id
     

@@ -643,7 +643,7 @@ def handel_request_redis(data, account_id):
                                     result_data = response.json()
                                     # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', f"{image_id}.jpeg")
                                     file_name = f"{image_id}.jpeg"
-                                    url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                    url = download_and_save_image(result_data.get('url'), headers, '/www/wwwroot/chatapi.icsl.me/media/chat_message', file_name)
                                     chat_image = ChatMessage.objects.create(
                                         conversation_id= conversation,
                                         content_type= content_type,
@@ -674,7 +674,7 @@ def handel_request_redis(data, account_id):
                                     result_data = response.json()
                                     # url = download_and_save_image(media_url, 'media/chat_message')
                                     file_name = f"{video_id}.mp4"
-                                    url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                    url = download_and_save_image(result_data.get('url'), headers, '/www/wwwroot/chatapi.icsl.me/media/chat_message', file_name)
                                     chat_video = ChatMessage.objects.create(
                                         conversation_id= conversation,
                                         content_type= content_type,
@@ -705,7 +705,7 @@ def handel_request_redis(data, account_id):
                                     result_data = response.json()
                                     # url = download_and_save_image(media_url, 'media/chat_message')
                                     file_name = f"{audio_id}.ogg"
-                                    url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                    url = download_and_save_image(result_data.get('url'), headers, '/www/wwwroot/chatapi.icsl.me/media/chat_message', file_name)
                                     chat_audio = ChatMessage.objects.create(
                                         conversation_id= conversation,
                                         content_type= content_type,
@@ -737,7 +737,7 @@ def handel_request_redis(data, account_id):
                                     # url = download_and_save_image(media_url, 'media/chat_message')
                                     # file_name = f"{document_id}"
                                     # url = download_and_save_image(result_data.get('url'), headers, 'media/chat_message', file_name)
-                                    url = download_and_save_image(result_data.get('url'), headers, '/var/www/html/media/chat_message', file_name)
+                                    url = download_and_save_image(result_data.get('url'), headers, '/www/wwwroot/chatapi.icsl.me/media/chat_message', file_name)
                                     chat_document = ChatMessage.objects.create(
                                         conversation_id= conversation,
                                         content_type= content_type,

@@ -1166,7 +1166,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def _broadcast_message(self, payload: dict) -> None:
         """Broadcast message to all channel members."""
-        if payload["from_bot"] == "False":
+        if payload["from_bot"] == "True":
             payload.update({"content_type":"message_status"})
         await self.channel_layer.group_send(
             self.room_group_name,

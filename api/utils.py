@@ -70,7 +70,7 @@ def show_response(question, questions):
             choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
     else:
-        next_id = ''
+        print(dict(question['next']))
         next_question_id = question['next']['target']
 
     r_type = question['type']
@@ -132,7 +132,7 @@ def send_message(version = '18.0',
                 beem_media_id=None,
                 preview_url : bool = True,
                 question=None,):
-    
+    print(f"Sending message: {message_content}")
     message_content = change_occurences(message_content, pattern=r'\{\{(\w+)\}\}', chat_id=chat_id, sql=True)
     if platform =='whatsapp':
         url = f"https://graph.facebook.com/v{version}/{wa_id}/messages"
@@ -545,7 +545,7 @@ def handel_request_redis(data, account_id):
                 chatmessage.status_message = status_message
                 chatmessage.save()
                 read_receipt(channel.channle_id, chatmessage.message_id, chatmessage.conversation_id.conversation_id, status_message)
-            if value:
+            else:
                 contact_phonenumber = value.get('messages', '')[0].get('from', '')
                 try:
                     content_ = value.get('messages', '')[0].get('text', '').get('body','')

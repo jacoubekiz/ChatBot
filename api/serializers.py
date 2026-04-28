@@ -631,7 +631,7 @@ class GroupSerializer(serializers.ModelSerializer):
         for member in members:
             group.contact.add(member)
         return group
-    
+
     def update(self, instance, validated_data):
         members = self.context.get('members', [])
         instance.name = validated_data.get('name', instance.name)
@@ -641,6 +641,16 @@ class GroupSerializer(serializers.ModelSerializer):
         for member in members:
             instance.contact.add(member)
         return instance
+    
+    # def update(self, instance, validated_data):
+    #     members = self.context.get('members', [])
+    #     instance.name = validated_data.get('name', instance.name)
+    #     instance.contact.clear()
+    #     instance.save()
+
+    #     for member in members:
+    #         instance.contact.add(member)
+    #     return instance
 
     
     def to_representation(self, instance):

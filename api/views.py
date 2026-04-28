@@ -1529,7 +1529,7 @@ class ListAllTeamMembers(GenericAPIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, account_id):
         # account = Account.objects.get(account_id=account_id)
-        teams = Team.objects.filter(account_id__account_id=account_id)
+        teams = CustomUser.objects.filter(role_user="agent", team__account_id=account_id).values_list('team__team_id', flat=True).distinct()
         members = []
         for team in teams:
             member = team.members.all()

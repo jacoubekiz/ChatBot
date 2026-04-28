@@ -12,9 +12,9 @@ from django.utils import timezone
 import urllib.parse as up
 import langid
 
-from api.models import *
-from api.serializers import *
-from api.utils import *
+from .models import *
+from .serializers import *
+from .utils import *
 
 
 
@@ -173,7 +173,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = data.get("conversation_id")
         from_bot = data.get("from_bot")
 
-        await self._update_conversation_status(conversation_id, from_bot)
+        # await self._update_conversation_status(conversation_id, from_bot)
 
         handler_mapping = {
             ContentType.BOT_INTEGRATION: self._handle_bot_integration,

@@ -636,6 +636,7 @@ class GroupSerializer(serializers.ModelSerializer):
         members = self.context.get('members', [])
         instance.name = validated_data.get('name', instance.name)
         instance.contact.clear()
+        instance.save()
 
         for member in members:
             instance.contact.add(member)

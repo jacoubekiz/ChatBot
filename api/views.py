@@ -1527,14 +1527,11 @@ class ImageToBase64View(APIView):
 class ListAllTeamMembers(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
-    def get(self, request, account_id):
-        # account = Account.objects.get(account_id=account_id)
-        teams = Team.objects.filter(account_id__account_id=account_id)
+    def get(self, request):
+        members = CustomUser.objects.filter(role_user="agent")
         members = []
-        for team in teams:
-            member = team.members.all()
-            serializer = MemberSerializer(member, many=True)
-            members.extend(serializer.data)
+        serializer = MemberSerializer(members, many=True)
+        members.extend(serializer.data)
         return Response(members, status=status.HTTP_200_OK)
 
 

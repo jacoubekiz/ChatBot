@@ -70,8 +70,10 @@ def show_response(question, questions):
             choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
     else:
-        print(dict(question['next']))
-        next_question_id = question['next']['target']
+        try:
+            next_question_id = question['next']['target']
+        except:
+            next_question_id = "End"
 
     r_type = question['type']
     try:

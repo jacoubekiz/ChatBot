@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     model = CustomUser
 
-    list_display = ['username','id' ,'email', 'first_name', 'last_name', 'is_staff']
+    list_display = ['username','id' ,'email', 'first_name', 'last_name', 'is_staff', 'role_user']
     fieldsets = (
     (None, 
          {'fields':('email', 'password',)}
@@ -26,7 +26,7 @@ class CustomUserAdmin(UserAdmin):
         {'fields':('username', 'first_name', 'last_name',)}
     ),
     ('Permissions', 
-        {'fields':('is_staff', 'is_superuser', 'is_active', 'groups','user_permissions')}
+        {'fields':('is_staff', 'is_superuser', 'is_active', 'groups','user_permissions', 'role_user')}
     ),
     ('Registration', 
         {'fields':('date_joined', 'last_login',)}

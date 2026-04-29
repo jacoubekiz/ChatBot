@@ -73,7 +73,7 @@ def show_response(question, questions):
         try:
             next_question_id = question['next']['target']
         except:
-            next_question_id = "End"
+            next_question_id = "end"
 
     r_type = question['type']
     try:

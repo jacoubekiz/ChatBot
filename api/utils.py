@@ -70,10 +70,7 @@ def show_response(question, questions):
             choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
     else:
-        try:
-            next_question_id = question['next']['target']
-        except:
-            next_question_id = "end"
+        next_question_id = question['next']['target']
 
     r_type = question['type']
     try:
@@ -134,7 +131,6 @@ def send_message(version = '18.0',
                 beem_media_id=None,
                 preview_url : bool = True,
                 question=None,):
-    print(f"Sending message: {message_content}")
     message_content = change_occurences(message_content, pattern=r'\{\{(\w+)\}\}', chat_id=chat_id, sql=True)
     if platform =='whatsapp':
         url = f"https://graph.facebook.com/v{version}/{wa_id}/messages"
@@ -760,7 +756,6 @@ def handel_request_redis(data, account_id):
                     message.status_updated_at = status_updated_at
                     message.save()
     except Exception as e:
-        print(e)
         error_redis = open('error_redis.txt', 'a')
         error_redis.write(f"your get the error: {e}\n")
     
@@ -1056,7 +1051,6 @@ def ffmpeg_has_opus_encoder():
     return None
 
 def run(cmd):
-    # print("+ " + " ".join(cmd))  # uncomment for debugging
     subprocess.run(cmd, check=True)
 
 def convert_to_ogg_opus_mono(input_path, target_path, bitrate_kbps=24):

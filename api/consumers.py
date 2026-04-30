@@ -391,9 +391,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         )
 
                         # Send the message to the channel layer
-                        await self._broadcast_message(
+                        await self._broadcast_message_flow(
                             {
                                 "phoneNumber":await self._get_phone_number(conversation_id),
+                                "conversation_id": conversation_id,
                                 "content":content,
                                 "content_type":"text",
                                 "wamid": wamid,
@@ -478,7 +479,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     content=message,
                     whatsapp_message_id=message_wamid['messages'][0]['id'],
                 )
-                await self._broadcast_message({
+                await self._broadcast_message_flow({
                     "conversation_id": conversation_id,
                     "phoneNumber":await self._get_phone_number(conversation_id),
                     "content": message,
@@ -519,7 +520,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     from_message=contact_name
 
                 )
-                await self._broadcast_message({
+                await self._broadcast_message_flow({
                     **data,
                     "wamid": message_wamid['messages'][0]['id'],
                     "message_id": message_id.message_id,
@@ -538,7 +539,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             
             # Send message through WebSocket
-                await self._broadcast_message({
+                await self._broadcast_message_flow({
                     **data,
                     "wamid": message_wamid['messages'][0]['id'],
                     "message_id": message_id.message_id,
@@ -595,7 +596,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 content=message,
                 whatsapp_message_id=message_wamid['messages'][0]['id']
                 )
-            await self._broadcast_message({
+            await self._broadcast_message_flow({
                 "conversation_id": conversation_id,
                 "phoneNumber":await self._get_phone_number(conversation_id),
                 "content": message,
@@ -629,7 +630,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     content=error_message,
                     whatsapp_message_id=message_wamid['messages'][0]['id'],
                 )
-                await self._broadcast_message({
+                await self._broadcast_message_flow({
                     "conversation_id": conversation_id,
                     "phoneNumber":await self._get_phone_number(conversation_id),
                     "content": message,
@@ -649,7 +650,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     whatsapp_message_id="sdflskjdflksjdf",
                     from_message=contact_name
                 )
-                await self._broadcast_message({
+                await self._broadcast_message_flow({
                     "from_bot": "False",
                     "phoneNumber":await self._get_phone_number(conversation_id),
                     "wamid": "message_wamid['messages'][0]['id']",
@@ -680,7 +681,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             wamid=message_wamid['messages'][0]['id'],
             media_url = question['source'],
         )
-        await self._broadcast_message({
+        await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
@@ -712,7 +713,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             wamid=message_wamid['messages'][0]['id'],
             media_url = question['source'],
         )
-        await self._broadcast_message({
+        await self._broadcast_message_flow({
              "conversation_id": conversation_id,
             "content": message,
             "phoneNumber":await self._get_phone_number(conversation_id),
@@ -743,7 +744,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             wamid=message_wamid['messages'][0]['id'],
             media_url = question['source'],
         )
-        await self._broadcast_message({
+        await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
@@ -771,7 +772,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content=message,
             whatsapp_message_id=message_wamid['messages'][0]['id']
         )
-        await self._broadcast_message({
+        await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
@@ -972,7 +973,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         content=message,
                         whatsapp_message_id=message_wamid['messages'][0]['id']
                     )
-                    await self._broadcast_message({
+                    await self._broadcast_message_flow({
                         "from_bot":"True",
                         "phoneNumber":await self._get_phone_number(conversation_id),
                         "wamid": message_wamid['messages'][0]['id'],
@@ -1002,12 +1003,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {"type": MessageType.CHAT_MESSAGE, **payload}
         )
-
-    # async def _broadcast_message_bot(self, payload: dict) -> None:
-    #     await self.channel_layer.group_send(
-    #         self.room_group_name,
-    #         {"type": MessageType.CHAT_MESSAGE, **payload}
-        # )
+    async def _broadcast_message_flow(self, payload: dict) -> None:
+                await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": MessageType.CHAT_MESSAGE, **payload}
+        )
+                
     async def _send_error_message(self, error_message: str) -> None:
         """Send error message to client."""
         await self.send(json.dumps({

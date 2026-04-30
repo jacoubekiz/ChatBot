@@ -1002,7 +1002,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "wamid": "wamid",
                             "created_at": f"{message_id.created_at}",
                             "message_id": message_id.message_id,
-                            "from_bot":"False",
+                            "from_bot":"True",
                             "status_message": "sent"
                         }
                     )

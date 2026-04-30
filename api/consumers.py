@@ -393,8 +393,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         # Send the message to the channel layer
                         await self._broadcast_message(
                             {
-                                **data,
+                                "phoneNumber":await self._get_phone_number(conversation_id),
+                                "content":content,
                                 "wamid": wamid,
+                                "created_at": f"{message_id.created_at}",
+                                "wamid":wamid,
                                 "message_id": message_id.message_id,
                                 "status_message": "sent"
                             }
@@ -475,6 +478,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 await self._broadcast_message({
                     "conversation_id": conversation_id,
+                    "phoneNumber":await self._get_phone_number(conversation_id),
                     "content": message,
                     "created_at": f"{message_id.created_at}",
                     "content_type": "message_status",
@@ -591,6 +595,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             await self._broadcast_message({
                 "conversation_id": conversation_id,
+                "phoneNumber":await self._get_phone_number(conversation_id),
                 "content": message,
                 "created_at": f"{message_id.created_at}",
                 "content_type": "message_status",
@@ -624,6 +629,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 await self._broadcast_message({
                     "conversation_id": conversation_id,
+                    "phoneNumber":await self._get_phone_number(conversation_id),
                     "content": message,
                     "created_at": f"{message_id.created_at}",
                     "content_type": "message_status",
@@ -643,6 +649,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 await self._broadcast_message({
                     "from_bot": "False",
+                    "phoneNumber":await self._get_phone_number(conversation_id),
                     "wamid": "message_wamid['messages'][0]['id']",
                     "message_id": message_id.message_id,
                     "status_message": "sent"
@@ -673,6 +680,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self._broadcast_message({
             "conversation_id": conversation_id,
+            "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
             "created_at": f"{message_id.created_at}",
             "content_type": "message_status",
@@ -705,6 +713,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._broadcast_message({
              "conversation_id": conversation_id,
             "content": message,
+            "phoneNumber":await self._get_phone_number(conversation_id),
             "created_at": f"{message_id.created_at}",
             "content_type": "message_status",
             "wamid": message_wamid['messages'][0]['id'],
@@ -734,6 +743,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self._broadcast_message({
             "conversation_id": conversation_id,
+            "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
             "created_at": f"{message_id.created_at}",
             "content_type": "message_status",
@@ -761,6 +771,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self._broadcast_message({
             "conversation_id": conversation_id,
+            "phoneNumber":await self._get_phone_number(conversation_id),
             "content": message,
             "created_at": f"{message_id.created_at}",
             "content_type": "message_status",
@@ -960,6 +971,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     await self._broadcast_message({
                         "from_bot":"True",
+                        "phoneNumber":await self._get_phone_number(conversation_id),
                         "wamid": message_wamid['messages'][0]['id'],
                         "message_id": chat_message.message_id,
                         "status_message": "sent"

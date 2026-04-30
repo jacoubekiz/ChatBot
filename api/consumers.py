@@ -516,16 +516,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     user=None,
                     content_type="text",
                     content=message,
-                    whatsapp_message_id="message_wamid['messages'][0]['id']",
+                    whatsapp_message_id="sdflskjdflksjdf",
                     from_message=contact_name
 
                 )
-                await self._broadcast_message_flow({
-                    **data,
-                    "wamid": message_wamid['messages'][0]['id'],
-                    "message_id": message_id.message_id,
-                    "status_message": "sent"
-                })
+                await self._broadcast_message_flow(
+                    {
+                        "phoneNumber":await self._get_phone_number(conversation_id),
+                        "conversation_id": conversation_id,
+                        "content":message,
+                        "content_type":"text",
+                        "wamid": "wamid",
+                        "created_at": f"{message_id.created_at}",
+                        "message_id": message_id.message_id,
+                        "from_bot":"False",
+                        "status_message": "sent"
+                    }
+                )
                 return True
                 
             else:
@@ -539,12 +546,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             
             # Send message through WebSocket
-                await self._broadcast_message_flow({
-                    **data,
-                    "wamid": message_wamid['messages'][0]['id'],
-                    "message_id": message_id.message_id,
-                    "status_message": "sent"
-                })
+                await self._broadcast_message_flow(
+                    {
+                        "phoneNumber":await self._get_phone_number(conversation_id),
+                        "conversation_id": conversation_id,
+                        "content":message,
+                        "content_type":"text",
+                        "wamid": "wamid",
+                        "created_at": f"{message_id.created_at}",
+                        "message_id": message_id.message_id,
+                        "from_bot":"False",
+                        "status_message": "sent"
+                    }
+                )
                 account = await self._get_account(self.channel_id)
                 await self._create_attribute(attribute_name, user_reply, chat, account)
                 next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
@@ -650,13 +664,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     whatsapp_message_id="sdflskjdflksjdf",
                     from_message=contact_name
                 )
-                await self._broadcast_message_flow({
-                    "from_bot": "False",
-                    "phoneNumber":await self._get_phone_number(conversation_id),
-                    "wamid": "message_wamid['messages'][0]['id']",
-                    "message_id": message_id.message_id,
-                    "status_message": "sent"
-                })
+                await self._broadcast_message_flow(
+                    {
+                        "phoneNumber":await self._get_phone_number(conversation_id),
+                        "conversation_id": conversation_id,
+                        "content":message,
+                        "content_type":"text",
+                        "wamid": "wamid",
+                        "created_at": f"{message_id.created_at}",
+                        "message_id": message_id.message_id,
+                        "from_bot":"False",
+                        "status_message": "sent"
+                    }
+                )
                 account = await self._get_account(self.channel_id)
                 await self._create_attribute(attribute_name, user_reply, chat, account)
                 await self._update_chat_status(chat, next_question_id)
@@ -966,20 +986,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                     platform=platform,
                                     question=question,
                                     )
-                    chat_message = await self._create_chat_message(
+                    message_id = await self._create_chat_message(
                         conversation_id=await self._get_conversation(conversation_id),
                         user= None,
                         content_type="text",
                         content=message,
                         whatsapp_message_id=message_wamid['messages'][0]['id']
                     )
-                    await self._broadcast_message_flow({
-                        "from_bot":"True",
-                        "phoneNumber":await self._get_phone_number(conversation_id),
-                        "wamid": message_wamid['messages'][0]['id'],
-                        "message_id": chat_message.message_id,
-                        "status_message": "sent"
-                    })
+                    await self._broadcast_message_flow(
+                        {
+                            "phoneNumber":await self._get_phone_number(conversation_id),
+                            "conversation_id": conversation_id,
+                            "content":message,
+                            "content_type":"text",
+                            "wamid": "wamid",
+                            "created_at": f"{message_id.created_at}",
+                            "message_id": message_id.message_id,
+                            "from_bot":"False",
+                            "status_message": "sent"
+                        }
+                    )
                 await database_sync_to_async(chat.update_state)(next_question_id)
                 if next_question_id == 'end':
                     chat.isSent = False

@@ -647,7 +647,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self._broadcast_message_flow({
                     "conversation_id": conversation_id,
                     "phoneNumber":await self._get_phone_number(conversation_id),
-                    "content": message,
+                    "content": user_reply,
                     "created_at": f"{message_id.created_at}",
                     "content_type": "text",
                     "wamid": message_wamid['messages'][0]['id'],
@@ -668,7 +668,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         "phoneNumber":await self._get_phone_number(conversation_id),
                         "conversation_id": conversation_id,
-                        "content":message,
+                        "content":user_reply,
                         "content_type":"text",
                         "wamid": "wamid",
                         "created_at": f"{message_id.created_at}",

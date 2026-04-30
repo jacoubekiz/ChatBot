@@ -399,6 +399,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 "created_at": f"{message_id.created_at}",
                                 "wamid":wamid,
                                 "message_id": message_id.message_id,
+                                "from_bot":"False",
                                 "status_message": "sent"
                             }
                         )
@@ -782,6 +783,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
         return "end"
+    
     async def _handle_bot_integration(self, data: dict) -> None:
         """Handle bot integration and flow processing."""
 

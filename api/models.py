@@ -215,7 +215,8 @@ STATUS = (
 
 STATUS_CONVERSATION = (
     ('end_bot', 'end_bot'),
-    ('start_bot', 'start_bot')
+    ('start_bot', 'start_bot'),
+    ("live_chat", "live_chat")
 )
 
 CONTENT_TYPE = (

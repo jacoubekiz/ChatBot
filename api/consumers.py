@@ -792,6 +792,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content=message,
             whatsapp_message_id=message_wamid['messages'][0]['id']
         )
+        await self._update_state_conversation(conversation_id)
         await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
@@ -1059,6 +1060,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             channel_id=channel,
             flow=flow
         )[0]
+
+    @database_sync_to_async
+    def _update_state_conversation(self, conversation_id: str) -> None:
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation.state = "live_chat"
+        conversation.save()
 
     @database_sync_to_async
     def _create_chat_message(self, conversation_id, user, content_type: str,

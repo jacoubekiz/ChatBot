@@ -144,7 +144,7 @@ CACHES = {
 CSRF_TRUSTED_ORIGINS = [
     'https://chatapi.icsl.me', 
     'http://127.0.0.1:443', 
-    'http://127.0.0.1', 
+    'http://127.0.0.1:5173', 
     'http://localhost:5173', 
     'https://wa.ics.com.sa'
     ]
@@ -152,7 +152,6 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     "https://localhost:5173",
     "https://127.0.0.1:5173", # Also allow the IP version of localhost
-    "https://chatfe.dev.icsl.me",
     "https://chatapi.icsl.me",
     "http://localhost:5173",
     "https://wa.ics.com.sa"

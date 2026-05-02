@@ -1592,10 +1592,10 @@ class RetrieveFlow(RetrieveDestroyAPIView):
     serializer_class = SerializerFlows
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        obj = super().get_object()
-        file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
-        return obj
+    # def get_object(self):
+    #     obj = super().get_object()
+    #     file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
+    #     return obj
 
 class InitiateLiveChat(APIView):
     permission_classes = [IsAuthenticated]

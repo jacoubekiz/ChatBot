@@ -1028,12 +1028,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             payload.update({"content_type":"message_status"})
         await self.channel_layer.group_send(
             self.room_group_name,
-            {"type": MessageType.CHAT_MESSAGE, **payload}
+            {
+                "type": MessageType.CHAT_MESSAGE,
+                "conversation_state":await self._get_conversation_state(payload["conversation_id"]),
+                **payload
+            }
         )
     async def _broadcast_message_flow(self, payload: dict) -> None:
-                await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": MessageType.CHAT_MESSAGE, **payload}
+        await self.channel_layer.group_send(
+            self.room_group_name,    
+            {
+                "type": MessageType.CHAT_MESSAGE,
+                "conversation_state":await self._get_conversation_state(payload["conversation_id"]),
+                **payload
+            }
         )
                 
     async def _send_error_message(self, error_message: str) -> None:
@@ -1066,6 +1074,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation = Conversation.objects.get(conversation_id=conversation_id)
         conversation.state = "live_chat"
         conversation.save()
+    
+    @database_sync_to_async
+    def _get_conversation_state(self, conversation_id: str) ->str:
+        return Conversation.objects.get(conversation_id=conversation_id).state
 
     @database_sync_to_async
     def _create_chat_message(self, conversation_id, user, content_type: str,

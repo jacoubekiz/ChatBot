@@ -556,6 +556,15 @@ class API(models.Model):
     def __str__(self) -> str:
         return f'api for account {self.account_id.name}'
 
+class APILog(models.Model):
+    apilog_id = models.AutoField(primary_key=True)
+    api = models.ForeignKey(API, on_delete=models.CASCADE)
+    response = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f'api log for api {self.api.api_name}'
+
     
 class InternalChat(models.Model):
     caht_id = models.AutoField(primary_key=True)

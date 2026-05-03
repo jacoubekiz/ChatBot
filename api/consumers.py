@@ -571,6 +571,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except:
             data = {}
         response = requests.post(endpoint , headers=headers, json=data)
+        api_log = await self._create_api_log(
+            api=api_,
+            response = response,
+        )
         for option in choices_with_next:
             for state in option:
                 if str(response.status_code) == str(state):
@@ -1237,3 +1241,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat.isSent = False
         chat.save()
         return chat
+
+    @database_sync_to_async
+    def _create_api_log(self,api, response):
+        return APILog.objects.create(api=api, response=response)

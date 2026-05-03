@@ -566,6 +566,15 @@ class APISerializer(serializers.ModelSerializer):
                     instance.parameters.add(param_obj)
         return instance
     
+
+class APILogSerializer(serializers.ModelSerializer):
+    body = serializers.CharField(source="api__body", read_only=True)
+    endpoint = serializers.CharField(source='api__endpoint', read_only=True)
+    
+    class Meta:
+        model = APILog
+        fields = '__all__'
+
 class ParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parameter

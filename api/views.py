@@ -1170,7 +1170,7 @@ class LogoutAPIView(APIView):
 
 class GenerateapiKeyView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request, account_id):
         account = Account.objects.get(account_id=account_id)
         account.apiKey= account.generate_key()
@@ -1361,6 +1361,11 @@ class DeleteAPIView(DestroyAPIView):
     serializer_class = APISerializer
     queryset = API.objects.all()
     lookup_field = 'api_id'
+
+class APILogVeiw(ListCreateAPIView):
+    serializer_class = APILogSerializer
+    queryset = APILog.objects.all()
+    permission_classes = [IsAuthenticated]
 
 class DeleteParameterAPIView(DestroyAPIView):
     permission_classes = [IsAuthenticated]

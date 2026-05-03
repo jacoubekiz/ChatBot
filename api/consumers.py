@@ -526,7 +526,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     conversation_id=await self._get_conversation(data["conversation_id"]),
                     user=None,
                     content_type="text",
-                    content=message,
+                    content=error_message,
                     whatsapp_message_id="sdflskjdflksjdf",
                     from_message=contact_name
 
@@ -535,7 +535,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         "phoneNumber":await self._get_phone_number(conversation_id),
                         "conversation_id": conversation_id,
-                        "content":message,
+                        "content":error_message,
                         "content_type":"text",
                         "wamid": "wamid",
                         "created_at": f"{message_id.created_at}",

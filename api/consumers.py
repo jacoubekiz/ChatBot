@@ -365,12 +365,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Bot Integration
     # =========================
 
-    async def reset_flow(self, data, channel, source_id, conversation_id, wamid, content, contact_name):
+    async def reset_flow(self, channel, source_id, conversation_id, wamid, content, contact_name):
         reset_flow = False
         restart_keyword = await database_sync_to_async(list)(RestartKeyword.objects.filter(channel_id=channel.channle_id))
         for rest in restart_keyword:
             if rest.keyword == content:
                 reset_flow = True
+                print(f"{source_id}-------{channel}------{await self._get_default_flow(rest)}")
                 ch = await self._update_chat_for_restart(source_id, channel, await self._get_default_flow(rest))
                 if ch:
                     message_id = await self._create_chat_message(
@@ -399,8 +400,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     )
                     await database_sync_to_async(ch.update_state)('start')
                     ch.isSent = False
-                    await database_sync_to_async(ch.save)()
-                    # break
+                    await database_sync_to_async(ch.save)()    
+            else:
+                ch = await self._get_chat(source_id, channel)        # break
         return reset_flow== True, ch
 
     async def _get_flow_by_trigger(self, channel, content, source_id):
@@ -822,7 +824,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         channel = await self._get_channel(self.channel_id)
 
         flow = await self._get_flow_by_trigger(channel, content, source_id)
-        reset_flow_, ch = await self.reset_flow(data, channel, source_id, conversation_id, wamid, content, contact_name)
+        reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
                 
         if not flow:
             flow = await database_sync_to_async(channel.flows.get)(is_default=True)

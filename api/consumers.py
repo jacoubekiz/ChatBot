@@ -612,7 +612,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return True
         else:
             user_reply = content
-
+            message_id = await self._create_chat_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=None,
+                content_type="text",
+                content=user_reply,
+                whatsapp_message_id="sdflskjdflksjdf",
+                from_message=contact_name
+            )
+            await self._broadcast_message_flow(
+                {
+                    "phoneNumber":await self._get_phone_number(conversation_id),
+                    "conversation_id": conversation_id,
+                    "content":user_reply,
+                    "content_type":"text",
+                    "wamid": "wamid",
+                    "created_at": f"{message_id.created_at}",
+                    "message_id": message_id.message_id,
+                    "from_bot":"False",
+                    "status_message": "sent"
+                }
+            )
             if r_type == 'name' and len(user_reply) > question['maxRange'] or\
             r_type == 'phone' and not validate_phone_number(user_reply) or\
             r_type == 'email' and not validate_email(user_reply) or\
@@ -645,27 +665,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
                 return True
             else:
-                message_id = await self._create_chat_message(
-                    conversation_id=await self._get_conversation(data["conversation_id"]),
-                    user=None,
-                    content_type="text",
-                    content=user_reply,
-                    whatsapp_message_id="sdflskjdflksjdf",
-                    from_message=contact_name
-                )
-                await self._broadcast_message_flow(
-                    {
-                        "phoneNumber":await self._get_phone_number(conversation_id),
-                        "conversation_id": conversation_id,
-                        "content":user_reply,
-                        "content_type":"text",
-                        "wamid": "wamid",
-                        "created_at": f"{message_id.created_at}",
-                        "message_id": message_id.message_id,
-                        "from_bot":"False",
-                        "status_message": "sent"
-                    }
-                )
                 account = await self._get_account(self.channel_id)
                 await self._create_attribute(attribute_name, user_reply, chat, account)
                 await self._update_chat_status(chat, next_question_id)

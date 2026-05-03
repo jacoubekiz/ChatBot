@@ -517,7 +517,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "wamid": "wamid",
                         "created_at": f"{message_id.created_at}",
                         "message_id": message_id.message_id,
-                        "from_bot":"False",
+                        "from_bot":"True",
                         "status_message": "sent"
                     }
                 )
@@ -538,7 +538,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         "phoneNumber":await self._get_phone_number(conversation_id),
                         "conversation_id": conversation_id,
-                        "content":message,
+                        "content":content,
                         "content_type":"text",
                         "wamid": "wamid",
                         "created_at": f"{message_id.created_at}",

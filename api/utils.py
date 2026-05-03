@@ -574,12 +574,13 @@ def handel_request_redis(data, account_id):
                         conversation.state = 'start_bot'
                         conversation.status =  'open'
                         conversation.save()
-                    # if conversation.state == 'start_bot':
+                    if conversation.state == 'start_bot':
                         match content_type:
                             case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body','')
                             case "button":
                                 content = value.get('messages', '')[0].get('button', '').get('text','')
+
                             case "interactive":
                                 content = value.get('messages', '')[0].get('interactive', '').get('button_reply','').get('title', '')
                         connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)

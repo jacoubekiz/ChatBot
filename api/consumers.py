@@ -486,6 +486,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
         else:
             user_reply = content
+            message_id = await self._create_chat_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=None,
+                content_type="text",
+                content=user_reply,
+                whatsapp_message_id="sdflskjdflksjdf",
+                from_message=contact_name,
+            )
+        
+            # Send message through WebSocket
+            await self._broadcast_message_flow(
+                {
+                    "phoneNumber":await self._get_phone_number(conversation_id),
+                    "conversation_id": conversation_id,
+                    "content":content,
+                    "content_type":"text",
+                    "wamid": "wamid",
+                    "created_at": f"{message_id.created_at}",
+                    "message_id": message_id.message_id,
+                    "from_bot":"False",
+                    "status_message": "sent"
+                }
+            )
             if user_reply not in choices or user_reply == '':
                 error_message = question['message']['error']
                 
@@ -524,29 +547,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return True
                 
             else:
-                message_id = await self._create_chat_message(
-                    conversation_id=await self._get_conversation(data["conversation_id"]),
-                    user=None,
-                    content_type="text",
-                    content=user_reply,
-                    whatsapp_message_id="sdflskjdflksjdf",
-                    from_message=contact_name
-                )
-            
-                # Send message through WebSocket
-                await self._broadcast_message_flow(
-                    {
-                        "phoneNumber":await self._get_phone_number(conversation_id),
-                        "conversation_id": conversation_id,
-                        "content":content,
-                        "content_type":"text",
-                        "wamid": "wamid",
-                        "created_at": f"{message_id.created_at}",
-                        "message_id": message_id.message_id,
-                        "from_bot":"False",
-                        "status_message": "sent"
-                    }
-                )
                 account = await self._get_account(self.channel_id)
                 await self._create_attribute(attribute_name, user_reply, chat, account)
                 next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]

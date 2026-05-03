@@ -109,27 +109,49 @@ class GetTemplate(APIView):
         response = requests.get(url, headers=headers)
         return Response(response.json(), status=status.HTTP_200_OK)
     
+
+template_info = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "{{phone_number}}",
+        "type": "template",
+        "template": {
+            "name": "{{name}}",
+            "language": {
+                "code": "{{lang_code}}"
+            },
+            "components": "{{components}}"
+        }
+    }
 class SendTemplate(APIView):
+
     def post(self, request, channel_id):
         channel = Channle.objects.get(channle_id= channel_id)
+        apiKey = request.headers.get('apiKey')
+        if channel.account_id.apiKey != apiKey:
+            return Response({"error": "Invalid API key"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {channel.tocken}"
         }
-        data = request.data
-        template_data = json.dumps(data)
-        # print(template_data)
-        conversation = Conversation.objects.get(contact_id__phone_number=data.get('to'))
+        # template_info.update()
+        template_info.update({"to": request.data.get('to')})
+        template_info["template"]["name"] = request.data.get('name')
+        template_info["template"]["language"]["code"] = request.data.get('code')
+        template_info["template"]["components"] = request.data.get('components')
+        template_data = json.dumps(template_info)
+        conversation = Conversation.objects.get(contact_id__phone_number=template_info.get('to'))
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
             # user_id = CustomUser1.objects.filter(id=15).first(),
             content_type = "text",
-            content = data.get('content_template', ''),
+            content = template_info.get('content_template', ''),
             from_message = 'bot',
-            wamid = "result.get('messages', '')[0].get('id', '')"
+            wamid = result.get('messages', '')[0].get('id', '')
         )
         return Response(result, status=status.HTTP_200_OK)
     

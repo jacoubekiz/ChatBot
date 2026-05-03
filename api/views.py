@@ -1167,6 +1167,21 @@ class LogoutAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": 'logout true'})
+
+class GenerateapiKeyView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        account.apiKey= account.generate_key()
+        # account.apiKey = hash_key(apiKey)
+        account.save()
+        message = {
+            "account": account.name,
+            "apiKey": account.apiKey
+        }
+
+        return Response(message, status=status.HTTP_200_OK)
     
 # End Points for GET all teams
 # class GetTeamView(ListAPIView):

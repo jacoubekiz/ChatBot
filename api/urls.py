@@ -39,6 +39,7 @@ urlpatterns = [
     path('auth/logout/', LogoutAPIView.as_view()),
     path('user-profile/<str:id>/', UserProfileView.as_view(), name='user_profile'),
     path('refresh-token/', RefreshTokenView.as_view(), name='refresh_token'),
+    path('generate-apiKey/<str:account_id>/', GenerateapiKeyView.as_view(), name='generate_apiKey'),
 
     path('add-team/<account_id>/', ListCreateTeamView.as_view(), name='teams'),
     path('update-delete-team/<str:team_id>/<str:account_id>/', RetrieveUpdateDeleteTeamView.as_view(), name='update_delete_team'),

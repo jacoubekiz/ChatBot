@@ -268,12 +268,17 @@ METHOD_CHOICES = (
 class Account(models.Model):
     account_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE , default=1)
+    apiKey = models.CharField(max_length=255, unique=True, null=True, blank=True)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name
+
+    @staticmethod
+    def generate_key():
+        return secrets.token_urlsafe(128)
     
     
 # class CustomUser1(CustomUser):
@@ -362,7 +367,7 @@ class RestartKeyword(models.Model):
 
 class Chat(models.Model):
     channel_id = models.ForeignKey(Channle, null=True, blank=True, on_delete=models.CASCADE, default='1')
-    flow = models.ForeignKey(Flow, on_delete=models.CASCADE)
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, null=True, blank=True)
     state = models.CharField(max_length=255, blank=True, null=True, default='start')
     conversation_id = models.CharField(max_length=255, blank=True, null=True)
     isSent = models.BooleanField(default=False, null=True, blank=True)

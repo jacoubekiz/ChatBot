@@ -570,10 +570,11 @@ class APISerializer(serializers.ModelSerializer):
 class APILogSerializer(serializers.ModelSerializer):
     body = serializers.CharField(source="api__body", read_only=True)
     endpoint = serializers.CharField(source='api__endpoint', read_only=True)
+    # body = serializers.CharField(source)
     
     class Meta:
         model = APILog
-        fields = '__all__'
+        fields = ["apilog_id", "api", "endpoint", "body", "response", "created_at"]
 
 class ParameterSerializer(serializers.ModelSerializer):
     class Meta:

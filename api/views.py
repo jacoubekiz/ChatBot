@@ -1362,10 +1362,16 @@ class DeleteAPIView(DestroyAPIView):
     queryset = API.objects.all()
     lookup_field = 'api_id'
 
-class APILogVeiw(ListCreateAPIView):
+class APILogVeiw(GenericAPIView):
     serializer_class = APILogSerializer
-    queryset = APILog.objects.all()
+    # queryset = APILog.objects.all()
     permission_classes = [IsAuthenticated]
+
+    def get(self, request, api_id):
+        api = API.objects.get(api_id=api_id)
+        api_log = APILog.objects.filter(api=api)
+        serializer = self.get_serializer(api_log, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class DeleteParameterAPIView(DestroyAPIView):
     permission_classes = [IsAuthenticated]

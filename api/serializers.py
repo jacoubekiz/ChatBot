@@ -480,13 +480,13 @@ class ReportSerializer(serializers.ModelSerializer):
 
 
 class SerializerFlows(serializers.ModelSerializer):
-    flow = serializers.SerializerMethodField()
+    flow_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Flow
-        fields = ['account', 'flow_name', 'flow']\
+        fields = '__all__'
     
-    def get_flow(self, obj):
+    def get_flow_url(self, obj):
         request = self.context.get('request')
         if obj.flow:
             return request.build_absolute_uri(obj.flow.uri)

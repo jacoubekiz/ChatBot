@@ -1577,7 +1577,7 @@ class AddListFlows(GenericAPIView):
     def get(self, request, channel_id):
         channel = Channle.objects.get(channle_id = channel_id)
         flows = channel.flows.all()
-        serializer = SerializerFlows(flows, many=True)
+        serializer = SerializerFlows(flows, many=True, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -1610,7 +1610,7 @@ class UpdateFlowView(GenericAPIView):
         flow = Flow.objects.get(id=pk)
         flow.flow_name = data['flow_name']
         flow.flow = data['flow']
-        serializer = SerializerFlows(flow)
+        serializer = SerializerFlows(flow, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class RetrieveFlow(RetrieveDestroyAPIView):

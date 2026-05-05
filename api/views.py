@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -1324,23 +1324,40 @@ class ListCreateApiView(APIView):
     def get(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
         api_objects = API.objects.filter(account_id=account)
-        serializer = APISerializer(api_objects, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        result = []
+        for api_object in api_objects:
+            api_parameters = Api_parameter.objects.filter(api=api_object)
+            serializer_api_param = APIParametersSerializer(api_parameters, many=True) 
+            serializer = APISerializer(api_object)
+            data = serializer.data
+            data_dict = dict(data)
+            data_dict['parameters'] = serializer_api_param.data
 
-class RetriveUpdateApiview(RetrieveUpdateAPIView):
+            result.append(data_dict)
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class GetApiView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = APISerializer
     lookup_field = 'api_id'
 
-    def get_queryset(self):
-        account_id = self.kwargs['account_id']
-        api_id = self.kwargs['api_id']
-        return API.objects.filter(account_id=account_id, api_id=api_id)
-    
-    # def perform_update(self, serializer):
-    #     account_id = Account.objects.get(account_id=self.kwargs['account_id'])
-    #     parameters = self.request.data.get('parameters', [])
-    #     serializer.save(account=account_id, parameters=parameters)
+    def get(self, request, api_id):
+        api_object = API.objects.filter(api_id=api_id).first()
+        api_parameters = Api_parameter.objects.filter(api=api_object)
+        serializer_api_param = APIParametersSerializer(api_parameters, many=True)
+        serializer = APISerializer(api_object)
+        data = serializer.data
+        data_dict = dict(data)
+        data_dict['parameters'] = serializer_api_param.data
+
+        return Response(data_dict, status=status.HTTP_200_OK)
+            
+class RetriveUpdateApiview(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = APISerializer
+    queryset = API.objects.all()
+    lookup_field = 'api_id'
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

@@ -265,6 +265,10 @@ METHOD_CHOICES = (
     ('DELETE', 'DELETE'),
 )
 
+TYPE_PARAM = (
+    ('parameter', 'parameter'),
+    ('header', 'header')
+)
 class Account(models.Model):
     account_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE , default=1)
@@ -531,30 +535,38 @@ class AnalyticsCampaign(models.Model):
 
 class Parameter(models.Model):
     parameter_id = models.AutoField(primary_key=True)
-    api = models.ForeignKey("API", on_delete=models.CASCADE, null=True, blank=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    key = models.CharField(max_length=100, null=True, blank=True)
-    value = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
-        return f'parameter {self.key}'
+        return f'parameter for account {self.account_id.name}'
      
 class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-    parameters = models.ManyToManyField("Parameter", related_name='api_parameter')
+    parameters = models.ManyToManyField(Parameter, through="api_parameter")
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
     body = models.TextField(null=True, blank=True)
-    headers = models.TextField(null=True, blank=True)
-    tocken = models.TextField(null=True, blank=True)
+    # headers = models.TextField(null=True, blank=True)
+    # tocken = models.TextField(null=True, blank=True)
     response = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'api for account {self.account_id.name}'
+        return f'api {self.api_name} for account {self.account_id.name}'
+
+    
+class Api_parameter(models.Model):
+    api = models.ForeignKey(API, on_delete=models.CASCADE)
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE)
+    type_param = models.CharField(choices=TYPE_PARAM,max_length=50, null=True, blank=True)
+    key = models.CharField(max_length=100, null=True, blank=True)
+    value = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f'parameter {self.key} for api {self.api.api_name}'
 
 class APILog(models.Model):
     apilog_id = models.AutoField(primary_key=True)

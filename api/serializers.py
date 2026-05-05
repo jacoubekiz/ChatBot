@@ -489,7 +489,7 @@ class SerializerFlows(serializers.ModelSerializer):
     def get_flow_url(self, obj):
         request = self.context.get('request')
         if obj.flow:
-            return request.build_absolute_uri(obj.flow.uri)
+            return request.build_absolute_uri(obj.flow.url)
         return None
 
 class SerializerAttributes(serializers.ModelSerializer):
@@ -540,16 +540,18 @@ class APISerializer(serializers.ModelSerializer):
         account = self.context.get('account')
         validated_data['account_id'] = account
         api = API.objects.create(**validated_data)
+        parameter = Parameter.objects.create(account_id=account)
         if parameters:
             for param in parameters:
-                for key, value in param.items():
-                    param_obj = Parameter.objects.create(
-                        account_id=account,
-                        api = api,
-                        key=key,
-                        value=value
-                    )
-                    api.parameters.add(param_obj)
+                Api_parameter.objects.create(
+                    parameter = parameter,
+                    api = api,
+                    type_param= param.get('type'),
+                    key=param.get('key'),
+                    value=param.get('value')
+                )
+        api.parameters.set([parameter])
+        api.save()
         return api
     
     def update(self, instance, validated_data):
@@ -558,22 +560,28 @@ class APISerializer(serializers.ModelSerializer):
         instance.endpoint = validated_data.get('endpoint', instance.endpoint)
         instance.method = validated_data.get('method', instance.method)
         instance.body = validated_data.get('body', instance.body)
-        instance.parameters.clear()
         instance.save()
 
         if parameters:
-            Parameter.objects.filter(api=instance).delete()
+            # print(instance.parameters.all())
+            param_ = Api_parameter.objects.filter(api=instance).first()
+            print(param_)
+            parameter_instance = param_.parameter
+            Api_parameter.objects.filter(api=instance).delete()
             for param in parameters:
-                for key, value in param.items():
-                    param_obj = Parameter.objects.create(
-                        account_id=instance.account_id,
-                        api=instance,
-                        key=key,
-                        value=value
-                    )
-                    instance.parameters.add(param_obj)
+                Api_parameter.objects.create(
+                    api=instance,
+                    parameter = parameter_instance,
+                    type_param= param.get('type'),
+                    key=param.get('key'),
+                    value=param.get('value')
+                )
         return instance
     
+class APIParametersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Api_parameter
+        fields = ['type_param', 'key', 'value']
 
 class APILogSerializer(serializers.ModelSerializer):
     body = serializers.CharField(source="api.body", read_only=True)

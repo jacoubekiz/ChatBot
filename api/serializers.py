@@ -115,13 +115,17 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields  = ['id', 'username', 'phonenumber', 'email', 'password', 'role_user']
+        fields  = ['id', 'username', 'phonenumber', 'email', 'password', 'role_user', 'manager']
         extra_kwargs = {
             'password':{
                 'write_only':True,
                 'required':False,
                 'allow_null':False
             },
+            'manager':{
+                'read_only':True,
+                'required': False
+            }
         }
         
     def validate(self, attrs):
@@ -130,10 +134,10 @@ class AddUserSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        # request = self.context.get('request')
+        manager = self.context.get('account_id')
         roles = self.context.get('role')
-        # team = Team.objects.get(team_id = self.context.get('team_id', ' '))
         password = self.validated_data.pop('password')
+        validated_data['manager'] = CustomUser.objects.get(id=manager)
         user = CustomUser.objects.create(**validated_data)
         for role in roles:
             content_type = ContentType.objects.get_for_model(CustomUser)
@@ -164,6 +168,11 @@ class AddUserSerializer(serializers.ModelSerializer):
             )
             user.user_permissions.add(permission)
         return instance
+
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['manager'] = instance.manager.username if instance.manager else None
+        return repre
     
 class AccontSerializer(serializers.ModelSerializer):
     channel_id = serializers.SerializerMethodField(read_only=True)

@@ -1002,9 +1002,16 @@ class ListTeamMember(GenericAPIView):
 
 class CreateTeamMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+    def post(self, request, account_id):
         data_request = request.data
-        serializer = AddUserSerializer(data = data_request, many=False, context={'role':request.data['role']})
+        serializer = AddUserSerializer(
+            data = data_request, 
+            many=False, 
+            context={
+                'role':request.data['role'], 
+                'account_id': account_id
+            }
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1571,8 +1578,8 @@ class ListAllTeamMembers(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
     def get(self, request, account_id):
-        # account = Account.objects.get(account_id=account_id)
-        member = CustomUser.objects.filter(role_user="agent")
+        account = Account.objects.get(account_id=account_id)
+        member = CustomUser.objects.filter(Q(role_user="agent") & Q(manager=account.user))
         serializer = MemberSerializer(member, many=True)
         members = serializer.data
         return Response(members, status=status.HTTP_200_OK)

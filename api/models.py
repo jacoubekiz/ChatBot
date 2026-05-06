@@ -25,6 +25,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=40, unique=True)
     phonenumber = models.BigIntegerField(null=True, blank=True)
     role_user = models.CharField(choices=ROLE_USER, max_length=20, default='admin')
+    manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username',]

@@ -61,7 +61,7 @@ class MediaType:
 
 class WhatsAppAPI:
     BASE_URL = "https://graph.facebook.com/v22.0"
-    MEDIA_URL = "https://chatapi.icsl.me/media/chat_message/"
+    MEDIA_URL = "https://chatapi.icsl.me/"
 
 
 # =========================
@@ -322,7 +322,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 wa_id=await self._get_whatsapp_account_id(data["conversation_id"]),
                 bearer_token=await self._get_channel_token(data["conversation_id"]),
                 type=media_type,
-                source=file_path,
                 chat_id= data["conversation_id"],
                 source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}",
                 platform="whatsapp"

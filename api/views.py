@@ -1634,6 +1634,7 @@ class UpdateFlowView(GenericAPIView):
         flow = Flow.objects.get(id=pk)
         flow.flow_name = data['flow_name']
         flow.flow = data['flow']
+        flow.save()
         serializer = SerializerFlows(flow, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     

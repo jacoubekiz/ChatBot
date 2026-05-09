@@ -324,7 +324,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 type=media_type,
                 source=file_path,
                 chat_id= data["conversation_id"],
-                question={"label":data["caption"]},
+                source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}",
                 platform="whatsapp"
             )
             

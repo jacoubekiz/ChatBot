@@ -370,7 +370,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for rest in restart_keyword:
             if rest.keyword == content:
                 reset_flow = True
-                print(f"{source_id}-------{channel}------{await self._get_default_flow(rest)}")
                 ch = await self._update_chat_for_restart(source_id, channel, await self._get_default_flow(rest))
                 if ch:
                     message_id = await self._create_chat_message(
@@ -814,6 +813,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         return questions, chat, flow
     
+    async def _retype_ifElse(self, chat, next_question_id):
+        await self._update_chat_status(chat, next_question_id)
+    
     async def _handle_bot_integration(self, data: dict) -> None:
         """Handle bot integration and flow processing."""
 
@@ -860,7 +862,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         if item['id'] == chat.state:
                             question = item
                             break
-                message, next_question_id, choices_with_next, choices, r_type, attribute_name = await sync_to_async(show_response)(question, questions)
+                message, next_question_id, choices_with_next, choices, r_type, attribute_name = await sync_to_async(show_response)(question, questions, chat.id)
                 # if next_question_id == "end":
                 #     break
                 
@@ -896,6 +898,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     # await self._update_chat_status_flow(chat, questions[0]['id'], flow)
                     continue
 
+                elif r_type == 'if-else':
+                    await self._retype_ifElse(chat, next_question_id)
+                    continue
 
                 elif r_type == 'smart_question' and choices_with_next:
                     if not chat.isSent:

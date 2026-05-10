@@ -32,14 +32,13 @@ def read_json(file_path, encoding='utf-8'):
     except json.JSONDecodeError as e:
         return
 
-def show_response(question, questions):
+def show_response(question, questions, chat_id):
     current_response = ''
     choices_with_next = None
     next_question_id = None
     choices = None
     r_type = None
     current_response += question['label'] + '\n'
-    import itertools
     try:
         options = question['options']
     except:
@@ -73,6 +72,35 @@ def show_response(question, questions):
         elif question['type'] == 'detect_language':
             choices_with_next = [(option['value'], option['next']['target']) for option in question['options']]
             choices = [c[0] for c in choices_with_next]
+        
+    elif question['type'] == 'if-else':
+        branches = question['ifElse']['branches']
+        for branch in branches:
+            orGroups = branch['if']['orGroups']
+            for orGroup in orGroups:
+                conditions = orGroup['conditions']
+                operator = conditions[0]['operator']
+                value = conditions[0]['value']
+                customAttribute = Attribute.objects.filter(Q(key=conditions[0]['customAttribute']) & Q(chat_id=chat_id)).first()
+                if customAttribute:
+                    customAttributeValue = customAttribute.value
+                    if operator == 'equals' and customAttributeValue == value:
+                        next_question_id = branch['if']['target']
+                        break
+                    elif operator == 'not_equals' and customAttributeValue != value:
+                        next_question_id = branch['if']['target']
+                        break
+                    elif operator == 'contains' and value in customAttributeValue:
+                        next_question_id = branch['if']['target']
+                        break
+                    elif operator == 'not_contains' and value not in customAttributeValue:
+                        next_question_id = branch['if']['target']
+                        break
+            if next_question_id != None:
+                break
+        if next_question_id == None:
+            next_question_id = question['next']['target']
+
     else:
         next_question_id = question['next']['target']
 

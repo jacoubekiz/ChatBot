@@ -135,9 +135,10 @@ class AddUserSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         manager = self.context.get('account_id')
+        manager_ = Account.objects.get(account_id=manager)
         roles = self.context.get('role')
         password = self.validated_data.pop('password')
-        validated_data['manager'] = CustomUser.objects.get(id=manager)
+        validated_data['manager'] = manager_.user
         user = CustomUser.objects.create(**validated_data)
         for role in roles:
             content_type = ContentType.objects.get_for_model(CustomUser)

@@ -314,38 +314,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         file_path = await self._save_base64_file(data)
-
+        print(file_path)
         try:
-            result = await sync_to_async(send_message)(
-                message_content=data["caption"],
-                to=await self._get_phone_number(data["conversation_id"]),
-                wa_id=await self._get_whatsapp_account_id(data["conversation_id"]),
-                bearer_token=await self._get_channel_token(data["conversation_id"]),
-                type=media_type,
-                chat_id= data["conversation_id"],
-                source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}",
-                platform="whatsapp"
-            )
-            
-            whatsapp_message_id = result['messages'][0]['id']
+            result = await sync_to_async (process_and_send_voice_note)(
+                file_path, 
+                await self._get_whatsapp_account_id(data["conversation_id"]), 
+                await self._get_channel_token(data["conversation_id"]), 
+                await self._get_phone_number(data["conversation_id"]), 
+                bitrate_kbps=24)
+            # result = await sync_to_async(send_message)(
+            #     message_content=data["caption"],
+            #     to=await self._get_phone_number(data["conversation_id"]),
+            #     wa_id=await self._get_whatsapp_account_id(data["conversation_id"]),
+            #     bearer_token=await self._get_channel_token(data["conversation_id"]),
+            #     type=media_type,
+            #     chat_id= data["conversation_id"],
+            #     source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}.opus",
+            #     platform="whatsapp"
+            # )
+
+            # whatsapp_message_id = result['messages'][0]['id']
 
             message_id = await self._create_chat_media_message(
                 conversation_id=await self._get_conversation(data["conversation_id"]),
                 user=self.user,
                 media_type=media_type,
                 caption=data["caption"],
-                whatsapp_message_id=whatsapp_message_id,
+                whatsapp_message_id=result,
                 file_path=file_path
             )
 
             await self._broadcast_message({
                 **data,
-                "wamid": whatsapp_message_id,
+                "wamid": result,
                 "message_id": f'{message_id.message_id}',
                 "status_message": "sent"
             })
 
         except Exception as error:
+            print(error)
             await self._send_error_message(str(error))
 
     async def _save_base64_file(self, data: dict) -> str:
@@ -358,7 +365,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         with open(file_path, "wb") as file_handle:
             file_handle.write(file_content)
 
-        return f"{WhatsAppAPI.MEDIA_URL}{file_name}"
+        return f"{WhatsAppAPI.MEDIA_URL}{file_path}"
 
     # =========================
     # Bot Integration

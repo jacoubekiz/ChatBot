@@ -1139,6 +1139,10 @@ def process_and_send_voice_note(input_audio_path, phone_number_id, access_token,
     Convert the given file to WhatsApp-PTT-compatible OGG/Opus mono and send it.
     Returns the WhatsApp message id (wamid...).
     """
+    print(input_audio_path)
+    print(phone_number_id)
+    print(access_token)
+    print(recipient)
     if not os.path.exists(input_audio_path):
         raise FileNotFoundError(input_audio_path)
 

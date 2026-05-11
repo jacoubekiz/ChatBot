@@ -470,7 +470,7 @@ class ChatMessage(models.Model):
     status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20, default='sent')
     status_updated_at = models.DateTimeField(auto_now_add=True)
     media_url = models.URLField(null=True, blank=True)
-    media_mime_type = models.CharField(max_length=50, null=True, blank=True)
+    media_mime_type = models.CharField(max_length=500, null=True, blank=True)
     media_sha256_hash = models.CharField(max_length=256, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)

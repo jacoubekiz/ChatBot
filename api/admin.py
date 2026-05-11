@@ -83,6 +83,9 @@ class ChatMessageAdmin(admin.ModelAdmin):
 class UploadImageAdmin(admin.ModelAdmin):
     list_display = ['id', 'image_file']
 
+class FlowAdmin(admin.ModelAdmin):
+    list_display = ['id', 'account', 'flow_name', 'is_default']
+
 admin.site.register(CustomUser, CustomUserAdmin)
 # admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
@@ -96,7 +99,7 @@ admin.site.register(RestartKeyword)
 # admin.site.register(MessageChat)
 
 admin.site.register(Trigger)
-admin.site.register(Flow)
+admin.site.register(Flow, FlowAdmin)
 admin.site.site_title = "ICSL Bot Creator"
 admin.site.site_header = "ICSL Bot Creator"
 

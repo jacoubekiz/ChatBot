@@ -1181,7 +1181,6 @@ class GenerateapiKeyView(GenericAPIView):
     def post(self, request, account_id):
         account = Account.objects.get(account_id=account_id)
         account.apiKey= account.generate_key()
-        # account.apiKey = hash_key(apiKey)
         account.save()
         message = {
             "account": account.name,
@@ -1189,7 +1188,13 @@ class GenerateapiKeyView(GenericAPIView):
         }
 
         return Response(message, status=status.HTTP_200_OK)
-    
+
+    def get(sefl, request, account_id):
+        account = Account.objects.get(account_id=account_id)
+        message = {
+            "apikey": account.apiKey
+        }
+        return Response(message, status=status.HTTP_200_OK)
 # End Points for GET all teams
 # class GetTeamView(ListAPIView):
 #     queryset = Team.objects.all()
@@ -1392,10 +1397,35 @@ class APILogVeiw(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, api_id):
-        api = API.objects.get(api_id=api_id)
+        api = API.objects.filter(api_id=api_id).first()
         api_log = APILog.objects.filter(api=api)
-        serializer = self.get_serializer(api_log, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        apis_logs = []
+        for api_log_ in api_log:
+            data = {
+                "id":api_log_.apilog_id,
+                "status": api_log_.status_request,
+                "message":"",
+                "created_at":api_log_.created_at,
+                "request": {
+                    "url": api_log_.api.endpoint,
+                    "method":api_log_.api.method,
+                    "data":{
+                        api_log_.api.body
+                    },
+                },
+                "response": {
+                    "status": api_log_.status_request,
+                    "message":"",
+                    "payload": {
+                        api_log_.response
+                    }
+                }
+            }
+            apis_logs.append(data)
+        # data ={
+        #     "data":apis_logs
+        # }
+        return Response(apis_logs, status=status.HTTP_200_OK)
 
 class DeleteParameterAPIView(DestroyAPIView):
     permission_classes = [IsAuthenticated]

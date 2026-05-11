@@ -548,10 +548,8 @@ class API(models.Model):
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
-    body = models.TextField(null=True, blank=True)
-    # headers = models.TextField(null=True, blank=True)
-    # tocken = models.TextField(null=True, blank=True)
-    response = models.TextField(null=True, blank=True)
+    body = models.JSONField(null=True, blank=True)
+    response = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -572,7 +570,8 @@ class Api_parameter(models.Model):
 class APILog(models.Model):
     apilog_id = models.AutoField(primary_key=True)
     api = models.ForeignKey(API, on_delete=models.CASCADE)
-    response = models.TextField(blank=True, null=True)
+    response = models.JSONField(blank=True, null=True)
+    status_request = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

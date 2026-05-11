@@ -554,6 +554,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _retype_api(self, question, chat, choices_with_next):
         api_name = question['name']
         api_ = await self._get_api_info(api_name)
+        api_parameter_header = await self._get_api_parameter_header(api_)
         headers = {
                 'Content-Type': 'application/json',
                 'Authorization': f'Bearer {await api_.tocken}'
@@ -571,7 +572,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         response = requests.post(endpoint , headers=headers, json=data)
         api_log = await self._create_api_log(
             api=api_,
-            response = response,
+            response = response.content,
+            status_request = response.status_code
         )
         for option in choices_with_next:
             for state in option:
@@ -1210,6 +1212,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Get API information by name."""
         return API.objects.get(name=api_name)
     
+    @database_sync_to_async
+    def _get_api_parameter_header(self, api):
+        return Api_parameter.objects.filter(Q(api=api) & Q(type_param='header'))
+
+    def _get_api_parameter_params(self, api):
+        return Api_parameter.objects.filter(Q(api=api) & Q(type_param='parameter'))
+
     @database_sync_to_async
     def _get_flow(self, next_question_id):
         return Flow.objects.get(id=next_question_id)

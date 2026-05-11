@@ -86,6 +86,9 @@ class UploadImageAdmin(admin.ModelAdmin):
 class FlowAdmin(admin.ModelAdmin):
     list_display = ['id', 'account', 'flow_name', 'is_default']
 
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ['account_id', 'name', 'user', 'apiKey', 'created_at']
+
 admin.site.register(CustomUser, CustomUserAdmin)
 # admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)
@@ -111,9 +114,8 @@ admin.site.register(UploadImage, UploadImageAdmin)
 admin.site.register(Contact)
 admin.site.register(Conversation)
 admin.site.register(Team)
-# admin.site.register(Account)
 admin.site.register(ChatMessage, ChatMessageAdmin)
-admin.site.register(Account)
+admin.site.register(Account, AccountAdmin)
 admin.site.register(Channle)
 admin.site.register(API)
 admin.site.register(Parameter)

@@ -322,6 +322,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self._get_channel_token(data["conversation_id"]), 
                 await self._get_phone_number(data["conversation_id"]), 
                 bitrate_kbps=24)
+            print(f'fjsldfjsldfjl {result}')
             # result = await sync_to_async(send_message)(
             #     message_content=data["caption"],
             #     to=await self._get_phone_number(data["conversation_id"]),
@@ -365,7 +366,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         with open(file_path, "wb") as file_handle:
             file_handle.write(file_content)
 
-        return f"{WhatsAppAPI.MEDIA_URL}{file_path}"
+        return f"{file_path}"
 
     # =========================
     # Bot Integration

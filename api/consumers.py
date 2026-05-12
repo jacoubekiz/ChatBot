@@ -39,6 +39,7 @@ class ContentType:
     TEXT = "text"
     DOCUMENT = "document"
     VIDEO = "video"
+    VOICE = "voice"
 
 class ContentTypeBot:
     SMART_QUESTION = "smart_question"
@@ -51,12 +52,14 @@ class ContentTypeBot:
     NUMBER = "number"
     DOCUMENT = "document"
     IMAGE = "image"
+    VOICE = "voice"
 
 class MediaType:
     AUDIO = "audio"
     IMAGE = "image"
     DOCUMENT = "document"
     VIDEO = "video"
+    VOICE = "voice"
 
 
 class WhatsAppAPI:
@@ -193,7 +196,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             ContentType.IMAGE: self._handle_image_message,
             ContentType.TEXT: self._handle_text_message,
             ContentType.DOCUMENT: self._handle_document_message,
-            ContentType.VIDEO: self._handle_video_message
+            ContentType.VIDEO: self._handle_video_message,
+            ContentType.VOICE: self._handle_voice_message,
         }
 
         handler = handler_mapping.get(content_type)
@@ -290,6 +294,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # =========================
     # Media Handlers
     # =========================
+    async def _handle_voice_message(self, data:dict) -> None:
+        """Handle audio message."""
+        await self._handle_media_message(data, MediaType.VOICE) 
 
     async def _handle_audio_message(self, data: dict) -> None:
         """Handle audio message."""
@@ -315,7 +322,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         file_path = await self._save_base64_file(data)
         try:
-            if media_type == 'audio':
+            if media_type == 'audio' or media_type == 'voice':
                 result = await sync_to_async (process_and_send_voice_note)(
                     file_path, 
                     await self._get_whatsapp_account_id(data["conversation_id"]), 
@@ -353,7 +360,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
 
         except Exception as error:
-            print(error)
             await self._send_error_message(str(error))
 
     async def _save_base64_file(self, data: dict) -> str:

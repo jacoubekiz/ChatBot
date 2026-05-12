@@ -331,7 +331,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     bearer_token=await self._get_channel_token(data["conversation_id"]),
                     type=media_type,
                     chat_id= data["conversation_id"],
-                    source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}.opus",
+                    source=f"https://chatapi.icsl.me/media/chat_message/{data["media_name"]}",
                     platform="whatsapp"
                 )
                 whatsapp_message_id = result['messages'][0]['id']
@@ -342,7 +342,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 media_type=media_type,
                 caption=data["caption"],
                 whatsapp_message_id=whatsapp_message_id,
-                file_path=f"{WhatsAppAPI.MEDIA_URL}{file_path}"
+                file_path=file_path
             )
 
             await self._broadcast_message({

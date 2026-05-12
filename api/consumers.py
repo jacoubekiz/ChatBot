@@ -349,7 +349,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 media_type=media_type,
                 caption=data["caption"],
                 whatsapp_message_id=whatsapp_message_id,
-                file_path=file_path
+                file_path=f"{WhatsAppAPI.MEDIA_URL}{file_path}"if media_type == 'audio' or media_type == 'voice'else file_path
             )
 
             await self._broadcast_message({

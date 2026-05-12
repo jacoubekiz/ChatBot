@@ -371,8 +371,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         with open(file_path, "wb") as file_handle:
             file_handle.write(file_content)
-
-        return f"{WhatsAppAPI.MEDIA_URL}{file_path}"
+        if data["content_type"] == 'voice' or data["content_type"]=='audio':
+            return f"{file_path}"
+        else:
+            return f"{WhatsAppAPI.MEDIA_URL}{file_path}"
 
     # =========================
     # Bot Integration

@@ -570,14 +570,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _retype_api(self, question, chat, choices_with_next):
         api_id = question['name']
         api_ = await self._get_api_info(api_id)
-        api_parameter_header = await self._get_api_parameter_header(api_)
+        api_parameter_headers = await self._get_api_parameter_header(api_)
         api_parameter_params = await self._get_api_parameter_params(api_)
         headers = {
-                'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         }
+        for api_parameter_header in api_parameter_headers:
+            value = f'{api_parameter_header.value}'
+            headers[f'{api_parameter_header.key}'] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
 
         data = api_.body
         endpoint = api_.endpoint
+        final_url = ''
+        if api_parameter_params:
+            for api_parameter_param_ in api_parameter_params:
+                key = api_parameter_param_.key
+                value_ = api_parameter_param_.value
+                value = change_occurences(value_, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                final_url += f'{key}={value}&'
+            endpoint += f'?{final_url}'
+        else:
+            endpoint = api_.endpoint
         try:
             for key, value in data.items():
                 if isinstance(value, (int, float)):

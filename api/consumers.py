@@ -568,12 +568,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # handle api type question
     async def _retype_api(self, question, chat, choices_with_next):
-        api_name = question['name']
-        api_ = await self._get_api_info(api_name)
+        api_id = question['name']
+        api_ = await self._get_api_info(api_id)
         api_parameter_header = await self._get_api_parameter_header(api_)
+        api_parameter_params = await self._get_api_parameter_params(api_)
         headers = {
                 'Content-Type': 'application/json',
-                'Authorization': f'Bearer {await api_.tocken}'
         }
 
         data = api_.body
@@ -1224,9 +1224,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         attr.save()
 
     @database_sync_to_async
-    def _get_api_info(self, api_name):
+    def _get_api_info(self, api_id):
         """Get API information by name."""
-        return API.objects.get(name=api_name)
+        return API.objects.get(api_id=api_id)
     
     @database_sync_to_async
     def _get_api_parameter_header(self, api):

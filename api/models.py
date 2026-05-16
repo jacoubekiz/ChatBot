@@ -396,7 +396,7 @@ class Chat(models.Model):
     
 class Attribute(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, default=1)
-    key = models.CharField(max_length=255, unique=True)
+    key = models.CharField(max_length=255)
     chat = models.ManyToManyField(Chat, through='custome_attribute')
     save_api = models.CharField(choices=SAVE_API, default='False')
     created_at = models.DateTimeField(auto_now_add=True)

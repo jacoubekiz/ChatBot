@@ -502,16 +502,28 @@ class SerializerFlows(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.flow.url)
         return None
 
-class SerializerAttributes(serializers.ModelSerializer):
+class SerializerCustomeAttributes(serializers.ModelSerializer):
     class Meta:
-        model = Attribute
-        fields = ['id', 'key', 'value']
+        model = Custome_attribute
+        fields = ['id', 'attribute', 'variable', 'api']
+
+        extra_kwargs = {
+            'api':{'read_only':True},
+        }
+
 
     def create(self, validated_data):
-        account = self.context.get('account')
-        validated_data['account'] = account
-        attribute = Attribute.objects.create(**validated_data)
-        return attribute
+        api = self.context.get('api')
+        attributes = validated_data['attributes']
+        for attribute in attributes:
+            attr = Attribute.objects.filter(id=attribute['id_attr'])
+            Custome_attribute.objects.create(
+                attribute=attr,
+                variable = validated_data['variable'],
+                api = api
+            )
+        return True
+
         
 
 class ChangePasswordSerializer(serializers.Serializer):

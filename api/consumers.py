@@ -562,7 +562,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             else:
                 account = await self._get_account(self.channel_id)
-                await self._create_attribute(attribute_name, user_reply, chat, account)
+                attr = await self._create_attribute(attribute_name, account)
+                await self._save_custome_attribute(attr, chat, user_reply)
                 next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
                 await self._update_chat_status(chat, next_question_id)
 
@@ -604,6 +605,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             response = response.content,
             status_request = response.status_code
         )
+        custome_attrs = await self._get_custome_attrs(api_)
+        if custome_attrs:
+            for custome_attr in custome_attrs:
+                await self._save_value_for_custome_attr(custome_attr, response, chat)
         for option in choices_with_next:
             for state in option:
                 if str(response.status_code) == str(state):
@@ -617,7 +622,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not chat.isSent:
             chat.isSent = True
             await database_sync_to_async(chat.save)()
-            message_wamid = send_message(message_content=message,
+            message_wamid = await sync_to_async(send_message)(message_content=message,
                             to=chat.conversation_id,
                             bearer_token=channel.tocken,
                             wa_id=channel.phone_number_id,
@@ -671,7 +676,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             r_type == 'email' and not validate_email(user_reply) or\
             r_type == 'number' and not str(user_reply).isdigit():
                 error_message = question['message']['error']
-                message_wamid = send_message(message_content=error_message,
+                message_wamid = await sync_to_async(send_message)(message_content=error_message,
                             to=chat.conversation_id,
                             bearer_token=channel.tocken,
                             wa_id=channel.phone_number_id,
@@ -699,12 +704,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return True
             else:
                 account = await self._get_account(self.channel_id)
-                await self._create_attribute(attribute_name, user_reply, chat, account)
+                attr =  await self._create_attribute(attribute_name, account)
+                await self._save_custome_attribute(attr, chat, user_reply)
                 await self._update_chat_status(chat, next_question_id)
 
 
     async def _retype_document(self, channel, chat, question, message, platform, conversation_id, data, next_question_id):
-        message_wamid = send_message(message_content=message,
+        message_wamid = await sync_to_async(send_message)(message_content=message,
                         to=chat.conversation_id,
                         bearer_token=channel.tocken,
                         type='document',
@@ -736,7 +742,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_image(self, message, chat, channel, question, platform, conversation_id, data, next_question_id):
-        message_wamid = send_message(message_content=message,
+        message_wamid = await sync_to_async(send_message)(message_content=message,
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             wa_id=channel.phone_number_id,
@@ -770,7 +776,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
 
     async def _retype_audio_vedio_steker(self, message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id):
-        message_wamid = send_message(message_content=message,
+        message_wamid = await sync_to_async(send_message)(message_content=message,
                 to=chat.conversation_id,
                 bearer_token=channel.tocken,
                 wa_id=channel.phone_number_id,
@@ -801,7 +807,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_live_chat(self, message, chat, channel, question, platform, conversation_id, data):
-        message_wamid = send_message(message_content=message,
+        message_wamid = await sync_to_async(send_message)(message_content=message,
                 to=chat.conversation_id,
                 bearer_token=channel.tocken,
                 wa_id=channel.phone_number_id,
@@ -937,7 +943,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if not chat.isSent:
                         chat.isSent = True
                         await database_sync_to_async(chat.save)()
-                        message_wamid = send_message(message_content=message,
+                        message_wamid = await sync_to_async(send_message)(message_content=message,
                                     to = chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     wa_id=channel.phone_number_id,
@@ -1001,7 +1007,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await self._retype_audio_vedio_steker(message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id)
 
                 elif r_type == 'contact' or r_type == 'location':
-                    message_wamid = send_message(message_content=message,
+                    message_wamid = await sync_to_async(send_message)(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     wa_id=channel.phone_number_id,
@@ -1030,7 +1036,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 elif r_type == 'detect_language':
                     pass
                 else:
-                    message_wamid = send_message(message_content=message,
+                    message_wamid = await sync_to_async(send_message)(message_content=message,
                                     to=chat.conversation_id,
                                     bearer_token=channel.tocken,
                                     wa_id=channel.phone_number_id,
@@ -1230,17 +1236,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return channel.account_id
     
     @database_sync_to_async
-    def _create_attribute(self, attribute_name, user_reply, chat, account):
+    def _create_attribute(self, attribute_name, account):
         """Create or update an attribute."""
-        attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id, account = account)
-        attr.value = user_reply
-        attr.save()
+        attr, created = Attribute.objects.get_or_create(key=attribute_name, account = account)
+        return attr
+
+    @database_sync_to_async
+    def _save_custome_attribute(self, attribute, chat, user_reply):
+        custome_attribute, created = Custome_attribute.objects.get_or_create(attribute=attribute, chat=chat)
+        custome_attribute.value = user_reply
+        custome_attribute.save()
 
     @database_sync_to_async
     def _get_api_info(self, api_id):
         """Get API information by name."""
         return API.objects.get(api_id=api_id)
     
+    @database_sync_to_async
+    def _get_custome_attrs(self, api):
+        return Custome_attribute.objects.filter(api=api)
+    
+    @database_sync_to_async
+    def _save_value_for_custome_attr(self, custome_attr, response, chat):
+        custome_attr.value = response.content[f'{custome_attr.variable}']
+        custome_attr.chat = chat
+        custome_attr.save()
+
     @database_sync_to_async
     def _get_api_parameter_header(self, api):
         return Api_parameter.objects.filter(Q(api=api) & Q(type_param='header'))

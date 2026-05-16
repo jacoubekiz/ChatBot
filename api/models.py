@@ -270,6 +270,11 @@ TYPE_PARAM = (
     ('parameter', 'parameter'),
     ('header', 'header')
 )
+
+SAVE_API = (
+    ('False', 'False'),
+    ('True', 'True')
+)
 class Account(models.Model):
     account_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE , default=1)
@@ -391,16 +396,23 @@ class Chat(models.Model):
     
 class Attribute(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, default=1)
-    key = models.CharField(max_length=255)
-    value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, blank=True, null=True)
+    key = models.CharField(max_length=255, unique=True)
+    chat = models.ManyToManyField(Chat, through='custome_attribute')
+    save_api = models.CharField(choices=SAVE_API, default='False')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f'{self.key} - {self.value}'
+        return f'{self.key} for save reply user' if self.save_api == 'False' else f'{self.key} for save response form api'
 # _____________________________________________________________________________________________________________________
 
+class Custome_attribute(models.Model):
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, blank=True, null=True)
+    value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
+    variable = models.CharField(max_length=50, blank=True, null=True)
+    api = models.ForeignKey('API', on_delete=models.CASCADE, blank=True, null=True)
+    
 
 class Tag(models.Model):
     tag_id = models.AutoField(primary_key=True)
@@ -545,6 +557,7 @@ class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     parameters = models.ManyToManyField(Parameter, through="api_parameter")
+    # api_attr = models.ManyToManyField(Attribute, through='api_attribute')
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)
@@ -556,7 +569,10 @@ class API(models.Model):
     def __str__(self) -> str:
         return f'api {self.api_name} for account {self.account_id.name}'
 
-    
+# class Api_attribute(models.Model):
+#     attr = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+#     api = models.ForeignKey(API, on_delete=models.CASCADE)
+
 class Api_parameter(models.Model):
     api = models.ForeignKey(API, on_delete=models.CASCADE)
     parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE)

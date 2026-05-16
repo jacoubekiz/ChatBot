@@ -1361,11 +1361,14 @@ class GetApiView(GenericAPIView):
         serializer = APISerializer(api_object)
         data = serializer.data
         data_dict = dict(data)
+        custome_attributes = Custome_attribute.objects.filter(api=api_object)
+        seria = SerializerCustomeAttributes(custome_attributes, many=True)
         data_dict['parameters'] = serializer_api_param.data
+        data_dict['custome_attrs'] = seria.data
 
         return Response(data_dict, status=status.HTTP_200_OK)
             
-class RetriveUpdateApiview(UpdateAPIView):
+class UpdateApiview(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = APISerializer
     queryset = API.objects.all()
@@ -1433,36 +1436,41 @@ class DeleteParameterAPIView(DestroyAPIView):
     queryset = Parameter.objects.all()
     lookup_field = 'parameter_id'
 
-class ListCreateAttributeView(ListCreateAPIView):
+class ListCreateCustomeAttributeView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, account_id):
-        account = Account.objects.filter(account_id=account_id).first()
+    def post(self, request, api_id):
+        api = API.objects.filter(api_id=api_id).first()
         data = request.data
-        serializer = SerializerAttributes(data=data, context={'account':account})
+        serializer = SerializerCustomeAttributes(
+            data=data, 
+            context={
+                'api':api
+            }
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED)
     
-    def get(self, request, account_id):
-        account = Account.objects.filter(account_id=account_id).first()
-        attributes = Attribute.objects.filter(account_id=account)
-        serializer = SerializerAttributes(attributes, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # def get(self, request, account_id):
+    #     account = Account.objects.filter(account_id=account_id).first()
+    #     attributes = Attribute.objects.filter(account_id=account)
+    #     serializer = SerializerAttributes(attributes, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     
-class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = SerializerAttributes
-    lookup_field = 'id'
+# class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = SerializerCustomeAttributes
+#     lookup_field = 'id'
 
-    def get_queryset(self):
-        attribute_id = self.kwargs['id']
-        account = self.kwargs['account_id']
-        return Attribute.objects.filter(account=account, id=attribute_id)
+#     def get_queryset(self):
+#         attribute_id = self.kwargs['id']
+#         account = self.kwargs['account_id']
+#         return Attribute.objects.filter(account=account, id=attribute_id)
     
-    def perform_update(self, serializer):
-        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
-        serializer.save(account=account_id)
+#     def perform_update(self, serializer):
+#         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+#         serializer.save(account=account_id)
 
 class CreateListQuickReplyView(GenericAPIView):
     permission_classes = [IsAuthenticated]

@@ -90,14 +90,15 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ['account_id', 'name', 'user', 'apiKey', 'created_at']
 
 class AttributeAdmin(admin.ModelAdmin):
-    list_display = ['account_name', 'key', 'value','client_name']
+    list_display = ['account_name', 'key']
 
-    def client_name(self, obj):
-        conversation = Conversation.objects.filter(contact_id__phone_number=self.chat.conversation_id).first()
-        return conversation.contact_id.name if conversation.contact_id.name else self.chat.conversation_id
-
+    # def client_name(self, obj):
+        # conversation = Conversation.objects.filter(contact_id__phone_number=self.chat.conversation_id).first()
+        # return conversation.contact_id.name if conversation.contact_id.name else self.chat.conversation_id
     def account_name(self, obj):
         return obj.account.name
+    
+admin.site.register(Custome_attribute)
 admin.site.register(CustomUser, CustomUserAdmin)
 # admin.site.register(Client, ClientAdmin)
 admin.site.register(Chat)

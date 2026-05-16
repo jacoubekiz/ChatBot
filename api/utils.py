@@ -79,9 +79,10 @@ def show_response(question, questions, chat_id):
             orGroups = branch['if']['orGroups']
             for orGroup in orGroups:
                 conditions = orGroup['conditions']
+                attr = Attribute.objects.filter(Q(key=conditions[0]['customAttribute'])).first()
                 operator = conditions[0]['operator']
                 value = conditions[0]['value']
-                customAttribute = Attribute.objects.filter(Q(key=conditions[0]['customAttribute']) & Q(chat_id=chat_id)).first()
+                customAttribute = Custome_attribute.objects.filter(Q(attribute=attr) & Q(chat=chat_id)).first()
                 if customAttribute:
                     customAttributeValue = customAttribute.value
                     if operator == 'equals' and customAttributeValue == value:
@@ -118,7 +119,8 @@ def change_occurences(content, pattern, chat_id, sql=False):
     matches = re.findall(pattern, content)
     for match in matches:
         try:
-            attr = Attribute.objects.get(key=match, chat_id = chat_id)
+            attr_ = Attribute.objects.filter(key=match).first()
+            attr = Custome_attribute.objects.get(attribute=attr_, chat_id = chat_id)
             if sql:
                 
                 if not attr.value.isdigit():

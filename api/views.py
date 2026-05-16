@@ -1328,7 +1328,15 @@ class ListCreateApiView(APIView):
         account = Account.objects.filter(account_id=account_id).first()
         data = request.data
         parameters = data.get('parameters', [])
-        serializer = APISerializer(data=data, context={'account':account, 'parameters':parameters})
+        custome_attrs = data.get('custome_attrs', [])
+        serializer = APISerializer(
+            data=data, 
+            context={
+                'account':account, 
+                'parameters':parameters,
+                'custome_attrs': custome_attrs
+            }
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
@@ -1377,6 +1385,7 @@ class UpdateApiview(UpdateAPIView):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['parameters'] = self.request.data.get('parameters', [])
+        context['custome_attrs'] = self.request.data.get('custome_attrs', [])
         return context
     
 class SaveResponse(APIView):
@@ -1436,16 +1445,16 @@ class DeleteParameterAPIView(DestroyAPIView):
     queryset = Parameter.objects.all()
     lookup_field = 'parameter_id'
 
-class ListCreateCustomeAttributeView(ListCreateAPIView):
+class ListCreateAttributeView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, api_id):
-        api = API.objects.filter(api_id=api_id).first()
+    def post(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
         data = request.data
-        serializer = SerializerCustomeAttributes(
+        serializer = SerializerAttributes(
             data=data, 
             context={
-                'api':api
+                'account':account
             }
         )
         serializer.is_valid(raise_exception=True)

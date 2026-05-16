@@ -1467,19 +1467,19 @@ class ListCreateAttributeView(ListCreateAPIView):
     #     serializer = SerializerAttributes(attributes, many=True)
     #     return Response(serializer.data, status=status.HTTP_200_OK)
     
-# class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = SerializerCustomeAttributes
-#     lookup_field = 'id'
+class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SerializerAttributes
+    lookup_field = 'id'
 
-#     def get_queryset(self):
-#         attribute_id = self.kwargs['id']
-#         account = self.kwargs['account_id']
-#         return Attribute.objects.filter(account=account, id=attribute_id)
+    def get_queryset(self):
+        attribute_id = self.kwargs['id']
+        account = self.kwargs['account_id']
+        return Attribute.objects.filter(account=account, id=attribute_id)
     
-#     def perform_update(self, serializer):
-#         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
-#         serializer.save(account=account_id)
+    def perform_update(self, serializer):
+        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        serializer.save(account=account_id)
 
 class CreateListQuickReplyView(GenericAPIView):
     permission_classes = [IsAuthenticated]

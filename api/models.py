@@ -395,7 +395,7 @@ class Chat(models.Model):
         return f"{self.conversation_id} Client -> {self.channel_id}, State -> {self.state}"
     
 class Attribute(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, default=1)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     key = models.CharField(max_length=255)
     chat = models.ManyToManyField(Chat, through='custome_attribute')
     save_api = models.CharField(choices=SAVE_API, default='False')

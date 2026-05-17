@@ -417,7 +417,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await database_sync_to_async(ch.save)()    
             else:
                 ch = await self._get_chat(source_id, channel)        # break
-        return reset_flow== True, ch
+        return reset_flow, ch
 
     async def _get_flow_by_trigger(self, channel, content, source_id):
         try:
@@ -1283,7 +1283,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat, created = Chat.objects.get_or_create(conversation_id=source_id, channel_id=channel)
         if chat:
             chat.flow = flow
-            chat.state = ''
+            chat.state = 'start'
             chat.isSent = False
             chat.save()
             return chat

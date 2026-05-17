@@ -1461,11 +1461,11 @@ class ListCreateAttributeView(ListCreateAPIView):
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
     
-    # def get(self, request, account_id):
-    #     account = Account.objects.filter(account_id=account_id).first()
-    #     attributes = Attribute.objects.filter(account_id=account)
-    #     serializer = SerializerAttributes(attributes, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, account_id):
+        account = Account.objects.filter(account_id=account_id).first()
+        attributes = Attribute.objects.filter(account_id=account)
+        serializer = SerializerAttributes(attributes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]

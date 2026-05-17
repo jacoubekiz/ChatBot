@@ -424,11 +424,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             flow = await database_sync_to_async(channel.flows.get)(trigger__trigger=content)
             chats = await database_sync_to_async(list)(Chat.objects.filter(
                 Q(conversation_id=source_id) & 
-                Q(channel_id=channel.channle_id) & 
-                ~Q(flow=flow)
+                Q(channel_id=channel.channle_id)
+                # ~Q(flow=flow)
             ))
             for c in chats:
-                await database_sync_to_async(c.update_state)('end')
+                # await database_sync_to_async(c.update_state)('end')
+                c.flow = flow
                 c.isSent = False
                 await database_sync_to_async(c.save)()
         except:
@@ -867,8 +868,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         flow = await self._get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
 
-
+        print(f'sjdlfjsdlf{reset_flow_}')
         if not flow or reset_flow_ == True:
+            print("sfsdfasdfasdfasdfasdfasfasfdfd")
             flow = await database_sync_to_async(channel.flows.get)(is_default=True)
         
         file_path = await database_sync_to_async(default_storage.path)(flow.flow.name)
@@ -896,6 +898,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         question = questions[0]
                         
                 else:
+                    print(f'no state -------{questions}')
                     for item in questions:
                         if item['id'] == chat.state:
                             question = item

@@ -866,8 +866,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         flow = await self._get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
-                
-        if not flow:
+
+
+        if not flow or reset_flow_ == True:
             flow = await database_sync_to_async(channel.flows.get)(is_default=True)
         
         file_path = await database_sync_to_async(default_storage.path)(flow.flow.name)

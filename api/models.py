@@ -557,7 +557,6 @@ class API(models.Model):
     api_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     parameters = models.ManyToManyField(Parameter, through="api_parameter")
-    # api_attr = models.ManyToManyField(Attribute, through='api_attribute')
     api_name = models.CharField(max_length=50, null=True, blank=True)
     endpoint = models.URLField(max_length=200, null=True, blank=True)
     method = models.CharField(max_length=10, choices=METHOD_CHOICES, null=True, blank=True)

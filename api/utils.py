@@ -120,7 +120,7 @@ def change_occurences(content, pattern, chat_id, sql=False):
     for match in matches:
         try:
             attr_ = Attribute.objects.filter(key=match).first()
-            attr = Custome_attribute.objects.get(attribute=attr_, chat_id = chat_id)
+            attr = Custome_attribute.objects.filter(attribute=attr_, chat_id = chat_id).first()
             if sql:
                 
                 if not attr.value.isdigit():

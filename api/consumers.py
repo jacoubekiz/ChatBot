@@ -430,6 +430,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             for c in chats:
                 # await database_sync_to_async(c.update_state)('end')
                 c.flow = flow
+                c.state = 'start'
                 c.isSent = False
                 await database_sync_to_async(c.save)()
         except:
@@ -572,51 +573,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _retype_api(self, question, chat, choices_with_next):
         api_id = question['name']
         api_ = await self._get_api_info(api_id)
-        api_parameter_headers = await self._get_api_parameter_header(api_)
-        api_parameter_params = await self._get_api_parameter_params(api_)
+        api_parameter_headers, api_parameter_params = await self._get_api_parameter_header(api_)
+        # api_parameter_params = await self._get_api_parameter_params(api_)
         headers = {
             'Content-Type': 'application/json',
         }
-        for api_parameter_header in api_parameter_headers:
-            value = f'{api_parameter_header.value}'
-            headers[f'{api_parameter_header.key}'] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-
-        data = api_.body
+        headers_ = await self._get_new_header(headers, api_parameter_headers, chat)
+        data = json.loads(api_.body) if api_.body else {}
         endpoint = api_.endpoint
-        final_url = ''
-        if api_parameter_params:
-            for api_parameter_param_ in api_parameter_params:
-                key = api_parameter_param_.key
-                value_ = api_parameter_param_.value
-                value = change_occurences(value_, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-                final_url += f'{key}={value}&'
-            endpoint += f'?{final_url}'
-        else:
-            endpoint = api_.endpoint
+        endpoint_ = await self._get_new_endpoint(endpoint, api_parameter_params, chat)
         try:
             for key, value in data.items():
                 if isinstance(value, (int, float)):
                     continue
-            data[key] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                data[key] = await sync_to_async(change_occurences)(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         except:
             data = {}
-        response = requests.post(endpoint , headers=headers, json=data)
+        response = requests.post(endpoint_ , headers=headers_, json=data)
         api_log = await self._create_api_log(
             api=api_,
-            response = response.content,
+            response = json.loads(response.content) if response.content else {},
             status_request = response.status_code
         )
         custome_attrs = await self._get_custome_attrs(api_)
-        if custome_attrs:
-            for custome_attr in custome_attrs:
-                await self._save_value_for_custome_attr(custome_attr, response, chat)
+        await self._save_api_response_in_custome_attribute(custome_attrs, response, chat)
         for option in choices_with_next:
             for state in option:
                 if str(response.status_code) == str(state):
                     next_question_id = option[2]
-                    await database_sync_to_async(chat.update_state)(next_question_id)
-                    chat.isSent = False
-                    await database_sync_to_async(chat.save)()
+                    await self._update_chat_status(chat, next_question_id)
+                    return next_question_id
+                # break
 
     # handle name and phone and email type question
     async def _retype_name_phone_email_question(self, question, chat,channel, content,r_type, next_question_id, platform, message, data, attribute_name, conversation_id, contact_name):
@@ -868,9 +855,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         flow = await self._get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
 
-        print(f'sjdlfjsdlf{reset_flow_}')
         if not flow or reset_flow_ == True:
-            print("sfsdfasdfasdfasdfasdfasfasfdfd")
+
             flow = await database_sync_to_async(channel.flows.get)(is_default=True)
         
         file_path = await database_sync_to_async(default_storage.path)(flow.flow.name)
@@ -898,14 +884,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         question = questions[0]
                         
                 else:
-                    print(f'no state -------{questions}')
                     for item in questions:
                         if item['id'] == chat.state:
                             question = item
                             break
                 message, next_question_id, choices_with_next, choices, r_type, attribute_name = await sync_to_async(show_response)(question, questions, chat.id)
-                # if next_question_id == "end":
-                #     break
                 
                 if r_type == 'detect_language':
                     lang = await sync_to_async(langid.classify)(data['content'])
@@ -989,7 +972,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         await database_sync_to_async(chat.save)()
 
                 elif r_type == 'api':
-                    await self._retype_api()
+                    next_question_id = await self._retype_api(question, chat, choices_with_next)
+
 
                 elif r_type == 'name' or \
                     r_type == 'phone' or \
@@ -1259,7 +1243,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def _get_custome_attrs(self, api):
         return Custome_attribute.objects.filter(api=api)
-    
+
+    @database_sync_to_async
+    def _save_api_response_in_custome_attribute(self, custome_attrs, response, chat):
+        if custome_attrs:
+            for custome_attr in custome_attrs:
+                self._save_value_for_custome_attr(custome_attr, response, chat)
+
     @database_sync_to_async
     def _save_value_for_custome_attr(self, custome_attr, response, chat):
         custome_attr.value = response.content[f'{custome_attr.variable}']
@@ -1268,10 +1258,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def _get_api_parameter_header(self, api):
-        return Api_parameter.objects.filter(Q(api=api) & Q(type_param='header'))
-
-    def _get_api_parameter_params(self, api):
-        return Api_parameter.objects.filter(Q(api=api) & Q(type_param='parameter'))
+        headers =Api_parameter.objects.filter(Q(api=api) & Q(type_param='header'))
+        parameters = Api_parameter.objects.filter(Q(api=api) & Q(type_param='parameter'))
+        return headers, parameters
+    
+    @database_sync_to_async
+    def _get_new_header(self, headers, api_parameter_headers, chat):
+        for api_parameter_header in api_parameter_headers:
+            value = f'{api_parameter_header.value}'
+            headers[f'{api_parameter_header.key}'] = change_occurences(value, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+        return headers
+    
+    @database_sync_to_async
+    def _get_new_endpoint(self, endpoint, api_parameter_params, chat):
+        final_url = ''
+        if api_parameter_params:
+            for api_parameter_param_ in api_parameter_params:
+                key = api_parameter_param_.key
+                value_ = api_parameter_param_.value
+                value = change_occurences(value_, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
+                final_url += f'{key}={value}&'
+            endpoint += f'?{final_url}'
+        else:
+            endpoint = endpoint
+        return endpoint
+    # def _get_api_parameter_params(self, api):
+    #     return Api_parameter.objects.filter(Q(api=api) & Q(type_param='parameter'))
 
     @database_sync_to_async
     def _get_flow(self, next_question_id):
@@ -1310,5 +1322,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return chat
 
     @database_sync_to_async
-    def _create_api_log(self,api, response):
-        return APILog.objects.create(api=api, response=response)
+    def _create_api_log(self,api, response, status_request):
+        return APILog.objects.create(api=api, response=response, status_request=status_request)

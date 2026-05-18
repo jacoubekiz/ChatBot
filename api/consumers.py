@@ -603,7 +603,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     next_question_id = option[2]
                     await self._update_chat_status(chat, next_question_id)
                     return next_question_id
-                # break
 
     # handle name and phone and email type question
     async def _retype_name_phone_email_question(self, question, chat,channel, content,r_type, next_question_id, platform, message, data, attribute_name, conversation_id, contact_name):

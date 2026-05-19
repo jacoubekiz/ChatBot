@@ -106,8 +106,8 @@ class Custome_attributeAdmin(admin.ModelAdmin):
     
     def contact(self, obj):
         conversation = Conversation.objects.filter(contact_id__phone_number=obj.chat.conversation_id).first()
-        contact_name = conversation.contact_id.name if conversation else conversation.contact_id.phone_nuber
-        return contact_name
+        contact_name = conversation.contact_id.name or conversation.contact_id.phone_number if conversation else None
+        return contact_name 
     
 admin.site.register(Custome_attribute, Custome_attributeAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)

@@ -328,7 +328,7 @@ class ContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contact
-        fields = ['contact_id', 'assigned_user',     'account_id', 'name', 'phone_number', 'email', "conversation_id"]
+        fields = ['contact_id', 'assigned_user', 'account_id', 'name', 'phone_number', 'email', "conversation_id"]
         extra_kwargs ={
             'account_id':{
                 # 'read_only':True,
@@ -366,10 +366,9 @@ class ContactSerializer(serializers.ModelSerializer):
     
     def get_conversation_id(self, obj):
         contact = Contact.objects.get(contact_id=obj.contact_id)
-        conversation_id = Conversation.objects.get(contact_id=contact.contact_id)
-        conversation_id = conversation_id.conversation_id
-        return conversation_id
-    
+        conversation_id = Conversation.objects.filter(contact_id=contact.contact_id).first()
+        return conversation_id.conversation_id if conversation_id else None
+
     def to_representation(self, instance):
         repre = super().to_representation(instance)
         repre['account_id'] = instance.account_id.name

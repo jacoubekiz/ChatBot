@@ -1042,6 +1042,25 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
         # context['team_id'] = self.kwargs['team_id']
         context['role'] = self.request.data.get('role')
         return context
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.data
+        user = CustomUser.objects.get(email=response_data['email'])
+        response_data['permission'] = user.get_all_permissions()
+        return Response(response_data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response_data = serializer.data
+        user = CustomUser.objects.get(email=response_data['email'])
+        response_data['permission'] = user.get_all_permissions()
+        return Response(response_data)
 
 class CreateListAccount(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -1133,7 +1152,7 @@ class ViewLogin(GenericAPIView):
         email = data_request['email']
         try:
             user = CustomUser.objects.get(email=email)
-            permissions = list(user.get_all_permissions())
+            # permissions = list(user.get_all_permissions())
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             team = Team.objects.filter(members__id=user.id).first()

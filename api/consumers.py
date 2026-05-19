@@ -454,7 +454,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             if r_type == 'list':
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=message,
+                    message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
                     choices=choices,
                     type='interactive', 
                     interaction_type='list',
@@ -469,7 +469,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             else:
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=message,
+                    message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
                     choices=choices,
                     type='interactive', 
                     interaction_type='button',
@@ -529,7 +529,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 error_message = question['message']['error']
                 
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=error_message,
+                    message_content=await sync_to_async(change_occurences)(error_message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
                     to=chat.conversation_id,
                     bearer_token=channel.tocken,
                     wa_id=channel.phone_number_id,
@@ -609,13 +609,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not chat.isSent:
             chat.isSent = True
             await database_sync_to_async(chat.save)()
-            message_wamid = await sync_to_async(send_message)(message_content=message,
-                            to=chat.conversation_id,
-                            bearer_token=channel.tocken,
-                            wa_id=channel.phone_number_id,
-                            chat_id=chat.id,
-                            platform=platform,
-                            question=question)
+            message_wamid = await sync_to_async(send_message)(
+                message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                to=chat.conversation_id,
+                bearer_token=channel.tocken,
+                wa_id=channel.phone_number_id,
+                chat_id=chat.id,
+                platform=platform,
+                question=question)
             message_id = await self._create_chat_message(
                 conversation_id=await self._get_conversation(conversation_id),
                 user=None,
@@ -663,13 +664,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             r_type == 'email' and not validate_email(user_reply) or\
             r_type == 'number' and not str(user_reply).isdigit():
                 error_message = question['message']['error']
-                message_wamid = await sync_to_async(send_message)(message_content=error_message,
-                            to=chat.conversation_id,
-                            bearer_token=channel.tocken,
-                            wa_id=channel.phone_number_id,
-                            chat_id=chat.id,
-                            platform=platform,
-                            question=question)
+                message_wamid = await sync_to_async(send_message)(
+                    message_content=await sync_to_async(change_occurences)(error_message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                    to=chat.conversation_id,
+                    bearer_token=channel.tocken,
+                    wa_id=channel.phone_number_id,
+                    chat_id=chat.id,
+                    platform=platform,
+                    question=question)
                 message_id = await self._create_chat_message(
                     conversation_id=await self._get_conversation(data["conversation_id"]),
                     user=None,
@@ -697,16 +699,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def _retype_document(self, channel, chat, question, message, platform, conversation_id, data, next_question_id):
-        message_wamid = await sync_to_async(send_message)(message_content=message,
-                        to=chat.conversation_id,
-                        bearer_token=channel.tocken,
-                        type='document',
-                        source=question['source'],
-                        beem_media_id=question.get('beem_media_id'),
-                        wa_id=channel.phone_number_id,
-                        chat_id=chat.id,
-                        platform=platform,
-                        question=question)
+        message_wamid = await sync_to_async(send_message)(
+            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            to=chat.conversation_id,
+            bearer_token=channel.tocken,
+            type='document',
+            source=question['source'],
+            beem_media_id=question.get('beem_media_id'),
+            wa_id=channel.phone_number_id,
+            chat_id=chat.id,
+            platform=platform,
+            question=question)
         message_id = await self._create_chat_media_message(
             conversation_id= await self._get_conversation(conversation_id),
             user=None,
@@ -729,7 +732,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_image(self, message, chat, channel, question, platform, conversation_id, data, next_question_id):
-        message_wamid = await sync_to_async(send_message)(message_content=message,
+        message_wamid = await sync_to_async(send_message)(
+            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             wa_id=channel.phone_number_id,
@@ -763,15 +767,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
 
     async def _retype_audio_vedio_steker(self, message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id):
-        message_wamid = await sync_to_async(send_message)(message_content=message,
-                to=chat.conversation_id,
-                bearer_token=channel.tocken,
-                wa_id=channel.phone_number_id,
-                type=r_type,
-                source=question['source'], 
-                chat_id=chat.id,
-                platform=platform,
-                question=question)
+        message_wamid = await sync_to_async(send_message)(
+            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            to=chat.conversation_id,
+            bearer_token=channel.tocken,
+            wa_id=channel.phone_number_id,
+            type=r_type,
+            source=question['source'], 
+            chat_id=chat.id,
+            platform=platform,
+            question=question)
         message_id = await self._create_chat_media_message(
             conversation_id= await self._get_conversation(conversation_id),
             user=None,
@@ -794,14 +799,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_live_chat(self, message, chat, channel, question, platform, conversation_id, data):
-        message_wamid = await sync_to_async(send_message)(message_content=message,
-                to=chat.conversation_id,
-                bearer_token=channel.tocken,
-                wa_id=channel.phone_number_id,
-                chat_id=chat.id,
-                platform=platform,
-                question=question,
-                )
+        message_wamid = await sync_to_async(send_message)(
+            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            to=chat.conversation_id,
+            bearer_token=channel.tocken,
+            wa_id=channel.phone_number_id,
+            chat_id=chat.id,
+            platform=platform,
+            question=question,
+        )
         message_id = await self._create_chat_message(
             conversation_id=await self._get_conversation(conversation_id),
             user= None,
@@ -929,13 +935,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if not chat.isSent:
                         chat.isSent = True
                         await database_sync_to_async(chat.save)()
-                        message_wamid = await sync_to_async(send_message)(message_content=message,
-                                    to = chat.conversation_id,
-                                    bearer_token=channel.tocken,
-                                    wa_id=channel.phone_number_id,
-                                    chat_id=chat.id,
-                                    platform=platform,
-                                    question=question)
+                        message_wamid = await sync_to_async(send_message)(
+                            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                            to = chat.conversation_id,
+                            bearer_token=channel.tocken,
+                            wa_id=channel.phone_number_id,
+                            chat_id=chat.id,
+                            platform=platform,
+                            question=question)
                         return True
                     else:
                         try:
@@ -994,14 +1001,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await self._retype_audio_vedio_steker(message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id)
 
                 elif r_type == 'contact' or r_type == 'location':
-                    message_wamid = await sync_to_async(send_message)(message_content=message,
-                                    to=chat.conversation_id,
-                                    bearer_token=channel.tocken,
-                                    wa_id=channel.phone_number_id,
-                                    type=r_type,
-                                    chat_id=chat.id,
-                                    platform=platform,
-                                    question=question)
+                    message_wamid = await sync_to_async(send_message)(
+                        message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        type=r_type,
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question)
                 elif r_type == 'Condition' and choices_with_next or r_type == 'condition' and choices_with_next:
         
                     for c in choices_with_next:
@@ -1023,14 +1031,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 elif r_type == 'detect_language':
                     pass
                 else:
-                    message_wamid = await sync_to_async(send_message)(message_content=message,
-                                    to=chat.conversation_id,
-                                    bearer_token=channel.tocken,
-                                    wa_id=channel.phone_number_id,
-                                    chat_id=chat.id,
-                                    platform=platform,
-                                    question=question,
-                                    )
+                    message_wamid = await sync_to_async(send_message)(
+                        message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question,
+                    )
                     message_id = await self._create_chat_message(
                         conversation_id=await self._get_conversation(conversation_id),
                         user= None,

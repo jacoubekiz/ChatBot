@@ -325,10 +325,12 @@ class ChannleSerializer(serializers.ModelSerializer):
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
     assigned_user = serializers.SerializerMethodField(read_only=True)
+    tags = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Contact
-        fields = ['contact_id', 'assigned_user', 'account_id', 'name', 'phone_number', 'email', "conversation_id"]
+        fields = ['contact_id', 'assigned_user', 'account_id', 'name', 'phone_number', 'email', "conversation_id", 'tags']
         extra_kwargs ={
             'account_id':{
                 # 'read_only':True,
@@ -374,6 +376,13 @@ class ContactSerializer(serializers.ModelSerializer):
         repre['account_id'] = instance.account_id.name
         # repre['contact_id'] = instance.contact_id.name
         return repre
+    
+    def get_tags(self, obj):
+        """Get all unique tags from all conversations of this contact"""
+        tags = Tag.objects.filter(
+            conversation__contact_id=obj
+        ).distinct().values('tag_id', 'name')
+        return list(tags)
     
 class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:

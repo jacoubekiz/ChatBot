@@ -315,6 +315,14 @@ class Team(models.Model):
     def __str__(self) -> str:
         return self.name
   
+class Tag(models.Model):
+    tag_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return self.name
+    
 class Contact(models.Model):
     contact_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
@@ -412,15 +420,6 @@ class Custome_attribute(models.Model):
     value = models.CharField(max_length=255, blank=True, null=True, default='Unknown')
     variable = models.CharField(max_length=50, blank=True, null=True)
     api = models.ForeignKey('API', on_delete=models.CASCADE, blank=True, null=True)
-    
-
-class Tag(models.Model):
-    tag_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
-
-    def __str__(self) -> str:
-        return self.name
 
 
 class Conversation(models.Model):
@@ -434,13 +433,7 @@ class Conversation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    # last_state_change = models.DateTimeField(default=timezone.now)
-
-    # def update_state(self, new_state):
-    #     self.state = new_state
-    #     self.last_state_change = timezone.now()
-    #     self.save()
-
+    
     def __str__(self) -> str:
         return f'conversation for contact {self.contact_id.name}'
     

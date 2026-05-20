@@ -9,6 +9,8 @@ from rest_framework import status
 from django.db.models import Q
 from django.core.files.storage import default_storage
 
+from api.filters import ContactFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from api.tasks import send_whatsapp_campaign
 from .models import *
 from .configure_api import *
@@ -1221,9 +1223,13 @@ class GenerateapiKeyView(GenericAPIView):
 #     permission_classes = [IsAuthenticated]
 
 class ListContactView(ListAPIView):
-    queryset = Contact.objects.all()
+    queryset = Contact.objects.all().prefetch_related(
+        'conversation_set__tags'
+    )
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ContactFilter
 
 class ListConversationView(GenericAPIView):
     serializer_class = ConversationSerializer

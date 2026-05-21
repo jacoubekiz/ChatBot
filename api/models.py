@@ -39,7 +39,7 @@ class CustomUser(AbstractUser):
             ('can_access_channels', 'Can Access Channels'),
             ('can_access_team_members', 'Can Access Team Members'),
             ('can reassign for all chat', 'can reassign for all chat'),
-            ('can reassign one chat', 'can reassign one chat'),
+            ('can reassign for own chat', 'can reassign for own chat'),
             ('can not reassign', 'can not reassign'),
             ('visibility all conversations', 'visibility all conversations'),
             ('visibility assigned conversations', 'visibility assigned conversations')
@@ -433,7 +433,7 @@ class Conversation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    
+
     def __str__(self) -> str:
         return f'conversation for contact {self.contact_id.name}'
     

@@ -1049,7 +1049,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance)
         response_data = serializer.data
         user = CustomUser.objects.get(email=response_data['email'])
-        response_data['role'] = user.get_all_permissions()
+        response_data['role'] = [perm.codename for perm in user.user_permissions.all()]
         return Response(response_data)
 
     def update(self, request, *args, **kwargs):
@@ -1060,7 +1060,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
         response_data = serializer.data
         user = CustomUser.objects.get(email=response_data['email'])
-        response_data['role'] = user.get_all_permissions()
+        response_data['role'] = [perm.codename for perm in user.user_permissions.all()]
         return Response(response_data)
 
 class CreateListAccount(GenericAPIView):

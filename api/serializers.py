@@ -482,14 +482,14 @@ class CampaignsSerilizer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
-    permission = serializers.SerializerMethodField(read_only=True)
+    role = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'username', 'phonenumber', 'role_user', 'permission']
+        fields = ['id', 'email', 'username', 'phonenumber', 'role_user', 'role']
 
-    def get_permission(self, obj):
-        permissions = obj.user_permissions.all()
-        return [perm.codename for perm in permissions]
+    def get_role(self, obj):
+        roles = obj.user_permissions.all()
+        return [role.codename for role in roles]
     
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:

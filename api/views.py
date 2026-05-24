@@ -1446,21 +1446,18 @@ class APILogVeiw(GenericAPIView):
                     "url": api_log_.api.endpoint,
                     "method":api_log_.api.method,
                     "data":{
-                        api_log_.api.body
+                        api_log_.api.body if api_log_.api.body else "",
                     },
                 },
                 "response": {
                     "status": api_log_.status_request,
                     "message":"",
                     "payload": {
-                        api_log_.response
+                        str(api_log_.response) if api_log_.response else ""
                     }
                 }
             }
             apis_logs.append(data)
-        # data ={
-        #     "data":apis_logs
-        # }
         return Response(apis_logs, status=status.HTTP_200_OK)
 
 class DeleteParameterAPIView(DestroyAPIView):

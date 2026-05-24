@@ -112,6 +112,40 @@ class BookAnAppointmentSerializer(serializers.ModelSerializer):
 # ---------------------------------------------------------------------------------------------------------
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+class UpdateTeamMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields  = ['id', 'username', 'phonenumber', 'email', 'role_user', 'manager']
+        extra_kwargs = {
+            'manager':{
+                    'read_only':True,
+                    'required': False
+                }
+            }
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
+        instance.role_user = validated_data.get('role_user', instance.role_user)
+        instance.save()
+        roles = self.context.get('role')
+        instance.user_permissions.clear()
+        user = CustomUser.objects.get(email=instance.email)
+        for role in roles:
+            content_type = ContentType.objects.get_for_model(CustomUser)
+            permission = Permission.objects.get(
+                codename= role,
+                content_type=content_type
+            )
+            user.user_permissions.add(permission)
+        return instance
+
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['manager'] = instance.manager.username if instance.manager else None
+        return repre
+    
 class AddUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser

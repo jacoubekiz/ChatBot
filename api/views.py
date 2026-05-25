@@ -1158,21 +1158,37 @@ class ViewLogin(GenericAPIView):
             team = Team.objects.filter(members__id=user.id).first()
             account_id = team.account_id.account_id
             channel_id = Channle.objects.filter(account_id__account_id = account_id).first()
-            data = {
-                'tokens':tokens,
-                'user': {
-                    'id':user.id,
-                    'name':user.username,
-                    'role':user.role_user,
-                    'account_id': account_id,
-                    'channel_id': channel_id.channle_id,
-                    'permissions': list(user.get_all_permissions())
+            if user.role_user == 'admin':
+                data = {
+                    'tokens':tokens,
+                    'user': {
+                        'id':user.id,
+                        'name':user.username,
+                        'role':user.role_user,
+                        'account_id': account_id,
+                        'channel_id': channel_id.channle_id,
+                        'permissions': list(user.get_all_permissions())
+                    }
                 }
-            }
+            else:
+                data = {
+                    'tokens':tokens,
+                    'user': {
+                        'id':user.id,
+                        'name':user.username,
+                        'permissions':list(user.get_all_permissions()),
+                        'account': {
+                            "account_id":account_id,
+                            "name": team.account_id.name,
+                            "email": team.account_id.user.email,
+                            "channel_id":channel_id.channle_id
+                        }
+                    }
+                }
         except:
             user = CustomUser.objects.get(email=email)
-            account = Account.objects.filter(user=user.manager).first()
-            channel = Channle.objects.filter(account_id = account.account_id).first()
+            # account = Account.objects.filter(user=user.manager).first()
+            # channel = Channle.objects.filter(account_id = account.account_id).first()
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -1181,12 +1197,12 @@ class ViewLogin(GenericAPIView):
                     'id':user.id,
                     'name':user.username,
                     'permissions':list(user.get_all_permissions()),
-                    'account': {
-                        "account_id":account.account_id,
-                        "name": account.name,
-                        "email": account.user.email,
-                        "channel_id":channel.channle_id
-                    }
+                    # 'account': {
+                    #     "account_id":account.account_id,
+                    #     "name": account.name,
+                    #     "email": account.user.email,
+                    #     "channel_id":channel.channle_id
+                    # }
                 }
             }
         return Response(data, status=status.HTTP_200_OK)

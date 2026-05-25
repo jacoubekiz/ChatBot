@@ -1153,7 +1153,6 @@ class ViewLogin(GenericAPIView):
         email = data_request['email']
         try:
             user = CustomUser.objects.get(email=email)
-            # permissions = list(user.get_all_permissions())
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             team = Team.objects.filter(members__id=user.id).first()
@@ -1172,6 +1171,8 @@ class ViewLogin(GenericAPIView):
             }
         except:
             user = CustomUser.objects.get(email=email)
+            account = Account.objects.filter(user=user.manager).first()
+            channel = Channle.objects.filter(account_id = account.account_id).first()
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -1179,7 +1180,13 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    'permissions':list(user.get_all_permissions())
+                    'permissions':list(user.get_all_permissions()),
+                    'account': {
+                        "account_id":account.account_id,
+                        "name": account.name,
+                        "email": account.user.email,
+                        "channel_id":channel.channle_id
+                    }
                 }
             }
         return Response(data, status=status.HTTP_200_OK)

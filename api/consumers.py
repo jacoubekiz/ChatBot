@@ -1266,8 +1266,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def _get_api_parameter_header(self, api):
-        headers =Api_parameter.objects.filter(Q(api=api) & Q(type_param='header'))
-        parameters = Api_parameter.objects.filter(Q(api=api) & Q(type_param='parameter'))
+        headers =Api_parameter.objects.filter(Q(api=api) & Q(type='header'))
+        parameters = Api_parameter.objects.filter(Q(api=api) & Q(type='parameter'))
         return headers, parameters
     
     @database_sync_to_async

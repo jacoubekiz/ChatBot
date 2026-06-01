@@ -606,7 +606,7 @@ class APISerializer(serializers.ModelSerializer):
                 Api_parameter.objects.create(
                     parameter = parameter,
                     api = api,
-                    type_param= param.get('type'),
+                    type= param.get('type'),
                     key=param.get('key'),
                     value=param.get('value')
                 )
@@ -640,7 +640,7 @@ class APISerializer(serializers.ModelSerializer):
                 Api_parameter.objects.create(
                     api=instance,
                     parameter = parameter_instance,
-                    type_param= param.get('type'),
+                    type= param.get('type'),
                     key=param.get('key'),
                     value=param.get('value')
                 )

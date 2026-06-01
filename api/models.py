@@ -569,7 +569,7 @@ class API(models.Model):
 class Api_parameter(models.Model):
     api = models.ForeignKey(API, on_delete=models.CASCADE)
     parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE)
-    type_param = models.CharField(choices=TYPE_PARAM,max_length=50, null=True, blank=True)
+    type = models.CharField(choices=TYPE_PARAM,max_length=50, null=True, blank=True)
     key = models.CharField(max_length=100, null=True, blank=True)
     value = models.CharField(max_length=255, null=True, blank=True)
 

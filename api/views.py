@@ -1167,7 +1167,7 @@ class ViewLogin(GenericAPIView):
                         'role':user.role_user,
                         'account_id': account_id,
                         'channel_id': channel_id.channle_id,
-                        'permissions': list(user.get_all_permissions())
+                        'permissions': [perm.codename for perm in user.user_permissions.all()]
                     }
                 }
             else:
@@ -1176,7 +1176,7 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'name':user.username,
-                        'permissions':list(user.get_all_permissions()),
+                        'permissions':[perm.codename for perm in user.user_permissions.all()],
                         'account': {
                             "account_id":account_id,
                             "name": team.account_id.name,
@@ -1196,7 +1196,7 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    'permissions':list(user.get_all_permissions()),
+                    'permissions':[perm.codename for perm in user.user_permissions.all()],
                     # 'account': {
                     #     "account_id":account.account_id,
                     #     "name": account.name,

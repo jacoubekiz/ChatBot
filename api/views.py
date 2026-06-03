@@ -1167,7 +1167,7 @@ class ViewLogin(GenericAPIView):
                         'role':user.role_user,
                         'account_id': account_id,
                         'channel_id': channel_id.channle_id,
-                        'permissions': [perm.codename for perm in user.user_permissions.all()]
+                        'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
                 }
             else:
@@ -1176,7 +1176,7 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'name':user.username,
-                        'permissions':[perm.codename for perm in user.user_permissions.all()],
+                        'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
                             "account_id":account_id,
                             "name": team.account_id.name,
@@ -1186,9 +1186,7 @@ class ViewLogin(GenericAPIView):
                     }
                 }
         except:
-            user = CustomUser.objects.get(email=email)
-            # account = Account.objects.filter(user=user.manager).first()
-            # channel = Channle.objects.filter(account_id = account.account_id).first()
+            user = CustomUser.objects.filter(email=email).first()
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -1196,13 +1194,7 @@ class ViewLogin(GenericAPIView):
                 'user': {
                     'id':user.id,
                     'name':user.username,
-                    'permissions':[perm.codename for perm in user.user_permissions.all()],
-                    # 'account': {
-                    #     "account_id":account.account_id,
-                    #     "name": account.name,
-                    #     "email": account.user.email,
-                    #     "channel_id":channel.channle_id
-                    # }
+                    'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                 }
             }
         return Response(data, status=status.HTTP_200_OK)

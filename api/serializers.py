@@ -669,7 +669,7 @@ class SerializerCustomeAttributes(serializers.ModelSerializer):
 class APIParametersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Api_parameter
-        fields = ['type_param', 'key', 'value']
+        fields = ['type', 'key', 'value']
 
 class APILogSerializer(serializers.ModelSerializer):
     body = serializers.CharField(source="api.body", read_only=True)

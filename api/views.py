@@ -1244,6 +1244,12 @@ class ListContactView(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ContactFilter
+    lookup_field = 'channel_id'
+
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        context['channel_id'] = self.kwargs['channel_id']
+        return context
 
 class ListConversationView(GenericAPIView):
     serializer_class = ConversationSerializer

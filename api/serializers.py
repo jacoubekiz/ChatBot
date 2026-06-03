@@ -378,8 +378,9 @@ class ContactSerializer(serializers.ModelSerializer):
         }
 
     def get_assigned_user(self, obj):
+        channel_id = self.context.get('channel_id')
         try:
-            conversation = Conversation.objects.get(contact_id=obj.contact_id)
+            conversation = Conversation.objects.get(contact_id=obj.contact_id, channle_id__channle_id=channel_id)
             return conversation.user.username if conversation.user else None
         except Conversation.DoesNotExist:
             return None

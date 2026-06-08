@@ -557,17 +557,18 @@ def handel_request_redis(data, account_id):
     # if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
 
     try:
-        redis_client = get_redis_connection()
-        redis_client.lpush('data_queue', json.dumps(data))
+        # redis_client = get_redis_connection()
+        # redis_client.lpush('data_queue', json.dumps(data))
+        print("task recived with data:", datetime.now())
         f = open(f'content_redis-{account_id}.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
-        raw_data = redis_client.rpop('data_queue')
-        test_data = json.loads(raw_data)
+        # raw_data = redis_client.rpop('data_queue')
+        test_data = json.loads(data)
         f.write("from redis: " + str(test_data) + '\n' + "new_line-------------------" + '\n')
-        if raw_data == None:
+        if data == None:
             return Response({'message':data}, status=status.HTTP_200_OK)
         else:
-            log_entry = json.loads(raw_data)
+            log_entry = json.loads(data)
             value = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {})
             statuses = log_entry.get('entry', [])[0].get('changes', [0])[0].get('value', {}).get('statuses', {})
             if statuses:

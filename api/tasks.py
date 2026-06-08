@@ -82,3 +82,4 @@ def send_whatsapp_campaign(
                 )
     except:
         return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+    

@@ -974,15 +974,16 @@ class ListMessgesForSpecificConversation(APIView):
         messages_serializer = ChatMessageSerializer(result_page, many=True)
         return paginator.get_paginated_response(messages_serializer.data)
 
-# @method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):
 
     def post(self, request):
         try:
-            data = request.data
+            print("Webhook received with data:", datetime.now())
+            payload = json.dumps(request.data)
             account_id = request.GET.get('account_id')
-            handel_request_redis.delay(data, account_id)
-            # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
+            handel_request_redis.delay(payload, str(account_id))
+            # thread = threading.Thread(target=handel_request_redis, args=(payload, account_id))
             # thread.start()
             return Response(status=status.HTTP_200_OK)
         except Exception as e:

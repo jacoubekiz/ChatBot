@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, UpdateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView, DestroyAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -29,7 +29,9 @@ from .pagination import *
 from django.http import HttpResponse
 import pandas as pd
 import csv
+from celery import shared_task
 
+@shared_task
 def write_inside_excel(data):
         response = data['response']
         time_meeting = data['time_meeting']
@@ -53,8 +55,9 @@ def write_inside_excel(data):
 class RegisterResponseClient(APIView):
     def post(self, request):
         data = request.data
-        thread = threading.Thread(target=write_inside_excel, args=(data,))
-        thread.start()
+        # thread = threading.Thread(target=write_inside_excel, args=(data,))
+        # thread.start()
+        write_inside_excel.delay(data)
         return Response(status=status.HTTP_200_OK)
 
 # class ClientsViewSet(viewsets.ModelViewSet):
@@ -284,7 +287,6 @@ class ListCreateTeamView(ListCreateAPIView):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['account_id'] = self.kwargs['account_id']
-        # context['team_id'] = self.kwargs['team_id']
         return context
     
     def get_queryset(self):
@@ -320,21 +322,6 @@ class AssigningPermissions(APIView):
             user.user_permissions.remove(permission)
         return Response(status=status.HTTP_200_OK)
     
-# class ListCreateTeamMemberView(ListCreateAPIView):
-#     permission_classes = [IsAuthenticated]
-#     queryset = CustomUser.objects.all()
-#     serializer_class = AddUserSerializer
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context['request'] = self.request
-#         context['role'] = self.request.data['role']
-#         context['team_id'] = self.kwargs['team_id']
-#         return context
-    
-#     def get_queryset(self):
-#         team_id = Team.objects.get(team_id=self.kwargs['team_id'])
-#         return team_id.members
 
 class ListTeamMember(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -369,10 +356,14 @@ class AddUserForTeam(GenericAPIView):
     
     def post(self, request, team_id):
         team = Team.objects.filter(team_id=team_id).first()
+        if not team:
+            return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
         users = request.data['users']
         keword = request.GET.get('keword')
         for user in users:
             t_user = CustomUser.objects.filter(id=user).first()
+            if not t_user:
+                return Response({'error':'User not found'}, status=status.HTTP_404_NOT_FOUND)
             if keword == 'add':
                 team.members.add(t_user)
             elif keword == 'delete':
@@ -394,7 +385,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         response_data = serializer.data
-        user = CustomUser.objects.get(email=response_data['email'])
+        user = get_object_or_404(CustomUser, email=response_data['email'])
         response_data['role'] = [perm.codename for perm in user.user_permissions.all()]
         return Response(response_data)
 
@@ -405,7 +396,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         response_data = serializer.data
-        user = CustomUser.objects.get(email=response_data['email'])
+        user = get_object_or_404(CustomUser, email=response_data['email'])
         response_data['role'] = [perm.codename for perm in user.user_permissions.all()]
         return Response(response_data)
 
@@ -417,7 +408,7 @@ class CreateListAccount(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         email = data_request['email']
-        user = CustomUser.objects.get(email=email)
+        user = get_object_or_404(CustomUser, email=email)
         account = Account.objects.create(
             user=user,
             name=user.username
@@ -426,6 +417,8 @@ class CreateListAccount(GenericAPIView):
 
     def get(self, request):
         accounts = Account.objects.filter(user__role_user='admin')
+        if not accounts:
+            return Response({'error':'Dont have permission for this action'}, status=status.HTTP_404_NOT_FOUND)
         serializer = AccontSerializer(accounts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -462,14 +455,14 @@ class RetrieveUpdateDeleteChannelView(RetrieveUpdateDestroyAPIView):
         return Channle.objects.filter(account_id=account_id, channle_id=channel)
 
     def perform_update(self, serializer):
-        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
 
 class CreateNewContact(GenericAPIView):
     def post(self, request, account_id, channel_id):
         data = request.data
-        account_id = Account.objects.get(account_id=account_id)
-        channel_id = Channle.objects.get(channle_id= channel_id)
+        account_id = get_object_or_404(Account, account_id=account_id)
+        channel_id = get_object_or_404(Channle, channle_id=channel_id)
         contact, created = Contact.objects.get_or_create(phone_number=data['phone_number'], account_id=account_id)
         if created:
             conversation = Conversation.objects.create(
@@ -504,7 +497,7 @@ class ViewLogin(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = data_request['email']
         try:
-            user = CustomUser.objects.get(email=email)
+            user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             team = Team.objects.filter(members__id=user.id).first()
@@ -538,7 +531,7 @@ class ViewLogin(GenericAPIView):
                     }
                 }
         except:
-            user = CustomUser.objects.filter(email=email).first()
+            user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
@@ -566,7 +559,7 @@ class GenerateapiKeyView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         account.apiKey= account.generate_key()
         account.save()
         message = {
@@ -577,7 +570,7 @@ class GenerateapiKeyView(GenericAPIView):
         return Response(message, status=status.HTTP_200_OK)
 
     def get(sefl, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         message = {
             "apikey": account.apiKey
         }
@@ -597,21 +590,29 @@ class ListConversationView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, channel_id):
-        user = CustomUser.objects.get(id=request.user.id)
+        user = get_object_or_404(CustomUser, id=request.user.id)
         permissions = list(user.get_all_permissions())
         if 'api.visibility all conversations' in permissions:
             conversation = Conversation.objects.filter(channle_id=channel_id)
+            if not conversation:
+                return Response({'error':'No conversations found'}, status=status.HTTP_404_NOT_FOUND)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
         else:
             conversation = Conversation.objects.filter(channle_id=channel_id, user=user)
+            if not conversation:
+                return Response({'error':'No conversations found'}, status=status.HTTP_404_NOT_FOUND)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
     
     def post(self, request, channel_id):
         data = request.data
         channel = Channle.objects.filter(channle_id = channel_id).first()
+        if not channel:
+            return Response({'error':'No channel found'}, status=status.HTTP_404_NOT_FOUND)
         contact = Contact.objects.filter(contact_id = channel_id).first()
+        if not contact:
+            return Response({'error':'No contact found'}, status=status.HTTP_404_NOT_FOUND)
         conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
         return Response(conversation_serializer.data)
@@ -625,8 +626,8 @@ class DeleteConversation(DestroyAPIView):
 class ReasignConversation(GenericAPIView):
     def post(self, request, conversation_id):
         data = request.data
-        conversation = Conversation.objects.get(conversation_id=conversation_id)
-        user = CustomUser.objects.get(id=data['user_id'])
+        conversation = get_object_or_404(Conversation ,conversation_id=conversation_id)
+        user = get_object_or_404(CustomUser, id=data['user_id'])
         conversation.user = user
         conversation.save()
 
@@ -672,15 +673,17 @@ class CreateListCampaignsView(GenericAPIView):
     permission_class = [IsAuthenticated]
 
     def get(self, request, channel_id):
-        channel = Channle.objects.get(channle_id=channel_id)
+        channel = get_object_or_404(Channle, channle_id=channel_id)
         campaigns = WhatsAppCampaign.objects.filter(account_id=channel.account_id)
+        if not campaigns:
+            return Response({'error':'No campaigns found'}, status=status.HTTP_404_NOT_FOUND)
         serializer_campaigns = self.get_serializer(campaigns, many=True)
         data = serializer_campaigns.data
 
         return Response(data, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
-        channel = Channle.objects.get(channle_id=channel_id)
+        channel = get_object_or_404(Channle, channle_id=channel_id)
         data = request.data
         file = request.data['file']
         content_template = data.get('content_template')
@@ -718,6 +721,8 @@ class ListCreateApiView(APIView):
 
     def post(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
+        if not account:
+            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
         data = request.data
         parameters = data.get('parameters', [])
         custome_attrs = data.get('custome_attrs', [])
@@ -735,7 +740,11 @@ class ListCreateApiView(APIView):
     
     def get(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
+        if not account:
+            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
         api_objects = API.objects.filter(account_id=account)
+        if not api_objects:
+            return Response({'error':'No APIs found'}, status=status.HTTP_404_NOT_FOUND)
         result = []
         for api_object in api_objects:
             api_parameters = Api_parameter.objects.filter(api=api_object)
@@ -756,6 +765,8 @@ class GetApiView(GenericAPIView):
 
     def get(self, request, api_id):
         api_object = API.objects.filter(api_id=api_id).first()
+        if not api_object:
+            return Response({'error':'No API found'}, status=status.HTTP_404_NOT_FOUND)
         api_parameters = Api_parameter.objects.filter(api=api_object)
         serializer_api_param = APIParametersSerializer(api_parameters, many=True)
         serializer = APISerializer(api_object)
@@ -784,7 +795,7 @@ class SaveResponse(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, api_id):
         response = request.data['response']
-        api = API.objects.get(api_id = api_id)
+        api = get_object_or_404(API, api_id = api_id)
         api.response = response
         api.save()
         return Response(status=status.HTTP_200_OK)
@@ -802,6 +813,8 @@ class APILogVeiw(GenericAPIView):
 
     def get(self, request, api_id):
         api = API.objects.filter(api_id=api_id).first()
+        if not api:
+            return Response({'error':'No API found'}, status=status.HTTP_404_NOT_FOUND)
         api_log = APILog.objects.filter(api=api)
         apis_logs = []
         for api_log_ in api_log:
@@ -839,6 +852,8 @@ class ListCreateAttributeView(ListCreateAPIView):
 
     def post(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
+        if not account:
+            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
         data = request.data
         serializer = SerializerAttributes(
             data=data, 
@@ -852,7 +867,11 @@ class ListCreateAttributeView(ListCreateAPIView):
     
     def get(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
+        if not account:
+            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
         attributes = Attribute.objects.filter(account_id=account)
+        if not attributes:
+            return Response({'error':'No attributes found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = SerializerAttributes(attributes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -867,7 +886,7 @@ class RetAupDelAttributeView(RetrieveUpdateDestroyAPIView):
         return Attribute.objects.filter(account=account, id=attribute_id)
     
     def perform_update(self, serializer):
-        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
         serializer.save(account=account_id)
 
 class CreateListQuickReplyView(GenericAPIView):
@@ -881,7 +900,7 @@ class CreateListQuickReplyView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def get(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         quick_replies = QuickReply.objects.filter(account_id=account)
         serializer = QuickReplySerializer(quick_replies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -897,7 +916,7 @@ class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
         return QuickReply.objects.filter(account_id=account, quickreply_id=quick_reply_id)
     
     def perform_update(self, serializer):
-        account_id = Account.objects.get(account_id=self.kwargs['account_id'])
+        account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
 
 class ListCreateTriggerView(GenericAPIView):
@@ -911,7 +930,7 @@ class ListCreateTriggerView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def get(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         triggers = Trigger.objects.filter(account_id=account)
         serializer = TriggerSerializer(triggers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -927,7 +946,7 @@ class RetrieveUpdateDeleteTriggerView(RetrieveUpdateDestroyAPIView):
         return Trigger.objects.filter(id=trigger_id, account_id=account)
 
     def perform_update(self, serializer):
-        account = Account.objects.get(account_id=self.kwargs['account_id'])
+        account = get_object_or_404(Account, account_id=self.kwargs['account_id'])
         serializer.save(account=account)
 
 
@@ -961,8 +980,6 @@ class WebhookView(APIView):
     def post(self, request):
         try:
             data = request.data
-            g = open('o.txt', 'a')
-            g.write(f"{data}" + '\n')
             account_id = request.GET.get('account_id')
             handel_request_redis.delay(data, account_id)
             # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
@@ -976,8 +993,6 @@ class WebhookView(APIView):
     def get(self, request):
         try:
             data = request.data
-            g = open('o.txt', 'a')
-            g.write(f"{data}" + '\n')
             account_id = request.GET.get('account_id')
             hub_mode = request.GET.get('hub.mode')
             hub_verify_token = request.GET.get('hub.verify_token')
@@ -1012,7 +1027,7 @@ class ListAllTeamMembers(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
     def get(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         member = CustomUser.objects.filter(Q(role_user="agent") & Q(manager=account.user))
         serializer = MemberSerializer(member, many=True)
         members = serializer.data
@@ -1023,7 +1038,7 @@ class AddListFlows(GenericAPIView):
     
     permission_classes = [IsAuthenticated]
     def post(self, request, channel_id):
-        channel = Channle.objects.get(channle_id = channel_id)
+        channel = get_object_or_404(Channle, channle_id = channel_id)
         flow = request.data['flow']
         flow_name = request.data['flow_name']
         flow_ = Flow.objects.create(account=channel.account_id, flow=flow, flow_name=flow_name)
@@ -1033,7 +1048,7 @@ class AddListFlows(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
     
     def get(self, request, channel_id):
-        channel = Channle.objects.get(channle_id = channel_id)
+        channel = get_object_or_404(Channle, channle_id = channel_id)
         flows = channel.flows.all()
         serializer = SerializerFlows(flows, many=True, context={'request': request})
 
@@ -1047,9 +1062,11 @@ class SetDefaultFlow(GenericAPIView):
         data = request.data
         try:
             channel = Channle.objects.filter(channle_id = channel_id).first()
+            if not channel:
+                return Response({'error':'No Channle found'}, status=status.HTTP_404_NOT_FOUND)
             flows = channel.flows.all()
         except:
-            return Response({"message":"Channel matching query dose not exist"})
+            return Response({"error":"Channel matching query dose not exist"})
         for flow in flows:
             if str(flow.id) == data['flow_id']:
                 
@@ -1065,7 +1082,7 @@ class SetDefaultFlow(GenericAPIView):
 class UpdateFlowView(GenericAPIView):
     def put(self, request, pk):
         data = request.data
-        flow = Flow.objects.get(id=pk)
+        flow = get_object_or_404(Flow, id=pk)
         flow.flow_name = data['flow_name']
         flow.flow = data['flow']
         flow.save()
@@ -1082,17 +1099,13 @@ class RetrieveFlow(RetrieveDestroyAPIView):
         context["request"] = self.request
         return context
 
-    # def get_object(self):
-    #     obj = super().get_object()
-    #     file_path = os.path.join(settings.BASE_DIR, 'flow_6_HoU4JBh.json')
-    #     return obj
 
 class InitiateLiveChat(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, conversation_id):
         state = request.data['state']
-        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
         conversation.state = state
         conversation.save()
         return Response(status=status.HTTP_200_OK)
@@ -1103,7 +1116,7 @@ class ChangeConversationStatus(APIView):
 
     def put(self, request, conversation_id):
         status_ = request.data['status']
-        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
         conversation.status = status_
         conversation.save()
         return Response(status=status.HTTP_200_OK)
@@ -1113,13 +1126,12 @@ class AddTagToConversation(APIView):
 
     def post(self, request, conversation_id):
         tag_ids = request.data.get('tag_ids', [])
-        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
         for tag_id in tag_ids:
-            try:
-                tag = Tag.objects.filter(tag_id=tag_id).first()
-                conversation.tags.add(tag)
-            except:
-                return Response({'error':f'Tag with id {tag_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+            tag = Tag.objects.filter(tag_id=tag_id).first()
+            if not tag:
+                return Response({"error":f"tag with {tag_id} not found"}, status=status.HTTP_204_NO_CONTENT)
+            conversation.tags.add(tag)
         conversation.save()
         return Response(status=status.HTTP_200_OK)
 
@@ -1128,7 +1140,7 @@ class CreateTagView(GenericAPIView):
 
     def post(self, request, account_id):
         name = request.data['name']
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         tag = Tag.objects.create(
             name=name,
             account_id=account
@@ -1136,7 +1148,7 @@ class CreateTagView(GenericAPIView):
         return Response({'tag_id': tag.tag_id, 'name': tag.name}, status=status.HTTP_201_CREATED)
     
     def get(self, request, account_id):
-        account = Account.objects.get(account_id=account_id)
+        account = get_object_or_404(Account, account_id=account_id)
         tags = account.tag_set.all()
         data = []
         for tag in tags:
@@ -1148,7 +1160,7 @@ class ChangePasswordView(GenericAPIView):
 
     def put(self, request, user_id):
         data = request.data
-        user = CustomUser.objects.get(id=user_id)
+        user = get_object_or_404(CustomUser,id=user_id)
         serializer = ChangePasswordSerializer(data=data, context={'user': user, 'user_login': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -1165,6 +1177,8 @@ class ListCreateGroupView(ListCreateAPIView):
         context['account_id'] = self.kwargs['account_id']
         tag = self.request.query_params.get('tag')
         members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
+        if not members:
+            return Response({'error':'No members found'}, status=status.HTTP_404_NOT_FOUND)
         context["members"] = members
         return context
     
@@ -1179,6 +1193,8 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
         context['account_id'] = self.kwargs['account_id']
         tag = self.request.query_params.get('tag')
         members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
+        if not members:
+            return Response({'error':'No members found'}, status=status.HTTP_404_NOT_FOUND)
         context["members"] = members
         return context
     

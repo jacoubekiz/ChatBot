@@ -8,7 +8,6 @@ router = DefaultRouter()
 # router.register(r'clients', ClientsViewSet, basename='clients')
 
 urlpatterns = [
-    path('bot-api/', BotAPI.as_view(), name = 'bot_api'),
     path('create-calander/', CreateCalenderView.as_view(), name='create-calander'),
     path('get-calander/<str:user_id>/', GetCalenderView.as_view(), name='get-calander'),
     path('get-hours-free/', GetHoursFree.as_view(), name='get-hours-free'),

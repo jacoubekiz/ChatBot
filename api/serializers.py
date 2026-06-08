@@ -369,12 +369,58 @@ class ConvSerializer(serializers.ModelSerializer):
         repr['tags'] = [{"tag_id":tag.tag_id, "name":tag.name} for tag in instance.tags.all()]
         return repr
 
+class ContactSerializerView(serializers.ModelSerializer):
+    conversation_id = serializers.SerializerMethodField(read_only=True)
+    assigned_user = serializers.SerializerMethodField(read_only=True)
+    tags = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Contact
+        fields = ['contact_id', 'account_id', 'name', 'assigned_user', 'phone_number', 'email', 'conversation_id', 'tags']
+        extra_kwargs ={
+            'account_id':{
+                # 'read_only':True,
+                'required':False,
+                'allow_null':False
+            },
+            'conversation_id':{
+                'required':False,
+                'allow_null':False
+            }
+        }
+
+    def get_assigned_user(self, obj):
+        try:
+            conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
+            return conversation.user.username if conversation.user else None
+        except Conversation.DoesNotExist:
+            return None
+        
+    def get_conversation_id(self, obj):
+            conversation = Conversation.objects.filter(contact_id=obj.contact_id)
+            return [{
+                "conversation_id": conv.conversation_id, 
+                "channel_id": conv.channle_id.channle_id,
+                "channel_name": conv.channle_id.name
+                } 
+                for conv in conversation] if conversation else None
+
+    def to_representation(self, instance):
+        repre = super().to_representation(instance)
+        repre['account_id'] = instance.account_id.name
+        return repre
+    
+    def get_tags(self, obj):
+        """Get all unique tags from all conversations of this contact"""
+        tags = Tag.objects.filter(
+            conversation__contact_id=obj
+        ).distinct().values('tag_id', 'name')
+        return list(tags)
+    
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
     assigned_user = serializers.SerializerMethodField(read_only=True)
-    # conversation = ConvSerializer(many=True, read_only=True, source='conversation_set.all')
     tags = serializers.SerializerMethodField()
-    # channel = serializers.SerializerMethodField(read_only=True)
 
 
     class Meta:
@@ -392,11 +438,6 @@ class ContactSerializer(serializers.ModelSerializer):
             }
         }
 
-    # def get_channel(self, obj):
-    #     conversation = Conversation.objects.filter(contact_id = obj.contact_id).first()
-    #     if conversation:
-    #         channel = Channle.objects.filter(channle_id=conversation.channle_id.channle_id).first()
-    #         return channel.name if channel else None
         
     def get_assigned_user(self, obj):
         # channel_id = self.context.get('channel_id')
@@ -432,7 +473,6 @@ class ContactSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repre = super().to_representation(instance)
         repre['account_id'] = instance.account_id.name
-        # repre['contact_id'] = instance.contact_id.name
         return repre
     
     def get_tags(self, obj):
@@ -480,10 +520,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField(read_only=True)
     timer = serializers.SerializerMethodField(read_only=True)
     tags = serializers.SerializerMethodField(read_only=True)
+    channel_id = serializers.CharField(source='channle_id.channle_id', read_only=True)
 
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags']
+        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags', 'channel_id']
 
     def get_last_message(self, obj):
             last_message = obj.chatmessage_set.order_by('-created_at').first()

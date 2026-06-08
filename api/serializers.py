@@ -356,15 +356,30 @@ class ChannleSerializer(serializers.ModelSerializer):
             instance.save()
             return instance
 
+class ConvSerializer(serializers.ModelSerializer):
+    channel = serializers.CharField(source='channle_id.name', read_only=True)
+    assigned_user = serializers.CharField(source = 'user.username',read_only=True)
+    class Meta:
+        model = Conversation
+        fields = ['conversation_id', 'channle_id', 'tags', 'status', 'assigned_user', 'channel']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        # repr['channle_id'] = instance.channle_id.name if instance.channle_id else None
+        repr['tags'] = [{"tag_id":tag.tag_id, "name":tag.name} for tag in instance.tags.all()]
+        return repr
+
 class ContactSerializer(serializers.ModelSerializer):
     conversation_id = serializers.SerializerMethodField(read_only=True)
     assigned_user = serializers.SerializerMethodField(read_only=True)
+    # conversation = ConvSerializer(many=True, read_only=True, source='conversation_set.all')
     tags = serializers.SerializerMethodField()
+    # channel = serializers.SerializerMethodField(read_only=True)
 
 
     class Meta:
         model = Contact
-        fields = ['contact_id', 'assigned_user', 'account_id', 'name', 'phone_number', 'email', "conversation_id", 'tags']
+        fields = ['contact_id', 'account_id', 'name', 'assigned_user', 'phone_number', 'email', 'conversation_id', 'tags']
         extra_kwargs ={
             'account_id':{
                 # 'read_only':True,
@@ -377,10 +392,16 @@ class ContactSerializer(serializers.ModelSerializer):
             }
         }
 
+    # def get_channel(self, obj):
+    #     conversation = Conversation.objects.filter(contact_id = obj.contact_id).first()
+    #     if conversation:
+    #         channel = Channle.objects.filter(channle_id=conversation.channle_id.channle_id).first()
+    #         return channel.name if channel else None
+        
     def get_assigned_user(self, obj):
-        channel_id = self.context.get('channel_id')
+        # channel_id = self.context.get('channel_id')
         try:
-            conversation = Conversation.objects.get(contact_id=obj.contact_id, channle_id__channle_id=channel_id)
+            conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
             return conversation.user.username if conversation.user else None
         except Conversation.DoesNotExist:
             return None
@@ -402,8 +423,10 @@ class ContactSerializer(serializers.ModelSerializer):
         return instance
     
     def get_conversation_id(self, obj):
+        channel_id = Channle.objects.get(channle_id=self.context.get('channel_id'))
+        account_id = Account.objects.get(account_id=self.context.get('account_id'))
         contact = Contact.objects.get(contact_id=obj.contact_id)
-        conversation_id = Conversation.objects.filter(contact_id=contact.contact_id).first()
+        conversation_id = Conversation.objects.get_or_create(contact_id=contact, channle_id=channel_id, account_id=account_id)[0]
         return conversation_id.conversation_id if conversation_id else None
 
     def to_representation(self, instance):
@@ -473,10 +496,6 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_tags(self, obj):
         tags = obj.tags.all()
         return TagConversationSerializer(tags, many=True).data
-    # def to_representation(self, instance):
-    #     repre = super().to_representation(instance)
-    #     repre['tags'] = instance.tags.name
-    #     return repre
 
 
 class ConverstionSerializerCreate(serializers.ModelSerializer):

@@ -1124,10 +1124,16 @@ class CreateNewContact(GenericAPIView):
         data = request.data
         account_id = Account.objects.get(account_id=account_id)
         channel_id = Channle.objects.get(channle_id= channel_id)
-        contact = ContactSerializer(data=data, many=False, context = {'account_id': account_id, 'channel_id': channel_id})
-        contact.is_valid(raise_exception=True)
-        contact.save()
-        return Response(contact.data, status=status.HTTP_200_OK)
+        contact, created = Contact.objects.get_or_create(phone_number=data['phone_number'], account_id=account_id)
+        if created:
+            conversation = Conversation.objects.create(
+                contact_id=contact, 
+                channle_id=channel_id, 
+                account_id=account_id
+                )
+        serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
+        data = serializer.data
+        return Response(data, status=status.HTTP_200_OK)
     
 class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
     serializer_class = ContactSerializer
@@ -1244,12 +1250,12 @@ class ListContactView(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ContactFilter
-    lookup_field = 'channel_id'
+    # lookup_field = 'channel_id'
 
-    def get_serializer_context(self):
-        context =  super().get_serializer_context()
-        context['channel_id'] = self.kwargs['channel_id']
-        return context
+    # def get_serializer_context(self):
+    #     context =  super().get_serializer_context()
+    #     context['channel_id'] = self.kwargs['channel_id']
+    #     return context
 
 class ListConversationView(GenericAPIView):
     serializer_class = ConversationSerializer
@@ -1275,6 +1281,12 @@ class ListConversationView(GenericAPIView):
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
         return Response(conversation_serializer.data)
 
+class DeleteConversation(DestroyAPIView):
+    queryset = Conversation.objects.all()
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'conversation_id'
+    
 class ReasignConversation(GenericAPIView):
     def post(self, request, conversation_id):
         data = request.data

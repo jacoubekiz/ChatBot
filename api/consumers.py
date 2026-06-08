@@ -105,8 +105,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self) -> None:
         """Handle new WebSocket connection."""
-        self.channel_id = self.scope["url_route"]["kwargs"]["channel_id"]
-        self.room_group_name = f"chat_{self.channel_id}"
+        self.room_group_name = f"chat_"
         self.user = self.scope['user']
 
         # Parse query parameters
@@ -133,7 +132,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-        conversations = await self._get_conversations(self.channel_id)
+        conversations = await self._get_conversations()
 
         # Archive stale conversations
         for conversation in conversations:
@@ -259,7 +258,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def _handle_template_message(self, data: dict) -> None:
         """Handle WhatsApp template messages."""
         try:
-            channel = await self._get_channel(self.channel_id)
+            channel = await self._get_channel(data['channel_id'])
 
             response = requests.post(
                 f"{WhatsAppAPI.BASE_URL}/{channel.phone_number_id}/messages",
@@ -448,13 +447,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return flow
     
     async def _retype_content_list_or_button(self, content, channel, question, chat, r_type, choices, platform, message, data, choices_with_next, attribute_name, conversation_id, contact_name):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         if not chat.isSent:
             chat.isSent = True
             await database_sync_to_async(chat.save)()
 
             if r_type == 'list':
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                    message_content=message_con,
                     choices=choices,
                     type='interactive', 
                     interaction_type='list',
@@ -469,7 +469,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             else:
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                    message_content=message_con,
                     choices=choices,
                     type='interactive', 
                     interaction_type='button',
@@ -484,13 +484,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     conversation_id=await self._get_conversation(conversation_id),
                     user=None,
                     content_type="text",
-                    content=message,
+                    content=message_con,
                     whatsapp_message_id=message_wamid['messages'][0]['id'],
                 )
                 await self._broadcast_message_flow({
                     "conversation_id": conversation_id,
                     "phoneNumber":await self._get_phone_number(conversation_id),
-                    "content": message,
+                    "content": message_con,
                     "created_at": f"{message_id.created_at}",
                     "content_type": "text",
                     "wamid": message_wamid['messages'][0]['id'],
@@ -563,7 +563,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return True
                 
             else:
-                account = await self._get_account(self.channel_id)
+                account = await self._get_account(data['channel_id'])
                 attr = await self._create_attribute(attribute_name, account)
                 await self._save_custome_attribute(attr, chat, user_reply)
                 next_question_id = [c[2] for c in choices_with_next if user_reply == c[0]][0]
@@ -606,11 +606,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # handle name and phone and email type question
     async def _retype_name_phone_email_question(self, question, chat,channel, content,r_type, next_question_id, platform, message, data, attribute_name, conversation_id, contact_name):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         if not chat.isSent:
             chat.isSent = True
             await database_sync_to_async(chat.save)()
             message_wamid = await sync_to_async(send_message)(
-                message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                message_content= message_con,
                 to=chat.conversation_id,
                 bearer_token=channel.tocken,
                 wa_id=channel.phone_number_id,
@@ -621,13 +622,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 conversation_id=await self._get_conversation(conversation_id),
                 user=None,
                 content_type="text",
-                content=message,
+                content=message_con,
                 whatsapp_message_id=message_wamid['messages'][0]['id']
                 )
             await self._broadcast_message_flow({
                 "conversation_id": conversation_id,
                 "phoneNumber":await self._get_phone_number(conversation_id),
-                "content": message,
+                "content": message_con,
                 "created_at": f"{message_id.created_at}",
                 "content_type": "text",
                 "wamid": message_wamid['messages'][0]['id'],
@@ -692,15 +693,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
                 return True
             else:
-                account = await self._get_account(self.channel_id)
+                account = await self._get_account(data['channel_id'])
                 attr =  await self._create_attribute(attribute_name, account)
                 await self._save_custome_attribute(attr, chat, user_reply)
                 await self._update_chat_status(chat, next_question_id)
 
 
     async def _retype_document(self, channel, chat, question, message, platform, conversation_id, data, next_question_id):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         message_wamid = await sync_to_async(send_message)(
-            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            message_content=message_con,
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             type='document',
@@ -714,14 +716,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation_id= await self._get_conversation(conversation_id),
             user=None,
             media_type="document",
-            caption=message or "",
+            caption=message_con or "",
             whatsapp_message_id=message_wamid['messages'][0]['id'],
             file_path= question['source'],
         )
         await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
-            "content": message,
+            "content": message_con,
             "created_at": f"{message_id.created_at}",
             "content_type": "document",
             "wamid": message_wamid['messages'][0]['id'],
@@ -732,8 +734,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_image(self, message, chat, channel, question, platform, conversation_id, data, next_question_id):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         message_wamid = await sync_to_async(send_message)(
-            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            message_content=message_con,
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             wa_id=channel.phone_number_id,
@@ -748,13 +751,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation_id= await self._get_conversation(conversation_id),
             user=None,
             media_type="image",
-            caption=message or "",
+            caption=message_con or "",
             whatsapp_message_id=message_wamid['messages'][0]['id'],
             file_path= question['source'],
         )
         await self._broadcast_message_flow({
              "conversation_id": conversation_id,
-            "content": message,
+            "content": message_con,
             "phoneNumber":await self._get_phone_number(conversation_id),
             "created_at": f"{message_id.created_at}",
             "content_type": "image",
@@ -767,8 +770,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
 
     async def _retype_audio_vedio_steker(self, message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         message_wamid = await sync_to_async(send_message)(
-            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            message_content=message_con,
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             wa_id=channel.phone_number_id,
@@ -781,14 +785,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation_id= await self._get_conversation(conversation_id),
             user=None,
             media_type=r_type,
-            caption=message or "",
+            caption=message_con or "",
             whatsapp_message_id=message_wamid['messages'][0]['id'],
             file_path= question['source'],
         )
         await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
-            "content": message,
+            "content": message_con,
             "created_at": f"{message_id.created_at}",
             "content_type": "audio",
             "wamid": message_wamid['messages'][0]['id'],
@@ -799,8 +803,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self._update_chat_status(chat, next_question_id)
 
     async def _retype_live_chat(self, message, chat, channel, question, platform, conversation_id, data):
+        message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         message_wamid = await sync_to_async(send_message)(
-            message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+            message_content=message_con,
             to=chat.conversation_id,
             bearer_token=channel.tocken,
             wa_id=channel.phone_number_id,
@@ -812,14 +817,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation_id=await self._get_conversation(conversation_id),
             user= None,
             content_type="text",
-            content=message,
+            content=message_con,
             whatsapp_message_id=message_wamid['messages'][0]['id']
         )
         await self._update_state_conversation(conversation_id)
         await self._broadcast_message_flow({
             "conversation_id": conversation_id,
             "phoneNumber":await self._get_phone_number(conversation_id),
-            "content": message,
+            "content": message_con,
             "created_at": f"{message_id.created_at}",
             "content_type": "text",
             "wamid": message_wamid['messages'][0]['id'],
@@ -855,7 +860,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation_id = data.get("conversation_id")
         source_id = data.get("data", {}).get("source_id")
         platform = 'whatsapp'
-        channel = await self._get_channel(self.channel_id)
+        channel = await self._get_channel(data['channel_id'])
 
         flow = await self._get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
@@ -955,7 +960,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             except:
                                 user_reply = data['entry'][0]['changes'][0]['value']['messages'][0]['reply_to']['button_title']
                                 
-                        account = await self.get_account(self.channel_id)
+                        account = await self.get_account(data['channel_id'])
                         attr, created = Attribute.objects.get_or_create(key=attribute_name, chat_id=chat.id, account=account)
                         attr.value = user_reply
                         await database_sync_to_async(attr.save)()
@@ -1031,8 +1036,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 elif r_type == 'detect_language':
                     pass
                 else:
+                    message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
                     message_wamid = await sync_to_async(send_message)(
-                        message_content=await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                        message_content=message_con,
                         to=chat.conversation_id,
                         bearer_token=channel.tocken,
                         wa_id=channel.phone_number_id,
@@ -1044,14 +1050,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         conversation_id=await self._get_conversation(conversation_id),
                         user= None,
                         content_type="text",
-                        content=message,
+                        content=message_con,
                         whatsapp_message_id=message_wamid['messages'][0]['id']
                     )
                     await self._broadcast_message_flow(
                         {
                             "phoneNumber":await self._get_phone_number(conversation_id),
                             "conversation_id": conversation_id,
-                            "content":message,
+                            "content":message_con,
                             "content_type":"text",
                             "wamid": "wamid",
                             "created_at": f"{message_id.created_at}",
@@ -1160,17 +1166,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     @database_sync_to_async
-    def _get_conversations(self, channel_id: str):
+    def _get_conversations(self):
         """Get all conversations for a channel."""
         user = CustomUser.objects.get(id=self.user.id)
         permissions = list(user.get_all_permissions())
         if 'api.visibility all conversations' in permissions:
-            conversation = Conversation.objects.filter(channle_id=channel_id)
+            conversation = Conversation.objects.all()
             # conversation = channel.conversation_set.all().order_by('-updated_at')
             serializer = ConversationSerializer(conversation, many=True)
             return serializer.data
         else:
-            conversation = Conversation.objects.filter(channle_id=channel_id, user=self.user)
+            conversation = Conversation.objects.filter(user=self.user)
             # conversation = channel.conversation_set.all().order_by('-updated_at')
             serializer = ConversationSerializer(conversation, many=True)
             return serializer.data

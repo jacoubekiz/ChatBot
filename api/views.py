@@ -53,7 +53,7 @@ def write_inside_excel(data):
 class RegisterResponseClient(APIView):
     def post(self, request):
         data = request.data
-        thread = threading.Thread(target=write_inside_excel(data))
+        thread = threading.Thread(target=write_inside_excel, args=(data,))
         thread.start()
         return Response(status=status.HTTP_200_OK)
 
@@ -62,219 +62,219 @@ class RegisterResponseClient(APIView):
 #     queryset = Client.objects.all()
 
 
-class CreateCalenderView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        data = request.data
-        serializer = CalenderSerializer(data=data,  context={'request':request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data ,status=status.HTTP_201_CREATED)
-    
-class GetCalenderView(GenericAPIView):
-
-    def get(self, request, user_id):
-        calendar = Calendar.objects.filter(user__id=user_id).all()
-        serializer = CalenderSerializer(calendar, many=True)
-        book_an_appointment = BookAnAppointment.objects.filter(Q(user__id = user_id) & Q(day__day__gte=timezone.now().day))
-        serializer_book = BookAnAppointmentSerializer(book_an_appointment, many=True)
-        return Response({'calender':serializer.data, 'busy_tiem':serializer_book.data}, status=status.HTTP_200_OK)
-    
-class CreateWorkingTimeView(ListCreateAPIView):
-    queryset = WorkingTime.objects.all()
-    serializer_class = WorkingTimeSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
-
-# class CreateListWorkingHoursPMView(ListCreateAPIView):
-#     queryset = WorkingHoursPM.objects.all()
-#     serializer_class = WorkingHoursPMSerializer
+# class CreateCalenderView(GenericAPIView):
 #     permission_classes = [IsAuthenticated]
 
+#     def post(self, request):
+#         data = request.data
+#         serializer = CalenderSerializer(data=data,  context={'request':request})
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data ,status=status.HTTP_201_CREATED)
+    
+# class GetCalenderView(GenericAPIView):
 
-class CreateBookAnAppointmentView(ListCreateAPIView):
-    queryset = BookAnAppointment.objects.all()
-    serializer_class = BookAnAppointmentSerializer
+#     def get(self, request, user_id):
+#         calendar = Calendar.objects.filter(user__id=user_id).all()
+#         serializer = CalenderSerializer(calendar, many=True)
+#         book_an_appointment = BookAnAppointment.objects.filter(Q(user__id = user_id) & Q(day__day__gte=timezone.now().day))
+#         serializer_book = BookAnAppointmentSerializer(book_an_appointment, many=True)
+#         return Response({'calender':serializer.data, 'busy_tiem':serializer_book.data}, status=status.HTTP_200_OK)
+    
+# class CreateWorkingTimeView(ListCreateAPIView):
+#     queryset = WorkingTime.objects.all()
+#     serializer_class = WorkingTimeSerializer
+#     permission_classes = [IsAuthenticated]
 
-class GetCalendarForUserView(GenericAPIView):
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context['request'] = self.request
+#         return context
 
-    def get(self, request, calender_key):
+# # class CreateListWorkingHoursPMView(ListCreateAPIView):
+# #     queryset = WorkingHoursPM.objects.all()
+# #     serializer_class = WorkingHoursPMSerializer
+# #     permission_classes = [IsAuthenticated]
+
+
+# class CreateBookAnAppointmentView(ListCreateAPIView):
+#     queryset = BookAnAppointment.objects.all()
+#     serializer_class = BookAnAppointmentSerializer
+
+# class GetCalendarForUserView(GenericAPIView):
+
+#     def get(self, request, calender_key):
         
-        calendar = Calendar.objects.filter(key=calender_key).all()
-        calendar_serializer = CalenderSerializer(calendar, many=True)
-        working_days = []
-        calendars = []
-        for calendar_user in calendar_serializer.data:
-            list_working_days = calendar_user['working_time']
-            duration = Duration.objects.get(id=calendar_user['duration'])
-            calendars.append({'calendar_id':calendar_user['id'],"api-key":calendar_user['key'], 'duration':duration_string(duration.duration)})
+#         calendar = Calendar.objects.filter(key=calender_key).all()
+#         calendar_serializer = CalenderSerializer(calendar, many=True)
+#         working_days = []
+#         calendars = []
+#         for calendar_user in calendar_serializer.data:
+#             list_working_days = calendar_user['working_time']
+#             duration = Duration.objects.get(id=calendar_user['duration'])
+#             calendars.append({'calendar_id':calendar_user['id'],"api-key":calendar_user['key'], 'duration':duration_string(duration.duration)})
 
-        for work_day in list_working_days:
-            working_days.append(work_day['day'])
+#         for work_day in list_working_days:
+#             working_days.append(work_day['day'])
 
-        data = {
-            'working_days':working_days,
-            'calendar':calendars
-            }
-        return Response(data , status=status.HTTP_200_OK)
+#         data = {
+#             'working_days':working_days,
+#             'calendar':calendars
+#             }
+#         return Response(data , status=status.HTTP_200_OK)
     
 
-class GetHoursFree(GenericAPIView):
+# class GetHoursFree(GenericAPIView):
 
-    def get(self, request):
-        days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-        # info = request.data
-        free_hours = []
-        day_number = days.index(get_day_name(request.GET.get('date')))
-        if day_number == 0:
-            day_number +=1
-        calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
-        working_time = calendar.working_time.get(day=day_number)
-        start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
-        start_work_pm = convert_time_to_timedelta(working_time.starting_time_pm)
-        end_work_am = convert_time_to_timedelta(working_time.end_time_am)
-        end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
-        duration = calendar.duration.duration
-        time_slots = []
-
-        user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=request.GET.get('date'))).order_by('day', 'hour')
-        if not user_book_an_appointment:
-            free_hours.append((convert_timedelta_to_time(start_work_am), convert_timedelta_to_time(end_work_am)))
-            free_hours.append((convert_timedelta_to_time(start_work_pm), convert_timedelta_to_time(end_work_pm)))
-            for i in free_hours:
-                time_slots.extend(split_time(i[0], i[1], duration))
-            return Response({'free_hours':time_slots})
-
-        starting_appointment = []
-        end_appointment = []
-        
-        for x in user_book_an_appointment:
-            starting_appointment.append((convert_time_to_timedelta(x.hour)))
-            end_appointment.append(convert_time_to_timedelta(x.hour) + x.duration)
-
-        starting_appointment.insert(0 , start_work_am)
-        starting_appointment.append(end_work_pm)
-        end_appointment.insert(0, start_work_am)
-        end_appointment.append(end_work_pm)
-        # deferance = []
-        for item in range(len(starting_appointment)):
-            try:
-                next_appointment = starting_appointment[item + 1]
-            except:
-                next_appointment = starting_appointment[item]
-            if next_appointment-end_appointment[item] >= duration:
-                free_hours.append((convert_timedelta_to_time(end_appointment[item]), convert_timedelta_to_time(next_appointment)))
-
-        for free in free_hours:
-            if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
-                free_hours.insert(free_hours.index(free), (free[0], convert_timedelta_to_time(end_work_am)))
-                
-                if convert_time_to_timedelta(free[1]) - start_work_pm >= duration:
-                    free_hours.insert(free_hours.index(free)+1, (convert_timedelta_to_time(start_work_pm), free[1]))
-                free_hours.remove(free)
-
-        for i in free_hours:
-            time_slots.extend(split_time(i[0], i[1], duration))
-
-        return Response({'free_hours':time_slots},status=status.HTTP_200_OK)
-
-class GetFirstTenDays(APIView):
-
-    def get(self, request):
-        days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-        
-        # info = request.data
-        calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
-        free_hours = []
-        free_days = set()
-        next_days = []
-        if request.GET.get('date') == '':
-            day = calendar.start_appointment
-        else:
-            day = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
-        # while len(free_days) <= 10
-        
-        for d in range(15):
-            if day + timedelta(days=d) <= calendar.end_appointment :
-                next_days.append(day + timedelta(days=d))
-        for next_day in next_days:
-            if len(free_days) == 9:
-                break
-            day_number = days.index(get_day_name(next_day))
-            if day_number == 0:
-                day_number +=1
-            if day_number == 6 or day_number == 5:
-                continue
-            
-            working_time = calendar.working_time.get(day=day_number)
-            start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
-            end_work_am = convert_time_to_timedelta(working_time.end_time_am)
-            end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
-            duration = calendar.duration.duration
-            user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=next_day)).order_by('day', 'hour')
-            if not user_book_an_appointment:
-                free_days.add( next_day)
-                continue
-            starting_appointment = []
-            end_appointment = []
-            
-            for x in user_book_an_appointment:
-                starting_appointment.append((convert_time_to_timedelta(x.hour)))
-                end_appointment.append(convert_time_to_timedelta(x.hour) + x.duration)
-
-            starting_appointment.insert(0 , start_work_am)
-            starting_appointment.append(end_work_pm)
-            end_appointment.insert(0, start_work_am)
-            end_appointment.append(end_work_pm)
-            for item in range(len(starting_appointment)):
-                try:
-                    next_appointment = starting_appointment[item + 1]
-                except:
-                    next_appointment = starting_appointment[item]
-                if next_appointment-end_appointment[item] >= duration:
-                    print(next_day)
-                    free_days.add(next_day)
-                    continue
-
-            for free in free_hours:
-                if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
-                    free_days.add(next_day)
-                    continue
-   
-        return Response({'free_days':sorted(list(free_days))},status=status.HTTP_200_OK)
-
-
-# class GetDoctorsView(APIView):
 #     def get(self, request):
-#         user = CustomUser.objects.all()
-#         serializer_user = SerializerSignUp(user, many=True)
-#         data = serializer_user.data
+#         days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+#         # info = request.data
+#         free_hours = []
+#         day_number = days.index(get_day_name(request.GET.get('date')))
+#         if day_number == 0:
+#             day_number +=1
+#         calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
+#         working_time = calendar.working_time.get(day=day_number)
+#         start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
+#         start_work_pm = convert_time_to_timedelta(working_time.starting_time_pm)
+#         end_work_am = convert_time_to_timedelta(working_time.end_time_am)
+#         end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
+#         duration = calendar.duration.duration
+#         time_slots = []
 
-#         return Response({'username':data['username']}, status=status.HTTP_200_OK)
+#         user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=request.GET.get('date'))).order_by('day', 'hour')
+#         if not user_book_an_appointment:
+#             free_hours.append((convert_timedelta_to_time(start_work_am), convert_timedelta_to_time(end_work_am)))
+#             free_hours.append((convert_timedelta_to_time(start_work_pm), convert_timedelta_to_time(end_work_pm)))
+#             for i in free_hours:
+#                 time_slots.extend(split_time(i[0], i[1], duration))
+#             return Response({'free_hours':time_slots})
+
+#         starting_appointment = []
+#         end_appointment = []
+        
+#         for x in user_book_an_appointment:
+#             starting_appointment.append((convert_time_to_timedelta(x.hour)))
+#             end_appointment.append(convert_time_to_timedelta(x.hour) + x.duration)
+
+#         starting_appointment.insert(0 , start_work_am)
+#         starting_appointment.append(end_work_pm)
+#         end_appointment.insert(0, start_work_am)
+#         end_appointment.append(end_work_pm)
+#         # deferance = []
+#         for item in range(len(starting_appointment)):
+#             try:
+#                 next_appointment = starting_appointment[item + 1]
+#             except:
+#                 next_appointment = starting_appointment[item]
+#             if next_appointment-end_appointment[item] >= duration:
+#                 free_hours.append((convert_timedelta_to_time(end_appointment[item]), convert_timedelta_to_time(next_appointment)))
+
+#         for free in free_hours:
+#             if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
+#                 free_hours.insert(free_hours.index(free), (free[0], convert_timedelta_to_time(end_work_am)))
+                
+#                 if convert_time_to_timedelta(free[1]) - start_work_pm >= duration:
+#                     free_hours.insert(free_hours.index(free)+1, (convert_timedelta_to_time(start_work_pm), free[1]))
+#                 free_hours.remove(free)
+
+#         for i in free_hours:
+#             time_slots.extend(split_time(i[0], i[1], duration))
+
+#         return Response({'free_hours':time_slots},status=status.HTTP_200_OK)
+
+# class GetFirstTenDays(APIView):
+
+#     def get(self, request):
+#         days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+        
+#         # info = request.data
+#         calendar = Calendar.objects.filter(key=request.GET.get('key')).first()
+#         free_hours = []
+#         free_days = set()
+#         next_days = []
+#         if request.GET.get('date') == '':
+#             day = calendar.start_appointment
+#         else:
+#             day = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
+#         # while len(free_days) <= 10
+        
+#         for d in range(15):
+#             if day + timedelta(days=d) <= calendar.end_appointment :
+#                 next_days.append(day + timedelta(days=d))
+#         for next_day in next_days:
+#             if len(free_days) == 9:
+#                 break
+#             day_number = days.index(get_day_name(next_day))
+#             if day_number == 0:
+#                 day_number +=1
+#             if day_number == 6 or day_number == 5:
+#                 continue
+            
+#             working_time = calendar.working_time.get(day=day_number)
+#             start_work_am = convert_time_to_timedelta(working_time.starting_time_am)
+#             end_work_am = convert_time_to_timedelta(working_time.end_time_am)
+#             end_work_pm = convert_time_to_timedelta(working_time.end_time_pm)
+#             duration = calendar.duration.duration
+#             user_book_an_appointment = calendar.user.bookanappointment_set.filter(Q(day=next_day)).order_by('day', 'hour')
+#             if not user_book_an_appointment:
+#                 free_days.add( next_day)
+#                 continue
+#             starting_appointment = []
+#             end_appointment = []
+            
+#             for x in user_book_an_appointment:
+#                 starting_appointment.append((convert_time_to_timedelta(x.hour)))
+#                 end_appointment.append(convert_time_to_timedelta(x.hour) + x.duration)
+
+#             starting_appointment.insert(0 , start_work_am)
+#             starting_appointment.append(end_work_pm)
+#             end_appointment.insert(0, start_work_am)
+#             end_appointment.append(end_work_pm)
+#             for item in range(len(starting_appointment)):
+#                 try:
+#                     next_appointment = starting_appointment[item + 1]
+#                 except:
+#                     next_appointment = starting_appointment[item]
+#                 if next_appointment-end_appointment[item] >= duration:
+#                     print(next_day)
+#                     free_days.add(next_day)
+#                     continue
+
+#             for free in free_hours:
+#                 if convert_time_to_timedelta(free[0]) <= end_work_am and convert_time_to_timedelta(free[1]) >= end_work_am:
+#                     free_days.add(next_day)
+#                     continue
+   
+#         return Response({'free_days':sorted(list(free_days))},status=status.HTTP_200_OK)
+
+
+# # class GetDoctorsView(APIView):
+# #     def get(self, request):
+# #         user = CustomUser.objects.all()
+# #         serializer_user = SerializerSignUp(user, many=True)
+# #         data = serializer_user.data
+
+# #         return Response({'username':data['username']}, status=status.HTTP_200_OK)
     
-class GetDoctorsCalanderView(APIView):
-    def get(self, request, doctor_id):
-        user = CustomUser.objects.get(id=doctor_id)
-        calander = user.calendar_set.all()
-        durations = []
-        for cal in calander:
-            durations.append(convert_timedelta_to_time(cal.duration.duration))
+# class GetDoctorsCalanderView(APIView):
+#     def get(self, request, doctor_id):
+#         user = CustomUser.objects.get(id=doctor_id)
+#         calander = user.calendar_set.all()
+#         durations = []
+#         for cal in calander:
+#             durations.append(convert_timedelta_to_time(cal.duration.duration))
 
-        return Response({'duration':durations}, status=status.HTTP_200_OK)
+#         return Response({'duration':durations}, status=status.HTTP_200_OK)
     
 
 
 
-class SendEmailView(APIView):
-    def post(self, request):
-        data= {'to_email':request.data['email'], 'email_subject':'','message': request.data['message']}
-        Utlil.send_email(data)
-        return Response(status=status.HTTP_200_OK)
+# class SendEmailView(APIView):
+#     def post(self, request):
+#         data= {'to_email':request.data['email'], 'email_subject':'','message': request.data['message']}
+#         Utlil.send_email(data)
+#         return Response(status=status.HTTP_200_OK)
 # --------------------------------------------------------------------------------------------------------------
 class ListCreateTeamView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -955,18 +955,18 @@ class ListMessgesForSpecificConversation(APIView):
         messages_serializer = ChatMessageSerializer(result_page, many=True)
         return paginator.get_paginated_response(messages_serializer.data)
 
-@method_decorator(csrf_exempt, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(APIView):
 
     def post(self, request):
-        print(request.data)
         try:
             data = request.data
             g = open('o.txt', 'a')
             g.write(f"{data}" + '\n')
             account_id = request.GET.get('account_id')
-            thread = threading.Thread(target=handel_request_redis(data, account_id))
-            thread.start()
+            handel_request_redis.delay(data, account_id)
+            # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
+            # thread.start()
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             f = open('redis_error.txt', 'a')
@@ -982,8 +982,9 @@ class WebhookView(APIView):
             hub_mode = request.GET.get('hub.mode')
             hub_verify_token = request.GET.get('hub.verify_token')
             hub_challenge = request.GET.get('hub.challenge')
-            thread = threading.Thread(target=handel_request_redis(data, account_id))
-            thread.start()
+            handel_request_redis.delay(data, account_id)
+            # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
+            # thread.start()
             if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
                 return HttpResponse(hub_challenge, content_type="text/html")
             

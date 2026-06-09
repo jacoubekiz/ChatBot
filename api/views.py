@@ -984,11 +984,7 @@ class WebhookView(APIView):
     def post(self, request):
         try:
             payload = json.dumps(request.data)
-            # account_id = request.GET.get('account_id')
-            print("Payload received:", payload)
             handel_request_redis.delay(payload)
-            # thread = threading.Thread(target=handel_request_redis, args=(payload, account_id))
-            # thread.start()
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             f = open('redis_error.txt', 'a')
@@ -998,16 +994,8 @@ class WebhookView(APIView):
     def get(self, request):
         try:
             data = request.data
-            # account_id = request.GET.get('account_id')
-            hub_mode = request.GET.get('hub.mode', '')
-            hub_verify_token = request.GET.get('hub.verify_token', '')
-            hub_challenge = request.GET.get('hub.challenge', '')
             handel_request_redis.delay(data)
-            # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
-            # thread.start()
-            if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
-                return HttpResponse(hub_challenge, content_type="text/html")
-            
+            return HttpResponse(data, content_type="text/html")
         except Exception as e:
             f = open('redis_error.txt', 'a')
             f.write(f"Error processign webhok: {str(e)}" + '\n')

@@ -470,9 +470,13 @@ class CreateNewContact(GenericAPIView):
                 channle_id=channel_id, 
                 account_id=account_id
                 )
-        serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
-        data = serializer.data
-        return Response(data, status=status.HTTP_200_OK)
+            serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
+            data = serializer.data
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
+            data = serializer.data
+            return Response(data, status=status.HTTP_302_FOUND)
     
 class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
     serializer_class = ContactSerializer
@@ -979,10 +983,10 @@ class WebhookView(APIView):
 
     def post(self, request):
         try:
-            print("Webhook received with data:", datetime.now())
             payload = json.dumps(request.data)
-            account_id = request.GET.get('account_id')
-            handel_request_redis.delay(payload, str(account_id))
+            # account_id = request.GET.get('account_id')
+            print("Payload received:", payload)
+            handel_request_redis.delay(payload)
             # thread = threading.Thread(target=handel_request_redis, args=(payload, account_id))
             # thread.start()
             return Response(status=status.HTTP_200_OK)
@@ -994,11 +998,11 @@ class WebhookView(APIView):
     def get(self, request):
         try:
             data = request.data
-            account_id = request.GET.get('account_id')
-            hub_mode = request.GET.get('hub.mode')
-            hub_verify_token = request.GET.get('hub.verify_token')
-            hub_challenge = request.GET.get('hub.challenge')
-            handel_request_redis.delay(data, account_id)
+            # account_id = request.GET.get('account_id')
+            hub_mode = request.GET.get('hub.mode', '')
+            hub_verify_token = request.GET.get('hub.verify_token', '')
+            hub_challenge = request.GET.get('hub.challenge', '')
+            handel_request_redis.delay(data)
             # thread = threading.Thread(target=handel_request_redis, args=(data, account_id))
             # thread.start()
             if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:

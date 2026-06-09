@@ -521,10 +521,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     timer = serializers.SerializerMethodField(read_only=True)
     tags = serializers.SerializerMethodField(read_only=True)
     channel_id = serializers.CharField(source='channle_id.channle_id', read_only=True)
+    channel_name = serializers.CharField(source='channle_id.name', read_only=True)
 
     class Meta:
         model = Conversation
-        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags', 'channel_id']
+        fields = ['conversation_id', 'contact_id', 'status', 'state', 'last_message', 'user', 'timer', 'tags', 'channel_id', 'channel_name']
 
     def get_last_message(self, obj):
             last_message = obj.chatmessage_set.order_by('-created_at').first()

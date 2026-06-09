@@ -550,17 +550,14 @@ a_a = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"displ
 d_d = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggNjAyNzIyNDYyNjUzMDVFMzU4NEExNDMzMkRFRjhGQ0IA", "timestamp": "1739961961", "type": "document", "document": {"filename": "1709124383910_ICS Company Profile AR.pdf", "mime_type": "application/pdf", "sha256": "IHPpJcYjvjTepZTrKvXAacDUge/p0JKvQHOX7t4V1ag=", "id": "1134184264697475"}}]}, "field": "messages"}, "medias": [{"url": "https://static-assets-v2.s3.us-east-2.amazonaws.com/uploads/1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf", "caption": "", "type": "document", "file_name": "1739961964386_1709124383910_ICS%20Company%20Profile%20AR.pdf"}]}'
 c_c = '{"event": {"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "966920025589", "phone_number_id": "157289147477280"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"context": {"from": "966920025589", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAERgSNEU2RTg2MDdFQzkzRjM1OURGAA=="}, "from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggQUJBNjg1MjA1M0Q3QjFDM0MyQUU4MDc2MzFEOUZEMzYA", "timestamp": "1740040871", "type": "button", "button": {"payload": "موقع المناسبة", "text": "موقع المناسبة"}}]}, "field": "messages"}}'
 
-new_response = '{"object": "whatsapp_business_account", "entry": [{"id": "395690116951596", "changes": [{"value": {"messaging_product": "whatsapp", "metadata": {"display_phone_number": "15556231998", "phone_number_id": "327799347091553"}, "contacts": [{"profile": {"name": "Jacoub"}, "wa_id": "966114886645"}], "messages": [{"from": "966114886645", "id": "wamid.HBgMOTY2MTE0ODg2NjQ1FQIAEhggOTk3MjIzNkJDMjUzRDRGRDMzOTNCOTg3RkY3MzVCQjYA", "timestamp": "1740823930", "text": {"body": "ببل"}, "type": "text"}]}, "field": "messages"}]}]}'
 
 @shared_task
-def handel_request_redis(data, account_id):
+def handel_request_redis(data):
     # if hub_mode == 'subscribe' and hub_verify_token == TOKEN_ACCOUNTS:
 
     try:
         # redis_client = get_redis_connection()
-        # redis_client.lpush('data_queue', json.dumps(data))
-        print("task recived with data:", datetime.now())
-        f = open(f'content_redis-{account_id}.txt', 'a')
+        f = open(f'content_redis.txt', 'a')
         f.write("recive redis: " + str(data) + '\n')
         # raw_data = redis_client.rpop('data_queue')
         test_data = json.loads(data)
@@ -592,7 +589,7 @@ def handel_request_redis(data, account_id):
                 contacts = value.get('contacts', '')
                 if contacts: 
                     channel = Channle.objects.filter(phone_number=display_phone_number).first()
-                    account = Account.objects.get(account_id=channel.account_id.account_id)
+                    account = channel.account_id
                     contact_name = value.get('contacts', '')[0].get('profile', '').get('name', '')
                     contact, created = Contact.objects.get_or_create(phone_number = contact_phonenumber, account_id=account)
                     contact.name = contact_name
@@ -782,7 +779,7 @@ def handel_request_redis(data, account_id):
     
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{channel_id}/?token=&from_bot=False"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

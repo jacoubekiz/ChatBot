@@ -330,7 +330,7 @@ class ListTeamMember(GenericAPIView):
         try:
             team = Team.objects.get(team_id=team_id)
         except:
-            return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'Team not found'}, status=status.HTTP_200_OK)
         members = team.members.all()
         serializer = self.serializer_class(members, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -357,13 +357,13 @@ class AddUserForTeam(GenericAPIView):
     def post(self, request, team_id):
         team = Team.objects.filter(team_id=team_id).first()
         if not team:
-            return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'Team not found'}, status=status.HTTP_200_OK)
         users = request.data['users']
         keword = request.GET.get('keword')
         for user in users:
             t_user = CustomUser.objects.filter(id=user).first()
             if not t_user:
-                return Response({'error':'User not found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error':'User not found'}, status=status.HTTP_200_OK)
             if keword == 'add':
                 team.members.add(t_user)
             elif keword == 'delete':
@@ -418,7 +418,7 @@ class CreateListAccount(GenericAPIView):
     def get(self, request):
         accounts = Account.objects.filter(user__role_user='admin')
         if not accounts:
-            return Response({'error':'Dont have permission for this action'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'Dont have permission for this action'}, status=status.HTTP_200_OK)
         serializer = AccontSerializer(accounts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -599,13 +599,13 @@ class ListConversationView(GenericAPIView):
         if 'api.visibility all conversations' in permissions:
             conversation = Conversation.objects.filter(channle_id=channel_id)
             if not conversation:
-                return Response({'error':'No conversations found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error':'No conversations found'}, status=status.HTTP_200_OK)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
         else:
             conversation = Conversation.objects.filter(channle_id=channel_id, user=user)
             if not conversation:
-                return Response({'error':'No conversations found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error':'No conversations found'}, status=status.HTTP_200_OK)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
     
@@ -613,10 +613,10 @@ class ListConversationView(GenericAPIView):
         data = request.data
         channel = Channle.objects.filter(channle_id = channel_id).first()
         if not channel:
-            return Response({'error':'No channel found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No channel found'}, status=status.HTTP_200_OK)
         contact = Contact.objects.filter(contact_id = channel_id).first()
         if not contact:
-            return Response({'error':'No contact found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No contact found'}, status=status.HTTP_200_OK)
         conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
         return Response(conversation_serializer.data)
@@ -680,7 +680,7 @@ class CreateListCampaignsView(GenericAPIView):
         channel = get_object_or_404(Channle, channle_id=channel_id)
         campaigns = WhatsAppCampaign.objects.filter(account_id=channel.account_id)
         if not campaigns:
-            return Response({'error':'No campaigns found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No campaigns found'}, status=status.HTTP_200_OK)
         serializer_campaigns = self.get_serializer(campaigns, many=True)
         data = serializer_campaigns.data
 
@@ -728,7 +728,7 @@ class ListCreateApiView(APIView):
     def post(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
         if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
         data = request.data
         parameters = data.get('parameters', [])
         custome_attrs = data.get('custome_attrs', [])
@@ -747,10 +747,10 @@ class ListCreateApiView(APIView):
     def get(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
         if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
         api_objects = API.objects.filter(account_id=account)
         if not api_objects:
-            return Response({'error':'No APIs found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No APIs found'}, status=status.HTTP_200_OK)
         result = []
         for api_object in api_objects:
             api_parameters = Api_parameter.objects.filter(api=api_object)
@@ -772,7 +772,7 @@ class GetApiView(GenericAPIView):
     def get(self, request, api_id):
         api_object = API.objects.filter(api_id=api_id).first()
         if not api_object:
-            return Response({'error':'No API found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No API found'}, status=status.HTTP_200_OK)
         api_parameters = Api_parameter.objects.filter(api=api_object)
         serializer_api_param = APIParametersSerializer(api_parameters, many=True)
         serializer = APISerializer(api_object)
@@ -820,7 +820,7 @@ class APILogVeiw(GenericAPIView):
     def get(self, request, api_id):
         api = API.objects.filter(api_id=api_id).first()
         if not api:
-            return Response({'error':'No API found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No API found'}, status=status.HTTP_200_OK)
         api_log = APILog.objects.filter(api=api)
         apis_logs = []
         for api_log_ in api_log:
@@ -859,7 +859,7 @@ class ListCreateAttributeView(ListCreateAPIView):
     def post(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
         if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
         data = request.data
         serializer = SerializerAttributes(
             data=data, 
@@ -874,10 +874,10 @@ class ListCreateAttributeView(ListCreateAPIView):
     def get(self, request, account_id):
         account = Account.objects.filter(account_id=account_id).first()
         if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
         attributes = Attribute.objects.filter(account_id=account)
         if not attributes:
-            return Response({'error':'No attributes found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No attributes found'}, status=status.HTTP_200_OK)
         serializer = SerializerAttributes(attributes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -1058,7 +1058,7 @@ class SetDefaultFlow(GenericAPIView):
         try:
             channel = Channle.objects.filter(channle_id = channel_id).first()
             if not channel:
-                return Response({'error':'No Channle found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error':'No Channle found'}, status=status.HTTP_200_OK)
             flows = channel.flows.all()
         except:
             return Response({"error":"Channel matching query dose not exist"})
@@ -1173,7 +1173,7 @@ class ListCreateGroupView(ListCreateAPIView):
         tag = self.request.query_params.get('tag')
         members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
         if not members:
-            return Response({'error':'No members found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No members found'}, status=status.HTTP_200_OK)
         context["members"] = members
         return context
     
@@ -1189,7 +1189,7 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
         tag = self.request.query_params.get('tag')
         members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
         if not members:
-            return Response({'error':'No members found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'No members found'}, status=status.HTTP_200_OK)
         context["members"] = members
         return context
     

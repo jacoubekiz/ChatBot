@@ -113,7 +113,7 @@ class CompaignAdmin(admin.ModelAdmin):
     list_display = ['campaign_id', 'name', 'account', 'status', 'template_name', 'total_recipients', 'failed_count', 'sent_count']  
 
     def account(self, obj):
-        return obj.account.name
+        return obj.account_id.name
 admin.site.register(WhatsAppCampaign, CompaignAdmin)
 admin.site.register(Custome_attribute, Custome_attributeAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)

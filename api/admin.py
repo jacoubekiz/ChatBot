@@ -108,7 +108,13 @@ class Custome_attributeAdmin(admin.ModelAdmin):
         conversation = Conversation.objects.filter(contact_id__phone_number=obj.chat.conversation_id).first()
         contact_name = conversation.contact_id.name or conversation.contact_id.phone_number if conversation else None
         return contact_name 
-    
+
+class CompaignAdmin(admin.ModelAdmin):
+    list_display = ['campaign_id', 'name', 'account', 'status', 'template_name', 'total_recipients', 'failed_count', 'sent_count']  
+
+    def account(self, obj):
+        return obj.account.name
+admin.site.register(WhatsAppCampaign, CompaignAdmin)
 admin.site.register(Custome_attribute, Custome_attributeAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
 # admin.site.register(Client, ClientAdmin)
@@ -126,12 +132,7 @@ admin.site.register(Trigger)
 admin.site.register(Flow, FlowAdmin)
 admin.site.site_title = "ICSL Bot Creator"
 admin.site.site_header = "ICSL Bot Creator"
-
-
-
-
 admin.site.register(UploadImage, UploadImageAdmin)
-
 admin.site.register(Contact)
 admin.site.register(Conversation)
 admin.site.register(Team)

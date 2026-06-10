@@ -701,18 +701,20 @@ class CreateListCampaignsView(GenericAPIView):
                     created_by=user,
                 )
         df = pd.read_csv(file)
-        send_whatsapp_campaign.delay(
-            channel=channel.channle_id, 
-            df=df.to_json(orient='records'), 
-            account=channel.account_id.account_id,
-            content_template = content_template,
-            user_id = user.id,
-            language_code=data.get('language_code'),
-            template_name = data.get('template_name'),
-            template_parameters = data.get('template_parameters'),
-            whatsappcampaign = whatsappcampaign.campaign_id
-        )
-        return Response(status=status.HTTP_201_CREATED)
+        data_e = {
+            'channel':channel.channle_id, 
+            'df':df.to_json(orient='records'), 
+            'account':channel.account_id.account_id,
+            'content_template': content_template,
+            'user_id': user.id,
+            'language_code': data.get('language_code'),
+            'template_name': data.get('template_name'),
+            'template_parameters': data.get('template_parameters'),
+            'whatsappcampaign': whatsappcampaign.campaign_id
+        }
+        payload = json.dumps(data_e)
+        send_whatsapp_campaign.delay(payload)
+        return Response({'campaign_id': whatsappcampaign.campaign_id}, status=status.HTTP_201_CREATED)
 
 class UserProfileView(RetrieveAPIView):
     queryset = CustomUser.objects.all()

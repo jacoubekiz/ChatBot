@@ -80,6 +80,15 @@ def send_whatsapp_campaign(
                     status_message='failed',
                     error_message = error_message_
                 )
+        faild_count = AnalyticsCampaign.objects.filter(campaign_id=whatsappcampaign_, status_message='failed').count()
+        total_count = AnalyticsCampaign.objects.filter(campaign_id=whatsappcampaign_).count()
+        sent_cout = AnalyticsCampaign.objects.filter(campaign_id=whatsappcampaign_, status_message='sent').count()
+        whatsappcampaign_.total_count = total_count
+        whatsappcampaign_.sent_count = sent_cout
+        whatsappcampaign_.failed_count = faild_count
+        whatsappcampaign_.status = "completed"
+        whatsappcampaign_.save()
+
     except:
         return Response({'error':'Invalid file format. Please upload a CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
     

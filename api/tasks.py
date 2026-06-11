@@ -21,6 +21,11 @@ def send_whatsapp_campaign(payload):
                     account_id=account_id,
                     phone_number=f"{row.get('Phone Dial Code')}{row.get('Phone Number')}"
                 )
+            conversation = Conversation.objects.get_or_create(
+                account_id=account_id,
+                contact_id=contact[0],
+                channle_id=channel_id
+            )
             template_info = {
                 "messaging_product": "whatsapp",
                 "recipient_type": "individual",
@@ -45,11 +50,6 @@ def send_whatsapp_campaign(payload):
             data_ = json.loads(response.content.decode())
             if response.status_code == 200 and 'messages' in data_:
                 template_wamid = data_['messages'][0]['id']
-                conversation = Conversation.objects.get_or_create(
-                    account_id=account_id,
-                    contact_id=contact[0],
-                    channle_id=channel_id
-                )
                 ChatMessage.objects.create(
                     conversation_id=conversation[0],
                     user_id=user,

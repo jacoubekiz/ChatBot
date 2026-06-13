@@ -65,6 +65,7 @@ urlpatterns = [
 
     path('handle-csv-file/', HandelCSView.as_view(), name='handle_csv_file'),
     path('campaigns/<str:channel_id>/', CreateListCampaignsView.as_view(), name='create_compaingn'),
+    path('get-campaign/<str:campaign_id>/', GetCampaignView.as_view(), name='get_campaign'),
     path('apis/<str:account_id>/', ListCreateApiView.as_view(), name='create_api'),
     path('update-api/<str:api_id>/<str:account_id>/', UpdateApiview.as_view(), name='retrive_update_api'),
     path('retrieve-api/<str:api_id>/', GetApiView.as_view(), name='retrieve_api'),

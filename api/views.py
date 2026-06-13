@@ -673,7 +673,7 @@ class HandelCSView(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 class CreateListCampaignsView(GenericAPIView):
-    serializer_class = CampaignsSerilizer
+    serializer_class = CampaignsSerializer
     permission_class = [IsAuthenticated]
 
     def get(self, request, channel_id):
@@ -715,6 +715,16 @@ class CreateListCampaignsView(GenericAPIView):
         payload = json.dumps(data_e)
         send_whatsapp_campaign.delay(payload)
         return Response({'campaign_id': whatsappcampaign.campaign_id}, status=status.HTTP_201_CREATED)
+
+class GetCampaignView(GenericAPIView):
+    serializer_class = CampaignSerializer_
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, campaign_id):
+        campaign = get_object_or_404(WhatsAppCampaign, campaign_id=campaign_id)
+        serializer_campaign = self.get_serializer(campaign)
+        data = serializer_campaign.data
+        return Response(data, status=status.HTTP_200_OK)
 
 class UserProfileView(RetrieveAPIView):
     queryset = CustomUser.objects.all()

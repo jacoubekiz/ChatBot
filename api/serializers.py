@@ -447,13 +447,13 @@ class ContactSerializer(serializers.ModelSerializer):
         except Conversation.DoesNotExist:
             return None
         
-    def create(self, validated_data):
-        account_id = self.context.get('account_id')
-        channel_id = self.context.get('channel_id')
-        validated_data['account_id'] = account_id
-        contact = Contact.objects.create(**validated_data)
-        conversation = Conversation.objects.create(account_id=account_id, channle_id=channel_id, contact_id=contact)
-        return contact
+    # def create(self, validated_data):
+    #     account_id = self.context.get('account_id')
+    #     channel_id = self.context.get('channel_id')
+    #     validated_data['account_id'] = account_id
+    #     contact = Contact.objects.create(**validated_data)
+    #     conversation = Conversation.objects.create(account_id=account_id, channle_id=channel_id, contact_id=contact)
+    #     return contact
     
     def update(self, instance, validated_data):
         instance.account_id = validated_data.get('account_id', instance.account_id)
@@ -465,7 +465,7 @@ class ContactSerializer(serializers.ModelSerializer):
     
     def get_conversation_id(self, obj):
         channel_id = Channle.objects.get(channle_id=self.context.get('channel_id'))
-        account_id = Account.objects.get(account_id=self.context.get('account_id'))
+        account_id = channel_id.account_id
         contact = Contact.objects.get(contact_id=obj.contact_id)
         conversation_id = Conversation.objects.get_or_create(contact_id=contact, channle_id=channel_id, account_id=account_id)[0]
         return conversation_id.conversation_id if conversation_id else None

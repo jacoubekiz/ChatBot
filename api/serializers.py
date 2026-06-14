@@ -520,6 +520,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField(read_only=True)
     timer = serializers.SerializerMethodField(read_only=True)
     tags = serializers.SerializerMethodField(read_only=True)
+    # contact_name = serializers.CharField(source='contact_id.name', read_only=True)
     channel_id = serializers.CharField(source='channle_id.channle_id', read_only=True)
     channel_name = serializers.CharField(source='channle_id.name', read_only=True)
 

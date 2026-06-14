@@ -323,14 +323,11 @@ class AssigningPermissions(APIView):
         return Response(status=status.HTTP_200_OK)
     
 
-class ListTeamMember(GenericAPIView):
+class ListTeamMember(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TeamMemberSerializer
     def get(self, request, team_id):
-        try:
-            team = Team.objects.get(team_id=team_id)
-        except:
-            return Response({'error':'Team not found'}, status=status.HTTP_200_OK)
+        team = get_object_or_404(Team, team_id=team_id)
         members = team.members.all()
         serializer = self.serializer_class(members, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -464,6 +461,8 @@ class CreateNewContact(GenericAPIView):
         account_id = get_object_or_404(Account, account_id=account_id)
         channel_id = get_object_or_404(Channle, channle_id=channel_id)
         contact, created = Contact.objects.get_or_create(phone_number=data['phone_number'], account_id=account_id)
+        contact.name = request.data['name']
+        contact.save()
         if created:
             conversation = Conversation.objects.create(
                 contact_id=contact, 
@@ -610,13 +609,9 @@ class ListConversationView(GenericAPIView):
             return Response(serializer.data)
     
     def post(self, request, channel_id):
-        data = request.data
-        channel = Channle.objects.filter(channle_id = channel_id).first()
-        if not channel:
-            return Response({'error':'No channel found'}, status=status.HTTP_200_OK)
-        contact = Contact.objects.filter(contact_id = channel_id).first()
-        if not contact:
-            return Response({'error':'No contact found'}, status=status.HTTP_200_OK)
+        # data = request.data
+        channel = get_object_or_404(Channle, channle_id = channel_id)
+        contact = get_object_or_404(Contact, contact_id = channel.contact_id.contact_id)
         conversation, created = Conversation.objects.get_or_create(contact_id = contact , channle_id = channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
         return Response(conversation_serializer.data)
@@ -674,7 +669,7 @@ class HandelCSView(GenericAPIView):
 
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerializer
-    permission_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, channel_id):
         channel = get_object_or_404(Channle, channle_id=channel_id)
@@ -736,12 +731,32 @@ class ListCreateApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, account_id):
-        account = Account.objects.filter(account_id=account_id).first()
-        if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
+        account = get_object_or_404(Account, account_id=account_id)
         data = request.data
+
+        # validate data not empty
+        if not data:
+            return Response(
+                {'error':'No data provided'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         parameters = data.get('parameters', [])
         custome_attrs = data.get('custome_attrs', [])
+
+        # Validate parameters is a list
+        if not isinstance(parameters, list):
+            return Response(
+                {'error':'Parameters must be a list'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Validate custome attributes is a list
+        if not isinstance(custome_attrs, list):
+            return Response(
+                {'error':'Custome attributes must be a list'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         serializer = APISerializer(
             data=data, 
             context={
@@ -750,24 +765,30 @@ class ListCreateApiView(APIView):
                 'custome_attrs': custome_attrs
             }
         )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'API created successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'error':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request, account_id):
-        account = Account.objects.filter(account_id=account_id).first()
-        if not account:
-            return Response({'error':'No account found'}, status=status.HTTP_200_OK)
-        api_objects = API.objects.filter(account_id=account)
-        if not api_objects:
-            return Response({'error':'No APIs found'}, status=status.HTTP_200_OK)
+        account = get_object_or_404(Account, account_id=account_id)
+        api_objects = API.objects.filter(account_id=account).prefetch_related('api_parameter_set')
+        if not api_objects.exists():
+            return Response(
+                {'message': 'No APIs found for this account'}, 
+                status=status.HTTP_200_OK
+            )
+        
+        # api_objects = API.objects.filter(account_id=account)
+
         result = []
         for api_object in api_objects:
-            api_parameters = Api_parameter.objects.filter(api=api_object)
+            api_parameters = api_object.api_parameter_set.all()
             serializer_api_param = APIParametersSerializer(api_parameters, many=True) 
             serializer = APISerializer(api_object)
-            data = serializer.data
-            data_dict = dict(data)
+
+            data_dict = serializer.data
+            # data_dict = dict(data)
             data_dict['parameters'] = serializer_api_param.data
 
             result.append(data_dict)
@@ -1199,7 +1220,7 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
         tag = self.request.query_params.get('tag')
         members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
         if not members:
-            return Response({'error':'No members found'}, status=status.HTTP_200_OK)
+            return {'error':'No members found'}
         context["members"] = members
         return context
     

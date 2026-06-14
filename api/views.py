@@ -485,7 +485,7 @@ class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['account_id'] = self.kwargs['account_id']
+        # context['account_id'] = self.kwargs['account_id']
         context['channel_id'] = self.kwargs['channel_id']
         return context
 

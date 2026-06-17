@@ -7,6 +7,9 @@ urlpatterns = [
     # Account Management URLs
     path('', include('api.Account.urls_account')),
     
+    # Channel Management URLs
+    path('', include('api.Channel.urls_channel')),
+    
     # Team Management URLs
     path('', include('api.Team.urls_team')),
     

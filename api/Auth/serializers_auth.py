@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.models import Permission
+from django.contrib.auth import authenticate
 from django.contrib.contenttypes.models import ContentType
 from api.Auth.models_auth import CustomUser, Duration, WorkingTime, Calendar, BookAnAppointment
 
@@ -174,7 +175,6 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        from django.contrib.auth import authenticate
         email = data.get('email')
         password = data.get('password')
         user = authenticate(request=self.context.get('request'), username=email, password=password)

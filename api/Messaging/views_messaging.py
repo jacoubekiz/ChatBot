@@ -3,6 +3,7 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView, 
     ListCreateAPIView
 )
+from api.Core.pagination import CustomPaginatins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -114,3 +115,17 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
             return {'error':'No members found'}
         context["members"] = members
         return context
+
+
+class ListMessgesForSpecificConversation(APIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPaginatins
+
+    def get(self, request, conversation_id):
+        paginator = CustomPaginatins()
+        # paginator.page_size = 20
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        messages = conversation.chatmessage_set.all().order_by('-created_at')
+        result_page = paginator.paginate_queryset(messages, request)
+        messages_serializer = ChatMessageSerializer(result_page, many=True)
+        return paginator.get_paginated_response(messages_serializer.data)

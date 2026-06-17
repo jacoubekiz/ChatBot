@@ -2,6 +2,25 @@ from rest_framework import serializers
 from api.Flow.models_flow import Trigger
 from api.Messaging.models_messaging import Group, QuickReply, Tag
 from api.Account.models_account import Account
+from api.Contact.models_contact import ChatMessage
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ['message_id', 'user_id', 'from_message', 'content','caption', 'content_type', 'created_at', 'conversation_id', 'media_url', 'media_sha256_hash', 'status_message']
+
+        extra_kwargs = {
+            'user_id':{'read_only': True},
+        }
+
+    def to_representation(self, instance):
+        repr =  super().to_representation(instance)
+        try :
+            repr['user_id'] = instance.user_id.username
+            return repr
+        except:
+            return repr
 
 
 class TagSerializer(serializers.ModelSerializer):

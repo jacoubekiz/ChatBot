@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .forms import CustomUserChangeForm, CustomUserCreationForm
+from api.Core.forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
-from .handel_time import get_day_name
+# from .handel_time import get_day_name
 from api.Account.models_account import Account, Team
 from api.APIs.models_api import (
     Parameter, 

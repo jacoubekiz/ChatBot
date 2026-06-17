@@ -6,9 +6,11 @@ from .views_messaging import (
     RetrieveUpdateDeleteTriggerView,
     ListCreateGroupView,
     RetrieveUpdateDeleteGroupView,
+    ListMessgesForSpecificConversation,
 )
 
 urlpatterns = [
+    path('list-messages/<str:conversation_id>/', ListMessgesForSpecificConversation.as_view(), name='list-messages'),
     path('quick-reply/<str:account_id>/', CreateListQuickReplyView.as_view(), name='quick_replies'),
     path('delete-retriev-update-quick-reply/<str:quickreply_id>/<str:account_id>/', RetrieveUpdateDeleteQuickReplyView.as_view(), name='delete_quick_reply'),
     path('triggers/<str:account_id>/', ListCreateTriggerView.as_view(), name='triggers'),

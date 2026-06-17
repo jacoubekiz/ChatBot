@@ -1,5 +1,5 @@
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomUser
+from api.Auth.models_auth import CustomUser
 from django import forms
 from django.core.exceptions import ValidationError
 

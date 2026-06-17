@@ -26,7 +26,7 @@
 # authentication.py
 
 from django.contrib.auth.backends import ModelBackend
-from .models import CustomUser
+from api.Auth.models_auth import CustomUser
 
 class CustomAuthBackend(ModelBackend):
     def authenticate(self, request, email=None, password=None, **kwargs):

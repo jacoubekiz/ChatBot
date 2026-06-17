@@ -1,6 +1,6 @@
 import django_filters
-from django.db.models import Count, Q
-from .models import Contact, Conversation, Tag
+from django.db.models import Count
+from api.Contact.models_contact import Contact, Conversation
 
 class ContactFilter(django_filters.FilterSet):
     # Filter by single tag name

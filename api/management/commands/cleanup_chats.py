@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from api.models import Chat
+from api.Flow.models_flow import Chat
 import datetime
 
 class Command(BaseCommand):

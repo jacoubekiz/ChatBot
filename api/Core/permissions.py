@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
-from .models import CustomUser
+from api.Auth.models_auth import CustomUser
 
 class UserIsAdmin(BasePermission):
     def has_permission(self, request, view):

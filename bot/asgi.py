@@ -10,8 +10,8 @@ from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 
-import api.routing
-from api.middleware import JWTAuthMiddleware
+import api.Consumers.routing
+from api.Core.middleware import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
@@ -19,7 +19,7 @@ application = ProtocolTypeRouter({
     JWTAuthMiddleware(
         AuthMiddlewareStack(
             URLRouter(
-                api.routing.websocket_urlpatterns
+                api.Consumers.routing.websocket_urlpatterns
             )
         ),
     )

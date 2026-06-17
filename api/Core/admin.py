@@ -1,9 +1,47 @@
 from django.contrib import admin
-from .models import  *
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
 from .handel_time import get_day_name
-
+from api.Account.models_account import Account, Team
+from api.APIs.models_api import (
+    Parameter, 
+    API, 
+    Api_parameter, 
+    APILog
+)
+from api.Auth.models_auth import (
+    CustomUser, 
+    Duration, 
+    WorkingTime, 
+    Calendar, 
+    BookAnAppointment
+)
+from api.Channel.models_channel import Channle
+from api.Contact.models_contact import (
+    Contact, 
+    Conversation, 
+    ChatMessage, 
+    MessageStatus, 
+    MediaManagement
+)
+from api.Flow.models_flow import (
+    Flow, 
+    Trigger, 
+    Chat, 
+    Attribute, 
+    Custome_attribute, 
+    RestartKeyword
+)
+from api.Messaging.models_messaging import Tag, Group, QuickReply
+from api.Utility.models_utility import (
+    TestWebhook, 
+    InternalChat, 
+    Report, 
+    ChatbotBuilder, 
+    Setting, 
+    UploadImage
+)
+from api.Campaign.models_campaign import WhatsAppCampaign, AnalyticsCampaign
 # @admin.register(CustomUser1)
 # class CustomUser1Admin(admin.ModelAdmin):
 #     list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')

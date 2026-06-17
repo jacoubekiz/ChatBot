@@ -1,7 +1,11 @@
 from celery import shared_task
-import pandas as pd
-from .models import *
+from api.Channel.models_channel import Channle
+from api.Auth.models_auth import CustomUser
+from api.Account.models_account import Account
+from api.Contact.models_contact import Contact, Conversation, ChatMessage
+from api.Campaign.models_campaign import WhatsAppCampaign, AnalyticsCampaign
 import requests 
+
 import json
 
 @shared_task()

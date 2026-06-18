@@ -23,7 +23,7 @@ class AddListFlows(GenericAPIView):
     
     def get(self, request, channel_id):
         channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
-        flows = channel.flows.all().select_related('account', 'trigger')
+        flows = channel.flows.all().select_related('account')
         serializer = SerializerFlows(flows, many=True, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)

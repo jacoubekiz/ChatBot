@@ -99,3 +99,9 @@ class GroupSerializer(serializers.ModelSerializer):
         for member in members:
             instance.contact.add(member)
         return instance
+
+
+    def to_representation(self, instance):
+        reper = super().to_representation(instance)
+        reper['contact'] = [con.name for con in instance.contact]
+        return reper

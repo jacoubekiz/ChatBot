@@ -18,7 +18,8 @@ from api.APIs.models_api import (
     API, 
     Parameter, 
     Api_parameter, 
-    Account
+    Account,
+    APILog
 )
 from api.APIs.serializers_api import (
     APISerializer, 

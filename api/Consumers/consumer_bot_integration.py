@@ -1,5 +1,6 @@
 import json
 import langid
+import requests
 from functools import lru_cache
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async

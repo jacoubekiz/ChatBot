@@ -27,8 +27,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 class CreateNewContact(GenericAPIView):
     def post(self, request, account_id, channel_id):
         data = request.data
-        account = get_object_or_404(Account.objects.select_related('account_id'), account_id=account_id)
-        channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
+        account = get_object_or_404(Account, account_id=account_id)
+        channel = get_object_or_404(Channle, channle_id=channel_id)
         contact, created = Contact.objects.get_or_create(
             phone_number=data['phone_number'], 
             account_id=account
@@ -53,7 +53,7 @@ class CreateNewContact(GenericAPIView):
 class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Contact.objects.all().select_related('account_id')
+    queryset = Contact.objects.all()
     lookup_field = 'contact_id'
 
     def get_serializer_context(self):

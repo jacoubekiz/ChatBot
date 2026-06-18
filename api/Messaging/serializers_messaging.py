@@ -103,5 +103,5 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         reper = super().to_representation(instance)
-        reper['contact'] = [con.name for con in instance.contact]
+        reper['contact'] = [con.name for con in instance.contact.all()]
         return reper

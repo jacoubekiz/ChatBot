@@ -1,10 +1,10 @@
 import json
 import langid
-import requests
+from functools import lru_cache
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from django.core.files.storage import default_storage
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from api.Flow.models_flow import Flow, Chat, Attribute, Custome_attribute, RestartKeyword
 from api.Channel.models_channel import Channle
 from api.Contact.models_contact import Conversation, ChatMessage

@@ -14,7 +14,7 @@ class ListCreateChannelView(ListCreateAPIView):
     permission_classes = [IsAuthenticated,]
     def get_queryset(self):
         account_id = self.kwargs['account_id']
-        return Channle.objects.filter(account_id=account_id)
+        return Channle.objects.filter(account_id=account_id).select_related('account_id')
     
     def perform_create(self, serializer):
         account_id = Account.objects.get(account_id=self.kwargs['account_id'])
@@ -27,7 +27,7 @@ class RetrieveUpdateDeleteChannelView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         account_id = self.kwargs['account_id']
         channel = self.kwargs['channel_id']
-        return Channle.objects.filter(account_id=account_id, channle_id=channel)
+        return Channle.objects.filter(account_id=account_id, channle_id=channel).select_related('account_id')
 
     def perform_update(self, serializer):
         account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])

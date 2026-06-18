@@ -26,7 +26,6 @@ from api.Messaging.utils_messaging import (
     send_message,
     validate_email,
     validate_phone_number,
-    bearer_token
 )
 
 # Webhook/Redis utilities
@@ -84,7 +83,6 @@ __all__ = [
     'send_message',
     'validate_email',
     'validate_phone_number',
-    'bearer_token',
     # Webhook/Redis utilities
     'handel_request_redis',
     'download_and_save_image',

@@ -28,7 +28,7 @@ class CreateListAccount(GenericAPIView):
         return Response(status=status.HTTP_201_CREATED)
 
     def get(self, request):
-        accounts = Account.objects.filter(user__role_user='admin')
+        accounts = Account.objects.filter(user__role_user='admin').select_related('user')
         if not accounts:
             return Response({'error':'Dont have permission for this action'}, status=status.HTTP_200_OK)
         serializer = AccontSerializer(accounts, many=True)

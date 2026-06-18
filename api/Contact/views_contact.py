@@ -27,22 +27,25 @@ from django_filters.rest_framework import DjangoFilterBackend
 class CreateNewContact(GenericAPIView):
     def post(self, request, account_id, channel_id):
         data = request.data
-        account_id = get_object_or_404(Account, account_id=account_id)
-        channel_id = get_object_or_404(Channle, channle_id=channel_id)
-        contact, created = Contact.objects.get_or_create(phone_number=data['phone_number'], account_id=account_id)
+        account = get_object_or_404(Account.objects.select_related('account_id'), account_id=account_id)
+        channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
+        contact, created = Contact.objects.get_or_create(
+            phone_number=data['phone_number'], 
+            account_id=account
+        )
         contact.name = request.data['name']
         contact.save()
         if created:
             conversation = Conversation.objects.create(
                 contact_id=contact, 
-                channle_id=channel_id, 
-                account_id=account_id
+                channle_id=channel, 
+                account_id=account
                 )
-            serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
+            serializer = ContactSerializer(contact, context={'channel_id': channel.channle_id, 'account_id': account.account_id})
             data = serializer.data
             return Response(data, status=status.HTTP_200_OK)
         else:
-            serializer = ContactSerializer(contact, context={'channel_id': channel_id.channle_id, 'account_id': account_id.account_id})
+            serializer = ContactSerializer(contact, context={'channel_id': channel.channle_id, 'account_id': account.account_id})
             data = serializer.data
             return Response(data, status=status.HTTP_302_FOUND)
 
@@ -50,7 +53,7 @@ class CreateNewContact(GenericAPIView):
 class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Contact.objects.all()
+    queryset = Contact.objects.all().select_related('account_id')
     lookup_field = 'contact_id'
 
     def get_serializer_context(self):
@@ -77,21 +80,21 @@ class ListConversationView(GenericAPIView):
         user = get_object_or_404(CustomUser, id=request.user.id)
         permissions = list(user.get_all_permissions())
         if 'api.visibility all conversations' in permissions:
-            conversation = Conversation.objects.filter(channle_id=channel_id)
+            conversation = Conversation.objects.filter(channle_id=channel_id).select_related('contact_id', 'channle_id', 'account_id')
             if not conversation:
                 return Response({'error':'No conversations found'}, status=status.HTTP_200_OK)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
         else:
-            conversation = Conversation.objects.filter(channle_id=channel_id, user=user)
+            conversation = Conversation.objects.filter(channle_id=channel_id, user=user).select_related('contact_id', 'channle_id', 'account_id')
             if not conversation:
                 return Response({'error':'No conversations found'}, status=status.HTTP_200_OK)
             serializer = self.get_serializer(conversation, many=True, context={'user':request.user})
             return Response(serializer.data)
     
     def post(self, request, channel_id):
-        channel = get_object_or_404(Channle, channle_id=channel_id)
-        contact = get_object_or_404(Contact, contact_id=channel.contact_id.contact_id)
+        channel = get_object_or_404(Channle.objects.select_related('account_id', 'contact_id'), channle_id=channel_id)
+        contact = get_object_or_404(Contact.objects.select_related('account_id'), contact_id=channel.contact_id.contact_id)
         conversation, created = Conversation.objects.get_or_create(contact_id=contact, channle_id=channel)
         conversation_serializer = ConverstionSerializerCreate(conversation, many=False)
         return Response(conversation_serializer.data)

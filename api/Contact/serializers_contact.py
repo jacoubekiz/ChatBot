@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
 from api.Messaging.models_messaging import Tag
-
+from api.Channel.models_channel import Channle
 
 class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -159,7 +159,6 @@ class ContactSerializer(serializers.ModelSerializer):
         return instance
     
     def get_conversation_id(self, obj):
-        from api.models import Channle
         channel_id = Channle.objects.get(channle_id=self.context.get('channel_id'))
         account_id = channel_id.account_id
         contact = Contact.objects.get(contact_id=obj.contact_id)

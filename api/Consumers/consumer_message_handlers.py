@@ -4,8 +4,6 @@ from channels.db import database_sync_to_async
 from django.utils import timezone
 from api.Contact.models_contact import Conversation, ChatMessage
 from api.Channel.models_channel import Channle
-from api.Auth.models_auth import CustomUser
-from api.Contact.serializers_contact import ConversationSerializer
 from .consumer_constants import MessageType, ContentType, WhatsAppAPI
 from api.utils import send_message
 

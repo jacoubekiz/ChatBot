@@ -32,7 +32,7 @@ class CreateListQuickReplyView(GenericAPIView):
     
     def get(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)
-        quick_replies = QuickReply.objects.filter(account_id=account)
+        quick_replies = QuickReply.objects.filter(account_id=account).select_related('account_id')
         serializer = QuickReplySerializer(quick_replies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -45,7 +45,7 @@ class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         account = self.kwargs['account_id']
         quick_reply_id = self.kwargs['quickreply_id']
-        return QuickReply.objects.filter(account_id=account, quickreply_id=quick_reply_id)
+        return QuickReply.objects.filter(account_id=account, quickreply_id=quick_reply_id).select_related('account_id')
     
     def perform_update(self, serializer):
         account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
@@ -117,7 +117,7 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
         return context
 
 
-class ListMessgesForSpecificConversation(APIView):
+class ListMessgesForSpecificConversation(GenericAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPaginatins
 

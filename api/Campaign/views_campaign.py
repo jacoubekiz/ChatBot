@@ -16,8 +16,8 @@ class CreateListCampaignsView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, channel_id):
-        channel = get_object_or_404(Channle, channle_id=channel_id)
-        campaigns = WhatsAppCampaign.objects.filter(account_id=channel.account_id)
+        channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
+        campaigns = WhatsAppCampaign.objects.filter(account_id=channel.account_id).select_related('account_id', 'created_by')
         if not campaigns:
             return Response({'error':'No campaigns found'}, status=status.HTTP_200_OK)
         serializer_campaigns = self.get_serializer(campaigns, many=True)
@@ -26,7 +26,7 @@ class CreateListCampaignsView(GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
-        channel = get_object_or_404(Channle, channle_id=channel_id)
+        channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
         data = request.data
         file = request.data['file']
         content_template = data.get('content_template')
@@ -60,8 +60,7 @@ class GetCampaignView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, campaign_id):
-        campaign = get_object_or_404(WhatsAppCampaign, campaign_id=campaign_id)
+        campaign = get_object_or_404(WhatsAppCampaign.objects.select_related('account_id', 'created_by'), campaign_id=campaign_id)
         serializer_campaign = self.get_serializer(campaign)
         # data = serializer_campaign.data
-        data = serializer_campaign.data
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer_campaign.data, status=status.HTTP_200_OK)

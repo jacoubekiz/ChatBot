@@ -32,8 +32,8 @@ def send_whatsapp_campaign(self, payload: str) -> Dict[str, Any]:
         # Optimize database queries with select_related
         user = CustomUser.objects.get(id=data_e['user_id'])
         account = Account.objects.get(account_id=data_e['account'])
-        channel = Channle.objects.select_related('account_id').get(channle_id=data_e['channel'])
-        campaign = WhatsAppCampaign.objects.select_related('account_id').get(campaign_id=data_e['whatsappcampaign'])
+        channel = Channle.objects.get(channle_id=data_e['channel'])
+        campaign = WhatsAppCampaign.objects.get(campaign_id=data_e['whatsappcampaign'])
         df_ = json.loads(data_e['df'])
         
         sent_count = 0

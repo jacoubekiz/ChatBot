@@ -1,3 +1,4 @@
+from email import message
 import json
 import requests
 from asgiref.sync import sync_to_async
@@ -7,6 +8,7 @@ from api.Contact.models_contact import Conversation, ChatMessage
 from api.Channel.models_channel import Channle
 from .consumer_constants import MessageType, ContentType, WhatsAppAPI
 from api.utils import send_message
+from django.shortcuts import get_object_or_404
 
 
 class MessageHandlers:
@@ -44,8 +46,8 @@ class MessageHandlers:
             await self._broadcast_message({
                 **data,
                 "wamid": whatsapp_message_id,
-                "message_id": message_id.message_id,
-                "contact_id": message_id.conversation_id.contact_id.contact_id,
+                "message_id": f'{message_id.message_id}',
+                "contact_id": await self.get_contact_id(message_id.message_id),
                 "status_message": "sent"
             })
 
@@ -91,7 +93,7 @@ class MessageHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": message_id.message_id,
-                "contact_id": message_id.conversation_id.contact_id.contact_id,
+                "contact_id": await self.get_contact_id(message_id.message_id),
                 "status_message": "sent"
             })
 
@@ -168,3 +170,9 @@ class MessageHandlers:
             wamid=whatsapp_message_id,
             from_message=from_message
         )
+
+
+    @database_sync_to_async
+    def get_contact_id(self, messgae_id):
+        message_id = get_object_or_404(ChatMessage, message_id = messgae_id)
+        return message_id.conversation_id.contact_id.contact_id

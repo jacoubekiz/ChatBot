@@ -1,7 +1,8 @@
 import base64
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 from api.Contact.models_contact import Conversation, ChatMessage
-from .consumer_constants import MediaType, ContentType, WhatsAppAPI
+from .consumer_constants import MediaType, WhatsAppAPI
 from api.utils import send_message, process_and_send_voice_note
 
 
@@ -73,8 +74,7 @@ class MediaHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": f'{message_id.message_id}',
-                "contact_id": message_id.conversation_id.contact_id.contact_id,
-                "status_message": "sent"
+"               contact_id": await self.get_contact_id(message_id.message_id),                "status_message": "sent"
             })
 
         except Exception as error:
@@ -162,3 +162,8 @@ class MediaHandlers:
             wamid=whatsapp_message_id,
             media_url=file_path
         )
+
+    @database_sync_to_async
+    def get_contact_id(self, messgae_id):
+        message_id = get_object_or_404(ChatMessage, message_id = messgae_id)
+        return message_id.conversation_id.contact_id.contact_id

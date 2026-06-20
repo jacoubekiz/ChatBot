@@ -2,7 +2,7 @@ import json
 import websocket
 
 
-def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name):
+def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id):
     """Connect to WebSocket and send bot integration message."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -23,7 +23,8 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         },
         "wamid": wamid,
         "contact_name": contact_name,
-        "from_bot": ""
+        "from_bot": "",
+        "contact_id":contact_id
     }
     try:
         ws.send(json.dumps(data))
@@ -33,7 +34,7 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         pass
 
 
-def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id):
+def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id, contact_id):
     """Send text message via WebSocket."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -43,6 +44,7 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         "content_type": 'text',
         "wamid": wamid,
         "from_bot": "False",
+        "contact_id": contact_id,
         "channel_id": f"{channel_id}",
         "message_id": message_id,
         "created_at": f"{created_at}",
@@ -56,7 +58,7 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
         pass
 
 
-def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
+def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id, contact_id):
     """Send image message via WebSocket."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -68,6 +70,7 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
         "from_bot": "False",
         "channel_id": f"{channel_id}",
         "message_id": message_id,
+        "contact_id":contact_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -80,7 +83,7 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
         pass
 
 
-def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id):
+def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id, contact_id):
     """Send video message via WebSocket."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -92,6 +95,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
         "from_bot": "False",
         "channel_id": f"{channel_id}",
         "message_id": message_id,
+        "contact_id":contact_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -104,7 +108,7 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
         pass
 
 
-def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id):
+def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id, contact_id):
     """Send audio message via WebSocket."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -116,6 +120,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
         "channel_id": f"{channel_id}",
         "from_bot": "False",
         "message_id": message_id,
+        "contact_id":contact_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"
@@ -128,7 +133,7 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
         pass
 
 
-def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id):
+def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id, contact_id):
     """Send document message via WebSocket."""
     url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
@@ -140,6 +145,7 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
         "from_bot": "False",
         "channel_id": f"{channel_id}",
         "message_id": message_id,
+        "contact_id":contact_id,
         "media_url": f"{media_url}",
         "created_at": f"{created_at}",
         "conversation_id": f"{conversation_id}"

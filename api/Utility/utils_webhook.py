@@ -105,7 +105,7 @@ def handel_request_redis(self, data: str):
                         case "interactive":
                             content = value.get('messages', '')[0].get('interactive', '').get('button_reply', '').get('title', '')
                     
-                    connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name)
+                    connect_web_socket(channel.channle_id, conversation.conversation_id, contact_phonenumber, content, wamid, contact_name, contact.contact_id)
                 else:
                     match content_type:
                         case "button":
@@ -117,7 +117,7 @@ def handel_request_redis(self, data: str):
                                 from_message=conversation.contact_id.name,
                                 wamid=wamid
                             )
-                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
+                            sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id, contact.contact_id)
                         case "text":
                                 content = value.get('messages', '')[0].get('text', '').get('body', '')
                                 chat_message = ChatMessage.objects.create(
@@ -127,7 +127,7 @@ def handel_request_redis(self, data: str):
                                     from_message=conversation.contact_id.name or contact.phone_number,
                                     wamid=wamid
                                 )
-                                sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id)
+                                sent_message_text(conversation.conversation_id, content, content_type, wamid, chat_message.message_id, chat_message.created_at, contact.phone_number, channel.channle_id, contact.contact_id)
                         case "image":
                             mime_type = value.get('messages', '')[0].get('image', {}).get('mime_type', '')
                             sha256 = value.get('messages', '')[0].get('image', {}).get('sha256', '')
@@ -152,7 +152,7 @@ def handel_request_redis(self, data: str):
                                     media_mime_type=mime_type,
                                     caption=caption
                                 )
-                                sent_message_image(conversation.conversation_id, chat_image.caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id)
+                                sent_message_image(conversation.conversation_id, chat_image.caption, content_type, wamid, chat_image.message_id, chat_image.created_at, contact.phone_number, chat_image.media_url, channel.channle_id, contact.contact_id)
                         case "video":
                             mime_type = value.get('messages', '')[0].get('video', {}).get('mime_type', '')
                             sha256 = value.get('messages', '')[0].get('video', {}).get('sha256', '')
@@ -177,7 +177,7 @@ def handel_request_redis(self, data: str):
                                     media_mime_type=mime_type,
                                     caption=caption
                                 )
-                                sent_message_video(conversation.conversation_id, chat_video.caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id)
+                                sent_message_video(conversation.conversation_id, chat_video.caption, content_type, wamid, chat_video.message_id, chat_video.created_at, contact.phone_number, chat_video.media_url, channel.channle_id, contact.contact_id)
                         case "audio":
                             mime_type = value.get('messages', '')[0].get('audio', {}).get('mime_type', '')
                             sha256 = value.get('messages', '')[0].get('audio', {}).get('sha256', '')
@@ -202,7 +202,7 @@ def handel_request_redis(self, data: str):
                                     media_mime_type=mime_type,
                                     caption=caption
                                 )
-                                sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id)
+                                sent_message_audio(conversation.conversation_id, caption, content_type, wamid, chat_audio.message_id, chat_audio.created_at, contact.phone_number, chat_audio.media_url, channel.channle_id, contact.contact_id)
                         case 'document':
                             mime_type = value.get('messages', '')[0].get('document', {}).get('mime_type', '')
                             sha256 = value.get('messages', '')[0].get('document', {}).get('sha256', '')
@@ -227,7 +227,7 @@ def handel_request_redis(self, data: str):
                                     media_mime_type=mime_type,
                                     caption=caption
                                 )
-                                sent_message_document(conversation.conversation_id, chat_document.caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id)
+                                sent_message_document(conversation.conversation_id, chat_document.caption, content_type, wamid, chat_document.message_id, chat_document.created_at, contact.phone_number, chat_document.media_url, mime_type, channel.channle_id, contact.contact_id)
             else:
                 mid = log_entry.get('event', {}).get('mid', ' ')
                 status_messaage = log_entry.get('event', {}).get('status', ' ')

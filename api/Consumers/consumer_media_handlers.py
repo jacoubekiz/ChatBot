@@ -73,6 +73,7 @@ class MediaHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": f'{message_id.message_id}',
+                "contact_id": message_id.conversation_id.contact_id.contact_id,
                 "status_message": "sent"
             })
 

@@ -45,6 +45,7 @@ class MessageHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": message_id.message_id,
+                "contact_id": message_id.conversation_id.contact_id.contact_id,
                 "status_message": "sent"
             })
 
@@ -90,6 +91,7 @@ class MessageHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": message_id.message_id,
+                "contact_id": message_id.conversation_id.contact_id.contact_id,
                 "status_message": "sent"
             })
 

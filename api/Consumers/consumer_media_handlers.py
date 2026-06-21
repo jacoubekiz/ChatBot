@@ -74,10 +74,20 @@ class MediaHandlers:
                 **data,
                 "wamid": whatsapp_message_id,
                 "message_id": f'{message_id.message_id}',
-"               contact_id": await self.get_contact_id(message_id.message_id),                "status_message": "sent"
+                "contact_id": await self.get_contact_id(message_id.message_id),
+                "status_message": "sent"
             })
 
         except Exception as error:
+            # Store failed message in database with error details
+            await self._create_failed_media_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=self.consumer.user,
+                media_type=media_type,
+                caption=data["caption"],
+                error_message=str(error),
+                file_path=f"{WhatsAppAPI.MEDIA_URL}{file_path}"if media_type == 'audio' or media_type == 'voice'else file_path
+            )
             await self._send_error_message(str(error))
 
     async def _save_base64_file(self, data: dict) -> str:
@@ -87,12 +97,16 @@ class MediaHandlers:
 
         file_path = f"media/chat_message/{file_name}"
 
-        with open(file_path, "wb") as file_handle:
-            file_handle.write(file_content)
+        await sync_to_async(self._write_file)(file_path, file_content)
         if data["content_type"] == 'voice' or data["content_type"]=='audio':
             return f"{file_path}"
         else:
             return f"{WhatsAppAPI.MEDIA_URL}{file_path}"
+
+    def _write_file(self, file_path: str, file_content: bytes) -> None:
+        """Synchronous file write operation."""
+        with open(file_path, "wb") as file_handle:
+            file_handle.write(file_content)
 
     async def _broadcast_message(self, payload: dict) -> None:
         """Broadcast message to all channel members."""
@@ -161,6 +175,22 @@ class MediaHandlers:
             caption=caption or "",
             wamid=whatsapp_message_id,
             media_url=file_path
+        )
+
+    @database_sync_to_async
+    def _create_failed_media_message(self, conversation_id, user, media_type: str,
+                                      caption: str, error_message: str,
+                                      file_path: str) -> int:
+        """Create a failed media chat message record with error details."""
+        return ChatMessage.objects.create(
+            conversation_id=conversation_id,
+            user_id=user,
+            content_type=media_type,
+            caption=caption or "",
+            wamid="failed",
+            media_url=file_path,
+            error_message=error_message,
+            status_message="failed"
         )
 
     @database_sync_to_async

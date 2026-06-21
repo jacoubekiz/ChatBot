@@ -52,6 +52,14 @@ class MessageHandlers:
             })
 
         except Exception as error:
+            # Store failed message in database with error details
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=self.consumer.user,
+                content_type=ContentType.TEXT,
+                content=data["content"],
+                error_message=str(error)
+            )
             await self._send_error_message(str(error))
 
     async def handle_message_status(self, data: dict) -> None:
@@ -69,7 +77,7 @@ class MessageHandlers:
         try:
             channel = await self._get_channel(data['channel_id'])
 
-            response = requests.post(
+            response = await sync_to_async(requests.post)(
                 f"{WhatsAppAPI.BASE_URL}/{channel.phone_number_id}/messages",
                 headers={
                     "Authorization": f"Bearer {channel.tocken}",
@@ -78,7 +86,7 @@ class MessageHandlers:
                 data=json.dumps(data["template_info"])
             )
 
-            response_data = response.json()
+            response_data = await sync_to_async(response.json)()
             whatsapp_message_id = response_data['messages'][0]['id']
 
             message_id = await self._create_chat_message(
@@ -98,6 +106,14 @@ class MessageHandlers:
             })
 
         except Exception as error:
+            # Store failed message in database with error details
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=self.consumer.user,
+                content_type=data["content_type"],
+                content=data["content"],
+                error_message=str(error)
+            )
             await self._send_error_message(str(error))
 
     async def _broadcast_message(self, payload: dict) -> None:
@@ -171,6 +187,20 @@ class MessageHandlers:
             from_message=from_message
         )
 
+    @database_sync_to_async
+    def _create_failed_message(self, conversation_id, user, content_type: str,
+                                content: str, error_message: str, from_message = "bot") -> int:
+        """Create a failed chat message record with error details."""
+        return ChatMessage.objects.create(
+            conversation_id=conversation_id,
+            user_id=user,
+            content_type=content_type,
+            content=content,
+            wamid="failed",
+            from_message=from_message,
+            error_message=error_message,
+            status_message="failed"
+        )
 
     @database_sync_to_async
     def get_contact_id(self, messgae_id):

@@ -14,6 +14,7 @@ from api.Channel.models_channel import Channle
 from api.Contact.models_contact import Contact, Conversation
 from api.Account.models_account import Account
 from api.Messaging.models_messaging import Tag
+from api.Flow.models_flow import Chat
 from api.Contact.serializers_contact import (
     ContactSerializer, 
     ContactSerializerView, 
@@ -60,6 +61,13 @@ class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
         context = super().get_serializer_context()
         context['channel_id'] = self.kwargs['channel_id']
         return context
+
+    def perform_destroy(self, instance):
+        """Delete Chat records where conversation_id equals contact phone number."""
+        # Delete Chat records where conversation_id equals the contact's phone number
+        Chat.objects.filter(conversation_id=instance.phone_number).delete()
+        # Call the parent's perform_destroy to delete the contact
+        super().perform_destroy(instance)
 
 
 class ListContactView(ListAPIView):

@@ -35,6 +35,7 @@ class CreateNewContact(GenericAPIView):
             account_id=account
         )
         contact.name = request.data['name']
+        contact.email = request.data['email']
         contact.save()
         if created:
             conversation = Conversation.objects.create(

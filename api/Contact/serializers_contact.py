@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
 from api.Messaging.models_messaging import Tag
@@ -166,7 +167,9 @@ class ContactSerializer(serializers.ModelSerializer):
         return conversation_id.conversation_id if conversation_id else None
 
     def to_representation(self, instance):
+        channel = get_object_or_404(Channle, channle_id= self.context.get('channel_id'))
         repre = super().to_representation(instance)
+        repre['channel_name'] = channel.name
         repre['account_id'] = instance.account_id.name
         return repre
     

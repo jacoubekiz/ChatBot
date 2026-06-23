@@ -29,8 +29,7 @@ from api.Messaging.utils_messaging import (
 )
 
 # Webhook/Redis utilities
-from api.Utility.utils_webhook import handel_request_redis, download_and_save_image
-
+from api.Utility.utils_webhook import handel_request_redis
 # WebSocket utilities
 from api.Consumers.utils_websocket import (
     connect_web_socket,

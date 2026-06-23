@@ -176,7 +176,13 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.status = 'open'
         conversation.save()
     
-    # Handle based on conversation state
+    # Always store message in database regardless of conversation state
+    if content_type in ['text', 'button']:
+        handle_text_message(conversation, contact, message_data, content, wamid)
+    elif content_type in ['image', 'video', 'audio', 'document']:
+        handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
+    
+    # Handle WebSocket connection for bot state
     if conversation.state == 'start_bot':
         connect_web_socket(
             channel.channle_id,
@@ -187,12 +193,6 @@ def handle_incoming_message(value: dict) -> dict:
             contact_name,
             contact.contact_id
         )
-    else:
-        # Handle different message types
-        if content_type in ['text', 'button']:
-            handle_text_message(conversation, contact, message_data, content, wamid)
-        elif content_type in ['image', 'video', 'audio', 'document']:
-            handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
     
     return {'success': True}
 

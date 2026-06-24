@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -10,11 +11,12 @@ import os
 import mimetypes
 from api.utils import resolve_app_id_from_token, _http_post, MetaApiError
 from pathlib import Path
+from django.conf import settings
 
 class ListCreateTemplate(APIView):
 
     def get(self, request, channel_id):
-        channel = Channle.objects.get(channle_id= channel_id)
+        channel = get_object_or_404(Channle, channle_id= channel_id)
         url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates"
         headers = {
             "Content-Type": "application/json",
@@ -36,7 +38,7 @@ class ListCreateTemplate(APIView):
         return Response({"results":responses}, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
-        channel = Channle.objects.get(channle_id= channel_id)
+        channel = get_object_or_404(Channle, channle_id= channel_id)
         url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates"
         headers = {
             "Content-Type": "application/json",
@@ -50,7 +52,7 @@ class ListCreateTemplate(APIView):
 
 class HandleFileUpload(APIView):
     def post(self, request, channel_id):
-        channel = Channle.objects.get(channle_id= channel_id)
+        channel = get_object_or_404(Channle, channle_id= channel_id)
         file = request.FILES['file']
         file_path = os.path.join(settings.MEDIA_ROOT, file.name)
         if not os.path.exists(f"{file_path}"):
@@ -101,7 +103,7 @@ class GetTemplate(APIView):
     def get(self, request):
         template_id = request.GET.get('template_id')
         channel_id = request.GET.get('channel_id')
-        channel = Channle.objects.get(channle_id= channel_id)
+        channel = get_object_or_404(Channle, channle_id= channel_id)
         url = f"https://graph.facebook.com/v22.0/{template_id}"
         headers = {
             "Content-Type": "application/json",
@@ -128,7 +130,7 @@ template_info = {
 class SendTemplate(APIView):
 
     def post(self, request, channel_id):
-        channel = Channle.objects.get(channle_id= channel_id)
+        channel = get_object_or_404(Channle ,channle_id= channel_id)
         apiKey = request.headers.get('apiKey')
         if channel.account_id.apiKey != apiKey:
             return Response({"error": "Invalid API key"}, status=status.HTTP_401_UNAUTHORIZED)

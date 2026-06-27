@@ -9,6 +9,8 @@ import requests
 import json
 import os
 import mimetypes
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from api.utils import resolve_app_id_from_token, _http_post, MetaApiError
 from pathlib import Path
 from django.conf import settings
@@ -52,50 +54,64 @@ class ListCreateTemplate(APIView):
 
 class HandleFileUpload(APIView):
     def post(self, request, channel_id):
-        channel = get_object_or_404(Channle, channle_id= channel_id)
+        channel = get_object_or_404(Channle, channle_id=channel_id)
         file = request.FILES['file']
-        file_path = os.path.join(settings.MEDIA_ROOT, file.name)
-        if not os.path.exists(f"{file_path}"):
-            raise FileNotFoundError(f"PDF file does not exist: {file_path}")
-        file_name = os.path.basename(file_path)
-        with open(file, "rb") as f:
+        
+        # Save file locally first
+        file_name = file.name
+        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        
+        # Save the uploaded file
+        saved_path = default_storage.save(file_name, ContentFile(file.read()))
+        full_path = os.path.join(settings.MEDIA_ROOT, saved_path)
+        
+        # Now the file exists, get its details
+        with open(full_path, "rb") as f:
             file_bytes = f.read()
+        
         file_size = len(file_bytes)
-        file_type = mimetypes.guess_type(file)[0]
+        file_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
+        
         # 1) Resolve App ID
-        app_id = resolve_app_id_from_token(f"{channel.tocken[7:]}")
+        app_id = resolve_app_id_from_token(f"{channel.tocken}")
+        
         # 2) Start resumable upload session
         init_url = f"https://graph.facebook.com/v22.0/{app_id}/uploads"
         init_params = {
             "file_name": file_name,
             "file_length": str(file_size),
             "file_type": file_type,
-            "access_token": f"{channel.tocken[7:]}",
+            "access_token": f"{channel.tocken}",
         }
         init_resp = _http_post(init_url, params=init_params)
         init_json = init_resp.json()
         upload_session_id = init_json.get("id")
+        
         if not upload_session_id:
             raise MetaApiError(f"Upload session init did not return id: {init_json}")
+        
         # 3) Upload the bytes to the session to obtain the file handle
         upload_url = f"https://graph.facebook.com/v22.0/{upload_session_id}"
         upload_headers = {
-            # For the upload step, Meta expects OAuth here (not Bearer)
             "Authorization": f"Bearer {channel.tocken}",
             "file_offset": "0",
-            # CHANGED: use octet-stream and remove 'Expect' header to avoid HTTP 417
             "Content-Type": "application/octet-stream",
-            "Content-Length": str(file_size),  # requests sets this anyway; harmless to keep
+            "Content-Length": str(file_size),
         }
         upload_resp = _http_post(upload_url, headers=upload_headers, data=file_bytes)
+        
         try:
             upload_json = upload_resp.json()
         except Exception:
             raise MetaApiError(f"Upload returned non-JSON (status {upload_resp.status_code}): {upload_resp.text}")
-
+        
         file_handle = upload_json.get("h")
         if not file_handle:
             raise MetaApiError(f"Upload did not return a file handle: {upload_json}")
+        
+        # Optional: Clean up local file after upload
+        # os.remove(full_path)
+        
         return Response({"file_handle": file_handle}, status=status.HTTP_200_OK)
         
 

@@ -57,6 +57,7 @@ def resolve_app_id_from_token(access_token: str) -> str:
             "input_token": access_token,
             "access_token": access_token,
         })
+        print(j)
         if "data" in j and "app_id" in j["data"]:
             return j["data"]["app_id"]
     except MetaApiError as e1:

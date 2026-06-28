@@ -170,6 +170,7 @@ class ContactSerializer(serializers.ModelSerializer):
         channel = get_object_or_404(Channle, channle_id= self.context.get('channel_id'))
         repre = super().to_representation(instance)
         repre['channel_name'] = channel.name
+        repre['channel_id'] = channel.channle_id
         repre['account_id'] = instance.account_id.name
         return repre
     

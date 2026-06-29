@@ -55,6 +55,11 @@ def handle_status_update(value: dict) -> dict:
 
 def handle_text_message(conversation, contact, message_data: dict, content: str, wamid: str):
     """Handle text message creation and broadcasting."""
+    # Check if message already exists to avoid duplicates
+    existing_message = ChatMessage.objects.filter(wamid=wamid).first()
+    if existing_message:
+        return existing_message
+    
     chat_message = ChatMessage.objects.create(
         conversation_id=conversation,
         content_type='text',
@@ -77,6 +82,11 @@ def handle_text_message(conversation, contact, message_data: dict, content: str,
 
 def handle_media_message(conversation, contact, channel, message_data: dict, media_type: str, wamid: str):
     """Handle media message download, creation and broadcasting."""
+    # Check if message already exists to avoid duplicates
+    existing_message = ChatMessage.objects.filter(wamid=wamid).first()
+    if existing_message:
+        return existing_message
+    
     media_data = extract_media_data(message_data[media_type])
     file_name = get_media_file_name(media_type, media_data)
     
@@ -178,13 +188,9 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.status = 'open'
         conversation.save()
     
-    if content_type in ['text', 'button']:
-        handle_text_message(conversation, contact, message_data, content, wamid)
-    elif content_type in ['image', 'video', 'audio', 'document']:
-        handle_media_message(conversation, contact, channel, message_data, content_type, wamid) 
-    # Handle WebSocket connection for bot state
+    # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':
-
+        # In bot state, only send to bot integration - it will handle storage and display
         connect_web_socket(
             channel.channle_id,
             conversation.conversation_id,
@@ -194,6 +200,12 @@ def handle_incoming_message(value: dict) -> dict:
             contact_name,
             contact.contact_id
         )
+    else:
+        # In non-bot state, store message and broadcast to UI
+        if content_type in ['text', 'button']:
+            handle_text_message(conversation, contact, message_data, content, wamid)
+        elif content_type in ['image', 'video', 'audio', 'document']:
+            handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
     
     return {'success': True}
 

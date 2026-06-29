@@ -159,7 +159,7 @@ def handle_incoming_message(value: dict) -> dict:
             phone_number=contact_phonenumber,
             account_id=account
         )
-        if contact.name != NULL:
+        if contact.name != '':
             contact.name = contact_name
             contact.save()
         

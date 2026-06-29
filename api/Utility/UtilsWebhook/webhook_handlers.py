@@ -155,11 +155,11 @@ def handle_incoming_message(value: dict) -> dict:
     contact_name = contacts[0].get('profile', {}).get('name', '')
     
     with transaction.atomic():
-        contact, _ = Contact.objects.get_or_create(
+        contact, created = Contact.objects.get_or_create(
             phone_number=contact_phonenumber,
             account_id=account
         )
-        if contact.name != '':
+        if created:
             contact.name = contact_name
             contact.save()
         
@@ -181,10 +181,10 @@ def handle_incoming_message(value: dict) -> dict:
     
     # Handle WebSocket connection for bot state
     if conversation.state == 'start_bot':
-        if content_type in ['text', 'button']:
-            handle_text_message(conversation, contact, message_data, content, wamid)
-        elif content_type in ['image', 'video', 'audio', 'document']:
-            handle_media_message(conversation, contact, channel, message_data, content_type, wamid) 
+        # if content_type in ['text', 'button']:
+        #     handle_text_message(conversation, contact, message_data, content, wamid)
+        # elif content_type in ['image', 'video', 'audio', 'document']:
+        #     handle_media_message(conversation, contact, channel, message_data, content_type, wamid) 
 
         connect_web_socket(
             channel.channle_id,

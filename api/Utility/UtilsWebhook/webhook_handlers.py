@@ -1,6 +1,7 @@
 """
 Handler functions for webhook processing.
 """
+from asyncio.windows_events import NULL
 from django.db import transaction
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
 from api.Consumers.utils_websocket import (
@@ -158,8 +159,9 @@ def handle_incoming_message(value: dict) -> dict:
             phone_number=contact_phonenumber,
             account_id=account
         )
-        contact.name = contact_name
-        contact.save()
+        if contact.name != NULL:
+            contact.name = contact_name
+            contact.save()
         
         conversation, _ = Conversation.objects.get_or_create(
             contact_id=contact,
@@ -176,14 +178,13 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.status = 'open'
         conversation.save()
     
-    # Always store message in database regardless of conversation state
-    if content_type in ['text', 'button']:
-        handle_text_message(conversation, contact, message_data, content, wamid)
-    elif content_type in ['image', 'video', 'audio', 'document']:
-        handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
-    
     # Handle WebSocket connection for bot state
     if conversation.state == 'start_bot':
+    # Always store message in database regardless of conversation state
+        if content_type in ['text', 'button']:
+            handle_text_message(conversation, contact, message_data, content, wamid)
+        elif content_type in ['image', 'video', 'audio', 'document']:
+            handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
         connect_web_socket(
             channel.channle_id,
             conversation.conversation_id,

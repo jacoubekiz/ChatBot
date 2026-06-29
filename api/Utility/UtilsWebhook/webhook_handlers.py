@@ -178,13 +178,12 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.status = 'open'
         conversation.save()
     
-    
+    if content_type in ['text', 'button']:
+        handle_text_message(conversation, contact, message_data, content, wamid)
+    elif content_type in ['image', 'video', 'audio', 'document']:
+        handle_media_message(conversation, contact, channel, message_data, content_type, wamid) 
     # Handle WebSocket connection for bot state
     if conversation.state == 'start_bot':
-        # if content_type in ['text', 'button']:
-        #     handle_text_message(conversation, contact, message_data, content, wamid)
-        # elif content_type in ['image', 'video', 'audio', 'document']:
-        #     handle_media_message(conversation, contact, channel, message_data, content_type, wamid) 
 
         connect_web_socket(
             channel.channle_id,

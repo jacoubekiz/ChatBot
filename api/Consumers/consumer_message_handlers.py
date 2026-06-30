@@ -106,7 +106,7 @@ class MessageHandlers:
                 "status_message": "sent"
             })
         else:
-            error_message = data_.get('error', {}).get('message', 'Unknown error')
+            error_message = response_data.get('error', {}).get('message', 'Unknown error')
             # whatsapp_message_id = None
     # except Exception as error:
         # Store failed message in database with error details

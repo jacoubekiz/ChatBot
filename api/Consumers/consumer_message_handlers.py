@@ -74,19 +74,20 @@ class MessageHandlers:
 
     async def handle_template_message(self, data: dict) -> None:
         """Handle WhatsApp template messages."""
-        try:
-            channel = await self._get_channel(data['channel_id'])
+        # try:
+        channel = await self._get_channel(data['channel_id'])
 
-            response = await sync_to_async(requests.post)(
-                f"{WhatsAppAPI.BASE_URL}/{channel.phone_number_id}/messages",
-                headers={
-                    "Authorization": f"Bearer {channel.tocken}",
-                    "Content-Type": "application/json"
-                },
-                data=json.dumps(data["template_info"])
-            )
+        response = await sync_to_async(requests.post)(
+            f"{WhatsAppAPI.BASE_URL}/{channel.phone_number_id}/messages",
+            headers={
+                "Authorization": f"Bearer {channel.tocken}",
+                "Content-Type": "application/json"
+            },
+            data=json.dumps(data["template_info"])
+        )
 
-            response_data = await sync_to_async(response.json)()
+        response_data = await sync_to_async(response.json)()
+        if 'messages' in response_data:
             whatsapp_message_id = response_data['messages'][0]['id']
 
             message_id = await self._create_chat_message(
@@ -104,17 +105,19 @@ class MessageHandlers:
                 "contact_id": await self.get_contact_id(message_id.message_id),
                 "status_message": "sent"
             })
-
-        except Exception as error:
-            # Store failed message in database with error details
-            await self._create_failed_message(
-                conversation_id=await self._get_conversation(data["conversation_id"]),
-                user=self.consumer.user,
-                content_type=data["content_type"],
-                content=data["content"],
-                error_message=str(error)
-            )
-            await self._send_error_message(str(error))
+        else:
+            error_message = data_.get('error', {}).get('message', 'Unknown error')
+            # whatsapp_message_id = None
+    # except Exception as error:
+        # Store failed message in database with error details
+        await self._create_failed_message(
+            conversation_id=await self._get_conversation(data["conversation_id"]),
+            user=self.consumer.user,
+            content_type=data["content_type"],
+            content=data["content"],
+            error_message=error_message
+        )
+        await self._send_error_message(str(error_message))
 
     async def _broadcast_message(self, payload: dict) -> None:
         """Broadcast message to all channel members."""

@@ -107,17 +107,15 @@ class MessageHandlers:
             })
         else:
             error_message = response_data.get('error', {}).get('message', 'Unknown error')
-            # whatsapp_message_id = None
-    # except Exception as error:
         # Store failed message in database with error details
-        await self._create_failed_message(
-            conversation_id=await self._get_conversation(data["conversation_id"]),
-            user=self.consumer.user,
-            content_type=data["content_type"],
-            content=data["content"],
-            error_message=error_message
-        )
-        await self._send_error_message(str(error_message))
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(data["conversation_id"]),
+                user=self.consumer.user,
+                content_type=data["content_type"],
+                content=data["content"],
+                error_message=error_message
+            )
+            await self._send_error_message(str(error_message))
 
     async def _broadcast_message(self, payload: dict) -> None:
         """Broadcast message to all channel members."""

@@ -85,7 +85,7 @@ class ChatMessage(models.Model):
     content = models.TextField(max_length=1000, blank=True, null=True)
     caption = models.CharField(max_length=500, blank=True, null=True)
     wamid = models.CharField(max_length=500)
-    error_message = models.CharField(max_length=255, null=True, blank=True)
+    error_message = models.CharField(max_length=1000, null=True, blank=True)
     status_message = models.CharField(choices=STATUS_MESSAGE, max_length=20, default='sent')
     status_updated_at = models.DateTimeField(auto_now_add=True)
     media_url = models.URLField(null=True, blank=True)

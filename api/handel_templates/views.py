@@ -52,7 +52,7 @@ class ListCreateTemplate(APIView):
         result = response.json()
         return Response(result, status=status.HTTP_200_OK)
 
-class HandleFileUpload(APIView):
+class GetUrl(APIView):
     def post(self, request, channel_id):
         channel = get_object_or_404(Channle, channle_id=channel_id)
         file = request.FILES['file']
@@ -69,50 +69,16 @@ class HandleFileUpload(APIView):
         with open(full_path, "rb") as f:
             file_bytes = f.read()
         
+        print(full_path)
         file_size = len(file_bytes)
         file_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
-        
-        # 1) Resolve App ID
-        app_id = resolve_app_id_from_token(f"{channel.tocken}")
-        
-        # 2) Start resumable upload session
-        init_url = f"https://graph.facebook.com/v22.0/{app_id}/uploads"
-        init_params = {
-            "file_name": file_name,
-            "file_length": str(file_size),
-            "file_type": file_type,
-            "access_token": f"{channel.tocken}",
+        data = {
+            'path': full_path,
+            'file_size': file_size,
+            'file_type': file_type
         }
-        init_resp = _http_post(init_url, params=init_params)
-        init_json = init_resp.json()
-        upload_session_id = init_json.get("id")
         
-        if not upload_session_id:
-            raise MetaApiError(f"Upload session init did not return id: {init_json}")
-        
-        # 3) Upload the bytes to the session to obtain the file handle
-        upload_url = f"https://graph.facebook.com/v22.0/{upload_session_id}"
-        upload_headers = {
-            "Authorization": f"Bearer {channel.tocken}",
-            "file_offset": "0",
-            "Content-Type": "application/octet-stream",
-            "Content-Length": str(file_size),
-        }
-        upload_resp = _http_post(upload_url, headers=upload_headers, data=file_bytes)
-        
-        try:
-            upload_json = upload_resp.json()
-        except Exception:
-            raise MetaApiError(f"Upload returned non-JSON (status {upload_resp.status_code}): {upload_resp.text}")
-        
-        file_handle = upload_json.get("h")
-        if not file_handle:
-            raise MetaApiError(f"Upload did not return a file handle: {upload_json}")
-        
-        # Optional: Clean up local file after upload
-        # os.remove(full_path)
-        
-        return Response({"file_handle": file_handle}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
         
 
 class GetTemplate(APIView):

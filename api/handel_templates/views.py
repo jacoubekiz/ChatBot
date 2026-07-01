@@ -53,29 +53,41 @@ class ListCreateTemplate(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 class GetUrl(APIView):
-    def post(self, request, channel_id):
-        channel = get_object_or_404(Channle, channle_id=channel_id)
-        file = request.FILES['file']
+    def post(self, request):
+        # channel = get_object_or_404(Channle, channle_id=channel_id)
+        file = request.FILES.get('file')
         
-        # Save file locally first
-        file_name = file.name
-        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        if not file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate unique filename to avoid conflicts
+        file_extension = os.path.splitext(file.name)[1]
+        unique_filename = f"{file.name.split('.')[0]}_{os.urandom(8).hex()}{file_extension}"
+        
+        # Save file to media/uploads directory
+        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_path = os.path.join(upload_dir, unique_filename)
         
         # Save the uploaded file
-        saved_path = default_storage.save(file_name, ContentFile(file.read()))
-        full_path = os.path.join(settings.MEDIA_ROOT, saved_path)
+        with open(file_path, 'wb') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
         
-        # Now the file exists, get its details
-        with open(full_path, "rb") as f:
-            file_bytes = f.read()
+        # Generate URL for the uploaded file
+        file_url = f"{settings.MEDIA_URL}uploads/{unique_filename}"
         
-        print(full_path)
-        file_size = len(file_bytes)
-        file_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
+        # Get file details
+        file_size = os.path.getsize(file_path)
+        file_type = mimetypes.guess_type(unique_filename)[0] or 'application/octet-stream'
+        
         data = {
-            'path': full_path,
+            'url': file_url,
+            'file_name': unique_filename,
             'file_size': file_size,
-            'file_type': file_type
+            'file_type': file_type,
+            'original_name': file.name
         }
         
         return Response(data, status=status.HTTP_200_OK)

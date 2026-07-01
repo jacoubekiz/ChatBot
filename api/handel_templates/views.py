@@ -9,6 +9,7 @@ import requests
 import json
 import os
 import mimetypes
+from urllib.parse import quote
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from api.utils import resolve_app_id_from_token, _http_post, MetaApiError
@@ -75,8 +76,10 @@ class GetUrl(APIView):
             for chunk in file.chunks():
                 f.write(chunk)
         
-        # Generate URL for the uploaded file
-        file_url = f"{settings.MEDIA_URL}uploads/{unique_filename}"
+        # Generate full URL for the uploaded file with domain and URL-encoded filename
+        base_url = "https://chatapi.icsl.me"
+        encoded_filename = quote(unique_filename)
+        file_url = f"{base_url}{settings.MEDIA_URL}uploads/{encoded_filename}"
         
         # Get file details
         file_size = os.path.getsize(file_path)

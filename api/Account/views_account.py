@@ -5,6 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from api.Account.models_account import Account
 from api.Auth.models_auth import CustomUser
+from api.handel_templates.models_template import TemplateBox
 from api.Account.serializers_account import (
     AddAccountSerializer, 
     UpdateAccountSerializer, 
@@ -25,6 +26,7 @@ class CreateListAccount(GenericAPIView):
             user=user,
             name=user.username
         )
+        template_box, _ = TemplateBox.objects.get_or_create(account=account, box_name=f'box for accont{account.name}')
         return Response(status=status.HTTP_201_CREATED)
 
     def get(self, request):

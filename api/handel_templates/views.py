@@ -11,9 +11,11 @@ import os
 import mimetypes
 from urllib.parse import quote
 from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from api.Flow.models_flow import Flow
+from .models_template import TemplateBox, Template, TemplateBoxTemplate
+from api.Account.models_account import Account
 from api.utils import resolve_app_id_from_token, _http_post, MetaApiError
-from pathlib import Path
+from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 
 class ListCreateTemplate(APIView):
@@ -137,22 +139,53 @@ class SendTemplate(APIView):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {channel.tocken}"
         }
-        # template_info.update()
-        template_info.update({"to": request.data.get('to')})
-        template_info["template"]["name"] = request.data.get('name')
-        template_info["template"]["language"]["code"] = request.data.get('code')
-        template_info["template"]["components"] = request.data.get('components')
-        template_data = json.dumps(template_info)
-        conversation = Conversation.objects.get(contact_id__phone_number=template_info.get('to'))
+        
+        # Get template info from request
+        template_info_request = request.data.get('template_info', {})
+        
+        # Build template payload
+        template_payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": request.data.get('to'),
+            "type": "template",
+            "template": {
+                "name": template_info_request.get('template', {}).get('name'),
+                "language": {
+                    "code": template_info_request.get('template', {}).get('language', {}).get('code')
+                },
+                "components": template_info_request.get('template', {}).get('components', [])
+            }
+        }
+        
+        # Filter out button components with empty parameters
+        components = template_payload["template"]["components"]
+        filtered_components = []
+        for component in components:
+            if component.get("type") == "button":
+                # Only include button if it has parameters
+                if component.get("parameters") and len(component.get("parameters", [])) > 0:
+                    filtered_components.append(component)
+            else:
+                filtered_components.append(component)
+        
+        template_payload["template"]["components"] = filtered_components
+        
+        template_data = json.dumps(template_payload)
+        conversation = Conversation.objects.get(contact_id__phone_number=request.data.get('to'))
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
+        
+        # Check for errors in response
+        if 'error' in result:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        
         chat_message = ChatMessage.objects.create(
             conversation_id = conversation,
-            # user_id = CustomUser1.objects.filter(id=15).first(),
             content_type = "text",
-            content = template_info.get('content_template', ''),
+            content = request.data.get('content', ''),
             from_message = 'bot',
-            wamid = result.get('messages', '')[0].get('id', '')
+            wamid = result.get('messages', [{}])[0].get('id', '')
         )
         return Response(result, status=status.HTTP_200_OK)
     
@@ -202,3 +235,26 @@ class FileUploadView(APIView):
 
         file_handle = upload_json.get("h")
         return Response({"file_handle": file_handle}, status=status.HTTP_201_CREATED)
+
+class ListCreateTemplateButtons(APIView):
+    permission_classes = [IsAuthenticated,]
+
+    def post(self, request, templatebox_id):
+        template_box = get_object_or_404(TemplateBox, id=templatebox_id)
+        account = get_object_or_404(Account, account_id=template_box.account.account_id)
+
+        template = Template.objects.create(
+            account=account,
+            template_id = request.data['template_id'],
+            template_name = request.data['template_name']
+        )
+        for button in request.data['buttons'] :
+            flow = get_object_or_404(Flow, id=button.get('flow_id', ''))
+            template_buttons = TemplateBoxTemplate.objects.create(
+                template_box = template_box,
+                template = template,
+                button_name = button.get('button_name', ''),
+                flow = flow
+            )
+
+        return Response(status=status.HTTP_201_CREATED)

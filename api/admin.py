@@ -42,11 +42,7 @@ from api.Utility.models_utility import (
     UploadImage
 )
 from api.Campaign.models_campaign import WhatsAppCampaign, AnalyticsCampaign
-# @admin.register(CustomUser1)
-# class CustomUser1Admin(admin.ModelAdmin):
-#     list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
-#     search_fields = ('email', 'username', 'first_name', 'last_name')
-#     ordering = ('email',)
+from api.handel_templates.models_template import Template, TemplateBox, TemplateBoxTemplate
 
 
 class CustomUserAdmin(UserAdmin):
@@ -185,3 +181,6 @@ admin.site.register(Tag)
 admin.site.register(AnalyticsCampaign)
 admin.site.register(Group)
 admin.site.register(APILog)
+admin.site.register(Template)
+admin.site.register(TemplateBox)
+admin.site.register(TemplateBoxTemplate)

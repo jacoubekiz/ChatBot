@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from api.Flow.models_flow import Flow
 from api.Channel.models_channel import Channle
 from api.Flow.serializers_flow import SerializerFlows
+import json, requests
 
 
 class AddListFlows(GenericAPIView):
@@ -15,7 +16,11 @@ class AddListFlows(GenericAPIView):
         channel = get_object_or_404(Channle, channle_id=channel_id)
         flow = request.data['flow']
         flow_name = request.data['flow_name']
-        flow_ = Flow.objects.create(account=channel.account_id, flow=flow, flow_name=flow_name)
+        flow_ = Flow.objects.create(
+            account=channel.account_id, 
+            flow=flow, 
+            flow_name=flow_name,
+        )
         channel.flows.add(flow_)
         channel.save()
 

@@ -73,12 +73,12 @@ class ViewLogin(GenericAPIView):
         except:
             user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
-            account = get_object_or_404(Account, user=user)
-            box_template = get_object_or_404(TemplateBox, account=account)
+            # account = get_object_or_404(Account, user=user)
+            # box_template = get_object_or_404(TemplateBox, account=account)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
                 'tokens':tokens,
-                'template_box': box_template.id,
+                # 'template_box': box_template.id,
                 'user': {
                     'id':user.id,
                     'name':user.username,

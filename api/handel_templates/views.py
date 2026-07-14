@@ -31,6 +31,7 @@ class ListCreateTemplate(APIView):
         responses = []
         results = response.json()
         for result in results.get('data', []):
+            template_box = TemplateBoxTemplate.objects.filter(template__template_id=result.get('id', '')).first()
             responses.append(
                 {
                     "name":result.get('name', ''),
@@ -38,11 +39,12 @@ class ListCreateTemplate(APIView):
                     "status" : result.get('status', ''),
                     "language": result.get('language', ''),
                     "id": result.get('id', ''),
-                    "components": result.get('components', [])
+                    "components": result.get('components', []),
+                    "button_name": template_box.button_name if template_box else '',
+                    "flow": template_box.flow.flow_name if template_box else ''
                 }
             )
 
-            print(results)
         return Response({"results":responses}, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
@@ -206,14 +208,14 @@ class FileUploadView(APIView):
         file_size = len(file_bytes)
         file_type = mimetypes.guess_type(file_path)[0]
         # 1) Resolve App ID
-        app_id = resolve_app_id_from_token(f"{channel.tocken[7:]}")
+        app_id = resolve_app_id_from_token(f"{channel.tocken}")
         # 2) Start resumable upload session
         init_url = f"https://graph.facebook.com/v22.0/{app_id}/uploads"
         init_params = {
             "file_name": file_name,
             "file_length": str(file_size),
             "file_type": file_type,
-            "access_token": f"{channel.tocken[7:]}",
+            "access_token": f"{channel.tocken}",
         }
         init_resp = _http_post(init_url, params=init_params)
         init_json = init_resp.json()

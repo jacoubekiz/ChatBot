@@ -4,7 +4,7 @@ from api.Channel.models_channel import Channle
 from api.Flow.models_flow import Flow
 
 class Template(models.Model):
-    account = models.OneToOneField(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     template_id = models.CharField(max_length= 100)
     template_name = models.CharField(max_length= 100)
 

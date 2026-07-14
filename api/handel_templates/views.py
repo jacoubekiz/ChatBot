@@ -248,7 +248,7 @@ class ListCreateTemplateButtons(APIView):
         template_box = get_object_or_404(TemplateBox, id=templatebox_id)
         account = get_object_or_404(Account, account_id=template_box.account.account_id)
 
-        template = Template.objects.create(
+        template, _ = Template.objects.get_or_create(
             account=account,
             template_id = request.data['template_id'],
             template_name = request.data['template_name']

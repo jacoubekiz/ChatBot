@@ -37,9 +37,12 @@ class ListCreateTemplate(APIView):
                     "category": result.get('category', ''),
                     "status" : result.get('status', ''),
                     "language": result.get('language', ''),
-                    "id": result.get('id', '')
+                    "id": result.get('id', ''),
+                    "components": result.get('components', [])
                 }
             )
+
+            print(results)
         return Response({"results":responses}, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
@@ -147,7 +150,7 @@ class SendTemplate(APIView):
         template_payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
-            "to": request.data.get('to'),
+            "to": template_info_request.get('to'),
             "type": "template",
             "template": {
                 "name": template_info_request.get('template', {}).get('name'),
@@ -172,7 +175,7 @@ class SendTemplate(APIView):
         template_payload["template"]["components"] = filtered_components
         
         template_data = json.dumps(template_payload)
-        conversation = Conversation.objects.get(contact_id__phone_number=request.data.get('to'))
+        conversation = Conversation.objects.get(contact_id__phone_number=template_info_request.get('to'))
         response = requests.post(url, headers=headers, data=template_data)
         result = response.json()
         

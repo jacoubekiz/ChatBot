@@ -1,15 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from api.Account.models_account import Account, Team, CustomUser
-
+from django.shortcuts import get_object_or_404
+from api.handel_templates.models_template import TemplateBox
 
 class AccontSerializer(serializers.ModelSerializer):
     channel_id = serializers.SerializerMethodField(read_only=True)
     email = serializers.SerializerMethodField(read_only=True)
+    template_box = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Account
         fields = '__all__'
 
+    def get_template_box(self, obj):
+        template_box = get_object_or_404(TemplateBox, account=obj)
+        return template_box.id
+        
     def get_channel_id(self, obj):
         try:
             return obj.channle_set.all().first().channle_id

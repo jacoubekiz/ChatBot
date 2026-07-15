@@ -30,22 +30,37 @@ class ListCreateTemplate(APIView):
         response = requests.get(url, headers=headers)
         responses = []
         results = response.json()
+        
         for result in results.get('data', []):
-            template_box = TemplateBoxTemplate.objects.filter(template__template_id=result.get('id', '')).first()
+            template_id = result.get('id', '')
+            
+            # Get TemplateBoxTemplate records for this specific template
+            template_box_templates = TemplateBoxTemplate.objects.filter(
+                template__template_id=template_id
+            ).select_related('flow', 'template', 'template_box')
+            
+            # Build buttons list for this template
+            buttons = []
+            for template_box_template in template_box_templates:
+                buttons.append({
+                    "button_name": template_box_template.button_name,
+                    "flow_id": template_box_template.flow.id if template_box_template.flow else None,
+                    "flow_name": template_box_template.flow.flow_name if template_box_template.flow else None,
+                })
+            
             responses.append(
                 {
-                    "name":result.get('name', ''),
+                    "name": result.get('name', ''),
                     "category": result.get('category', ''),
-                    "status" : result.get('status', ''),
+                    "status": result.get('status', ''),
                     "language": result.get('language', ''),
-                    "id": result.get('id', ''),
+                    "id": template_id,
                     "components": result.get('components', []),
-                    "button_name": template_box.button_name if template_box else '',
-                    "flow": template_box.flow.flow_name if template_box else ''
+                    "template_box_templates": buttons
                 }
             )
-
-        return Response({"results":responses}, status=status.HTTP_200_OK)
+        
+        return Response({"results": responses}, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):
         channel = get_object_or_404(Channle, channle_id= channel_id)
@@ -115,7 +130,26 @@ class GetTemplate(APIView):
         }
 
         response = requests.get(url, headers=headers)
-        return Response(response.json(), status=status.HTTP_200_OK)
+        result = response.json()
+        
+        # Get TemplateBoxTemplate records for this specific template
+        template_box_templates = TemplateBoxTemplate.objects.filter(
+            template__template_id=template_id
+        ).select_related('flow', 'template', 'template_box')
+        
+        # Build buttons list for this template
+        buttons = []
+        for template_box_template in template_box_templates:
+            buttons.append({
+                "button_name": template_box_template.button_name,
+                "flow_id": template_box_template.flow.id if template_box_template.flow else None,
+                "flow_name": template_box_template.flow.flow_name if template_box_template.flow else None
+            })
+        
+        # Add template_box_templates to the response
+        result['template_box_templates'] = buttons
+        
+        return Response(result, status=status.HTTP_200_OK)
     
 
 template_info = {

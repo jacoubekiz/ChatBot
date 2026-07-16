@@ -5,7 +5,8 @@ from .views import (
     GetTemplate,
     SendTemplate,
     FileUploadView,
-    ListCreateTemplateButtons
+    ListCreateTemplateButtons,
+    UpdateTemplateButtons
 )
 
 urlpatterns = [
@@ -14,5 +15,6 @@ urlpatterns = [
     path('get-template/', GetTemplate.as_view(), name='get-template'),
     path('send-template/<str:channel_id>/', SendTemplate.as_view(), name='send_template'),
     path('file-upload/<str:channel_id>/', FileUploadView.as_view(), name='file-upload'),
-    path('create-template-buttons/<str:templatebox_id>/', ListCreateTemplateButtons.as_view())
+    path('create-template-buttons/<str:templatebox_id>/', ListCreateTemplateButtons.as_view()),
+    path('update-template-buttons/<str:template_id>/', UpdateTemplateButtons.as_view())
 ]

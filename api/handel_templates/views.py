@@ -46,6 +46,7 @@ class ListCreateTemplate(APIView):
                     "button_name": template_box_template.button_name,
                     "flow_id": template_box_template.flow.id if template_box_template.flow else None,
                     "flow_name": template_box_template.flow.flow_name if template_box_template.flow else None,
+
                 })
             
             responses.append(
@@ -297,3 +298,19 @@ class ListCreateTemplateButtons(APIView):
             )
 
         return Response(status=status.HTTP_201_CREATED)
+
+class UpdateTemplateButtons(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, template_id):
+        template = get_object_or_404(Template, template_id=template_id)
+        for button in request.data['buttons']:
+            button_template = TemplateBoxTemplate.objects.filter(
+                template=template, 
+                button_name=button.get('button_name', '')).all()
+            flow = get_object_or_404(Flow, id=button.get('flow', ''))
+            button_template.flow = flow
+            button_template.save()
+    
+        return Response(status=status.HTTP_200_OK)
+

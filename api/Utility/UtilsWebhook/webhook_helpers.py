@@ -73,12 +73,14 @@ def extract_message_data(value: dict) -> dict:
         return {}
     
     message = messages[0]
+    button_data = message.get('button', {})
     return {
         'from': message.get('from', ''),
         'id': message.get('id', ''),
         'type': message.get('type', ''),
         'text': message.get('text', {}).get('body', ''),
-        'button': message.get('button', {}).get('text', ''),
+        'button': button_data.get('text', ''),
+        'button_payload': button_data.get('payload', ''),
         'interactive': message.get('interactive', {}).get('button_reply', {}).get('title', ''),
         'image': message.get('image', {}),
         'video': message.get('video', {}),

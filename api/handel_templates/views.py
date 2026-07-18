@@ -308,7 +308,7 @@ class UpdateTemplateButtons(APIView):
             button_template = TemplateBoxTemplate.objects.filter(
                 template=template, 
                 button_name=button.get('button_name', '')).all()
-            flow = get_object_or_404(Flow, id=button.get('flow', ''))
+            flow = get_object_or_404(Flow, id=button.get('flow_id', ''))
             button_template.flow = flow
             button_template.save()
     

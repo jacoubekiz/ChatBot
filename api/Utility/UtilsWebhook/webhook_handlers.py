@@ -188,36 +188,6 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.status = 'open'
         conversation.save()
     
-    # Handle template button click for flow redirection using button payload
-    if message_data.get('type') == 'button' and message_data.get('button_payload'):
-        button_payload = message_data.get('button_payload', '')
-        from api.Flow.models_flow import Chat, Flow
-        from api.Channel.models_channel import Channle
-        
-        # Get or create Chat record and assign flow by payload value
-        try:
-            flow = Flow.objects.get(id=button_payload)
-            chat, created = Chat.objects.get_or_create(
-                conversation_id=conversation.conversation_id,
-                channel_id=channel,
-                defaults={
-                    'flow': flow,
-                    'state': 'start',
-                    'isSent': False
-                }
-            )
-            if not created:
-                chat.flow = flow
-                chat.state = 'start'
-                chat.isSent = False
-                chat.save()
-            
-            conversation.state = 'start_bot'
-            conversation.status = 'open'
-            conversation.save()
-        except Flow.DoesNotExist:
-            pass  # Flow not found, continue normal processing
-    
     # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':
         # In bot state, only send to bot integration - it will handle storage and display
@@ -233,6 +203,7 @@ def handle_incoming_message(value: dict) -> dict:
     else:
         # In non-bot state, store message and broadcast to UI
         if content_type in ['text', 'button']:
+            # payload = 
             handle_text_message(conversation, contact, message_data, content, wamid)
         elif content_type in ['image', 'video', 'audio', 'document']:
             handle_media_message(conversation, contact, channel, message_data, content_type, wamid)

@@ -39,7 +39,6 @@ class ViewLogin(GenericAPIView):
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             team = Team.objects.filter(members__id=user.id).first()
             account_id = team.account_id.account_id
-            box_template = get_object_or_404(TemplateBox, account=account)
             channel_id = Channle.objects.filter(account_id__account_id=account_id).first()
             if user.role_user == 'admin':
                 data = {
@@ -50,7 +49,6 @@ class ViewLogin(GenericAPIView):
                         'role':user.role_user,
                         'account_id': account_id,
                         'channel_id': channel_id.channle_id,
-                        'template_box': box_template.id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
                 }
@@ -60,7 +58,6 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'name':user.username,
-                        'template_box': box_template.id,
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
                             "account_id":account_id,
@@ -73,8 +70,6 @@ class ViewLogin(GenericAPIView):
         except:
             user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
-            # account = get_object_or_404(Account, user=user)
-            # box_template = get_object_or_404(TemplateBox, account=account)
             team = Team.objects.filter(members__id=user.id).first()
             account_id = team.account_id.account_id
             tokens = {'refresh':str(token), 'access':str(token.access_token)}

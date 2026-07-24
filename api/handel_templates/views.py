@@ -120,6 +120,7 @@ class GetUrl(APIView):
         
 
 class GetTemplate(APIView):
+
     def get(self, request):
         template_id = request.GET.get('template_id')
         channel_id = request.GET.get('channel_id')
@@ -150,6 +151,20 @@ class GetTemplate(APIView):
         # Add template_box_templates to the response
         result['template_box_templates'] = buttons
         
+        return Response(result, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        template_name = request.GET.get('template_name')
+        channel_id = request.GET.get('channel_id')
+        channel = get_object_or_404(Channle, channle_id=channel_id)
+        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?name={template_name}"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {channel.tocken}"
+        }
+
+        response = requests.delete(url, headers=headers)
+        result = response.json()
         return Response(result, status=status.HTTP_200_OK)
     
 

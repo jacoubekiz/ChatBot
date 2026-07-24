@@ -71,7 +71,7 @@ class ViewLogin(GenericAPIView):
             user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
             team = Team.objects.filter(members__id=user.id).first()
-            account_id = team.account_id.account_id
+            account_id = team.account_id.account_id if team else None
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
                 'tokens':tokens,

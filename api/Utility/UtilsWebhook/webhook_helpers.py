@@ -80,6 +80,7 @@ def extract_message_data(value: dict) -> dict:
         'text': message.get('text', {}).get('body', ''),
         'button': message.get('button', {}).get('text', ''),
         'payload': message.get('button', {}).get('payload', ''),
+        'button_text': message.get('button', {}).get('text', ''),
         'interactive': message.get('interactive', {}).get('button_reply', {}).get('title', ''),
         'image': message.get('image', {}),
         'video': message.get('video', {}),

@@ -191,8 +191,10 @@ def handle_incoming_message(value: dict) -> dict:
     # Handle template button click for flow redirection using button payload
     if message_data.get('type') == 'button' and message_data.get('payload'):
         button_payload = message_data.get('payload', '')
-        content = message_data.get('button_text')  
+        content = message_data.get('button_text') 
         # Get or create Chat record and assign flow by payload value
+
+        handle_text_message(conversation, contact, message_data, content, wamid)
         try:
             flow = Flow.objects.get(id=button_payload)
             chat, created = Chat.objects.get_or_create(

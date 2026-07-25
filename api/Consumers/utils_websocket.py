@@ -4,7 +4,7 @@ import websocket
 
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id):
     """Connect to WebSocket and send bot integration message."""
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -36,7 +36,7 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
 
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id, contact_id):
     """Send text message via WebSocket."""
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

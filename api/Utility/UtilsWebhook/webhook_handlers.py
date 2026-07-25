@@ -1,6 +1,7 @@
 """
 Handler functions for webhook processing.
 """
+from api.Flow.models_flow import Chat, Flow
 from asyncio.windows_events import NULL
 from django.db import transaction
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
@@ -187,6 +188,33 @@ def handle_incoming_message(value: dict) -> dict:
         conversation.state = 'start_bot'
         conversation.status = 'open'
         conversation.save()
+    
+    # Handle template button click for flow redirection using button payload
+    if message_data.get('type') == 'button' and message_data.get('payload'):
+        button_payload = message_data.get('payload', '')        
+        # Get or create Chat record and assign flow by payload value
+        try:
+            flow = Flow.objects.get(id=button_payload)
+            chat, created = Chat.objects.get_or_create(
+                conversation_id=contact_phonenumber,
+                channel_id=channel,
+                defaults={
+                    'flow': flow,
+                    'state': 'start',
+                    'isSent': False
+                }
+            )
+            if not created:
+                chat.flow = flow
+                chat.state = 'start'
+                chat.isSent = False
+                chat.save()
+            
+            conversation.state = 'start_bot'
+            conversation.status = 'open'
+            conversation.save()
+        except Flow.DoesNotExist:
+            pass  # Flow not found, continue normal processing
     
     # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':

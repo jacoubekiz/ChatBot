@@ -89,15 +89,41 @@ class ListCreateGroupView(ListCreateAPIView):
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        account_id = self.kwargs['account_id']
+        tag = self.request.query_params.get('tag')
+        
+        # Filter by account
+        queryset = queryset.filter(account_id=account_id)
+        
+        # If tag is provided, filter groups related to that tag
+        if tag:
+            # Get conversations with this tag
+            conversations = Conversation.objects.filter(tags__tag_id=tag)
+            # Get contacts from those conversations
+            contact_ids = conversations.values_list('contact_id', flat=True).distinct()
+            # Filter groups that contain any of these contacts
+            queryset = queryset.filter(contact__in=contact_ids).distinct()
+        
+        return queryset
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['account_id'] = self.kwargs['account_id']
+        
+        # If creating with tag, get all contacts with that tag
         tag = self.request.query_params.get('tag')
-        members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
-        if not members:
-            return Response({'error':'No members found'}, status=status.HTTP_200_OK)
-        context["members"] = members
+        if tag and self.request.method == 'POST':
+            # Get conversations with this tag
+            conversations = Conversation.objects.filter(tags__tag_id=tag)
+            # Get contacts from those conversations
+            contact_ids = conversations.values_list('contact_id', flat=True).distinct()
+            context['members'] = list(contact_ids)
+        
         return context
+    
+    
     
 
 class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):

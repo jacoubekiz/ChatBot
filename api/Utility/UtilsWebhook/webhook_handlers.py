@@ -2,7 +2,6 @@
 Handler functions for webhook processing.
 """
 from api.Flow.models_flow import Chat, Flow
-from asyncio.windows_events import NULL
 from django.db import transaction
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
 from api.Consumers.utils_websocket import (

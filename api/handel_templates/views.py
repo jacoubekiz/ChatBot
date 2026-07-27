@@ -154,10 +154,11 @@ class GetTemplate(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
     def delete(self, request):
+        template_id = request.GET.get('template_id')
         template_name = request.GET.get('template_name')
         channel_id = request.GET.get('channel_id')
         channel = get_object_or_404(Channle, channle_id=channel_id)
-        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?name={template_name}"
+        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?hsm_ids={template_id}&name={template_name}"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {channel.tocken}"
@@ -198,6 +199,14 @@ class SendTemplate(APIView):
         # Get template info from request
         template_info_request = request.data.get('template_info', {})
         
+        # Normalize component types to uppercase for WhatsApp API compliance
+        components = []
+        for component in template_info_request.get('template', {}).get('components', []):
+            normalized_component = component.copy()
+            if 'type' in normalized_component:
+                normalized_component['type'] = normalized_component['type'].upper()
+            components.append(normalized_component)
+        
         # Build template payload
         template_payload = {
             "messaging_product": "whatsapp",
@@ -209,7 +218,7 @@ class SendTemplate(APIView):
                 "language": {
                     "code": template_info_request.get('template', {}).get('language', {}).get('code')
                 },
-                "components": template_info_request.get('template', {}).get('components', [])
+                "components": components
             }
         }
         

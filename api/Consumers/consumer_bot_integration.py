@@ -239,39 +239,61 @@ class BotIntegration:
             return False
 
     async def reset_flow(self, channel, source_id, conversation_id, wamid, content, contact_name):
-        reset_flow = False
-        restart_keyword = await database_sync_to_async(list)(RestartKeyword.objects.filter(channel_id=channel.channle_id))
-        for rest in restart_keyword:
-            if rest.keyword == content:
-                reset_flow = True
-                ch = await self._update_chat_for_restart(source_id, channel, await self._get_default_flow(rest))
-                if ch:
-                    message_id = await self._create_chat_message(
-                        conversation_id=await self._get_conversation(conversation_id),
-                        user=None,
-                        content_type=ContentType.TEXT,
-                        content=content,
-                        whatsapp_message_id=wamid,
-                        from_message=contact_name
-                    )
-                    await self._broadcast_message_flow({
-                        "phoneNumber":await self._get_phone_number(conversation_id),
-                        "conversation_id": conversation_id,
-                        "content":content,
-                        "content_type":"text",
-                        "wamid": wamid,
-                        "created_at": f"{message_id.created_at}",
-                        "wamid":wamid,
-                        "message_id": message_id.message_id,
-                        "from_bot":"False",
-                        "status_message": "sent"
-                    })
-                    await database_sync_to_async(ch.update_state)('start')
-                    ch.isSent = False
-                    await database_sync_to_async(ch.save)()    
-            else:
-                ch = await self._get_chat(source_id, channel)
-        return reset_flow, ch
+        """Reset flow if content matches a restart keyword."""
+        # Get restart keywords for this channel
+        restart_keywords = await database_sync_to_async(list)(
+            RestartKeyword.objects.filter(channel_id=channel.channle_id)
+        )
+        
+        # Check if content matches any restart keyword
+        matching_keyword = None
+        for keyword in restart_keywords:
+            if keyword.keyword == content:
+                matching_keyword = keyword
+                break
+        
+        if matching_keyword:
+            # Content is a restart keyword - reset the flow
+            ch = await self._update_chat_for_restart(
+                source_id, 
+                channel, 
+                await self._get_default_flow(matching_keyword)
+            )
+            
+            if ch:
+                # Store the restart message in database
+                message_id = await self._create_chat_message(
+                    conversation_id=await self._get_conversation(conversation_id),
+                    user=None,
+                    content_type=ContentType.TEXT,
+                    content=content,
+                    whatsapp_message_id=wamid,
+                    from_message=contact_name
+                )
+                
+                # Broadcast message to UI
+                await self._broadcast_message_flow({
+                    "phoneNumber": await self._get_phone_number(conversation_id),
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": "text",
+                    "wamid": wamid,
+                    "created_at": f"{message_id.created_at}",
+                    "message_id": message_id.message_id,
+                    "from_bot": "False",
+                    "status_message": "sent"
+                })
+                
+                # Reset chat state
+                await database_sync_to_async(ch.update_state)('start')
+                ch.isSent = False
+                await database_sync_to_async(ch.save)()
+            
+            return True, ch
+        else:
+            # Not a restart keyword - get existing chat
+            ch = await self._get_chat(source_id, channel)
+            return False, ch
 
     async def _get_flow_by_trigger(self, channel, content, source_id):
         try:

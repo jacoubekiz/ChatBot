@@ -21,8 +21,10 @@ from django.conf import settings
 class ListCreateTemplate(APIView):
 
     def get(self, request, channel_id):
+        after = request.GET.get('after', '')
+        before = request.GET.get('before', '')
         channel = get_object_or_404(Channle, channle_id= channel_id)
-        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates"
+        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?limit=100&after={after}&before={before}"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {channel.tocken}"
@@ -30,7 +32,8 @@ class ListCreateTemplate(APIView):
         response = requests.get(url, headers=headers)
         responses = []
         results = response.json()
-        
+        cursors = results.get('paging', {}).get('cursors', {})
+
         for result in results.get('data', []):
             template_id = result.get('id', '')
             
@@ -60,7 +63,7 @@ class ListCreateTemplate(APIView):
                     "template_box_templates": buttons
                 }
             )
-        
+        responses.append(cursors)
         return Response({"results": responses}, status=status.HTTP_200_OK)
     
     def post(self, request, channel_id):

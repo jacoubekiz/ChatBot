@@ -8,12 +8,10 @@ from .views_contact import (
     ReasignConversation,
     InitiateLiveChat,
     ChangeConversationStatus,
-    CreateTagView,
     AddTagToConversation
 )
 
 urlpatterns = [
-    path('tags/<str:account_id>/', CreateTagView.as_view(), name='create_tag'),
     path('add-tag-to-conversation/<str:conversation_id>/', AddTagToConversation.as_view(), name='add_tag_to_conversation'),
     path('create-contact/<account_id>/<channel_id>/', CreateNewContact.as_view(), name='create_contact'),
     path('update-delete-contact/<str:contact_id>/<str:channel_id>/', RetrieveUpdateDestroyContactView.as_view(), name='update_delete_contact'),

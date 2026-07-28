@@ -3,13 +3,17 @@ from .views_messaging import (
     CreateListQuickReplyView,
     RetrieveUpdateDeleteQuickReplyView,
     ListCreateTriggerView,
+    RetrieveUpdateDeleteTagView,
     RetrieveUpdateDeleteTriggerView,
     ListCreateGroupView,
     RetrieveUpdateDeleteGroupView,
     ListMessgesForSpecificConversation,
+    CreateTagView,
 )
 
 urlpatterns = [
+    path('tags/<str:account_id>/', CreateTagView.as_view(), name='create_tag'),
+    path('get-put-del/<str:tag_id>/', RetrieveUpdateDeleteTagView.as_view()),
     path('list-messages/<str:conversation_id>/', ListMessgesForSpecificConversation.as_view(), name='list-messages'),
     path('quick-reply/<str:account_id>/', CreateListQuickReplyView.as_view(), name='quick_replies'),
     path('delete-retriev-update-quick-reply/<str:quickreply_id>/<str:account_id>/', RetrieveUpdateDeleteQuickReplyView.as_view(), name='delete_quick_reply'),

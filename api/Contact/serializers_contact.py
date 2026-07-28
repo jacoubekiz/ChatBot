@@ -28,12 +28,6 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             return repr
 
 
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
-
-
 class TagConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag

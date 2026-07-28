@@ -271,7 +271,6 @@ class BotIntegration:
                     await database_sync_to_async(ch.save)()    
             else:
                 ch = await self._get_chat(source_id, channel)
-                print(f"sfsfsfdsfsdfasfas-----------{ch}")
         return reset_flow, ch
 
     async def _get_flow_by_trigger(self, channel, content, source_id):

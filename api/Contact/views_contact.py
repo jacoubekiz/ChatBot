@@ -162,24 +162,3 @@ class AddTagToConversation(APIView):
             conversation.tags.add(tag)
         conversation.save()
         return Response(status=status.HTTP_200_OK)
-
-
-class CreateTagView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, account_id):
-        name = request.data['name']
-        account = get_object_or_404(Account, account_id=account_id)
-        tag = Tag.objects.create(
-            name=name,
-            account_id=account
-        )
-        return Response({'tag_id': tag.tag_id, 'name': tag.name}, status=status.HTTP_201_CREATED)
-    
-    def get(self, request, account_id):
-        account = get_object_or_404(Account, account_id=account_id)
-        tags = account.tag_set.all()
-        data = []
-        for tag in tags:
-            data.append({'tag_id': tag.tag_id, 'name': tag.name})
-        return Response(data, status=status.HTTP_200_OK)

@@ -5,6 +5,11 @@ from api.Account.models_account import Account
 from api.Contact.models_contact import ChatMessage
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage

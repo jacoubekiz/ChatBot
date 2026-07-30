@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from api.Channel.models_channel import Channle
 from api.Campaign.models_campaign import WhatsAppCampaign
-from api.Campaign.serializers_campaign import CampaignsSerializer, CampaignSerializer_
+from api.Campaign.serializers_campaign import CampaignsSerializer, CampaignSerializer_, CreateCampaignSerializer
 import pandas as pd
 import json
 from ..tasks import send_whatsapp_campaign
@@ -27,15 +27,18 @@ class CreateListCampaignsView(GenericAPIView):
     
     def post(self, request, channel_id):
         channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
-        data = request.data
-        file = request.data['file']
-        content_template = data.get('content_template')
-        campaign_name = data.get('campaign_name')
+        
+        serializer = CreateCampaignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        file = serializer.validated_data['file']
+        content_template = serializer.validated_data.get('content_template')
+        campaign_name = serializer.validated_data['campaign_name']
         user = request.user
         whatsappcampaign = WhatsAppCampaign.objects.create(
                     account_id=channel.account_id,
                     name=campaign_name,
-                    template_name=data.get('template_name'),
+                    template_name=serializer.validated_data['template_name'],
                     created_by=user,
                 )
         df = pd.read_csv(file)
@@ -45,9 +48,9 @@ class CreateListCampaignsView(GenericAPIView):
             'account':channel.account_id.account_id,
             'content_template': content_template,
             'user_id': user.id,
-            'language_code': data.get('language_code'),
-            'template_name': data.get('template_name'),
-            'template_parameters': data.get('template_parameters'),
+            'language_code': serializer.validated_data['language_code'],
+            'template_name': serializer.validated_data['template_name'],
+            'template_parameters': serializer.validated_data.get('template_parameters'),
             'whatsappcampaign': whatsappcampaign.campaign_id
         }
         payload = json.dumps(data_e)

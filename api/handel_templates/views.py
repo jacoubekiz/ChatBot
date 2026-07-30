@@ -24,7 +24,7 @@ class ListCreateTemplate(APIView):
         after = request.GET.get('after', '')
         before = request.GET.get('before', '')
         channel = get_object_or_404(Channle, channle_id= channel_id)
-        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?limit=25&after={after}&before={before}"
+        url = f"https://graph.facebook.com/v22.0/{channel.organization_id}/message_templates?limit=200&after={after}&before={before}"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {channel.tocken}"

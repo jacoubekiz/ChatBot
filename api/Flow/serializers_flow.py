@@ -15,3 +15,18 @@ class SerializerFlows(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.flow.url)
         return None
 
+
+class CreateFlowSerializer(serializers.Serializer):
+    flow = serializers.FileField(required=True)
+    flow_name = serializers.CharField(required=True, max_length=255)
+
+
+class SetDefaultFlowSerializer(serializers.Serializer):
+    flow_id = serializers.IntegerField(required=True)
+    is_default = serializers.CharField(required=True)
+
+
+class UpdateFlowSerializer(serializers.Serializer):
+    flow_name = serializers.CharField(required=True, max_length=255)
+    flow = serializers.FileField(required=True)
+

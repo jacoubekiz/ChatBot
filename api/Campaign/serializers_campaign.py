@@ -30,3 +30,18 @@ class CampaignsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'status':{'read_only':True},
         }
+
+
+class CreateCampaignSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True, help_text="CSV file containing recipient data")
+    campaign_name = serializers.CharField(required=True, max_length=255, help_text="Name of the campaign")
+    template_name = serializers.CharField(required=True, help_text="WhatsApp template name")
+    language_code = serializers.CharField(required=True, help_text="Template language code (e.g., en, ar)")
+    content_template = serializers.CharField(required=False, allow_blank=True, help_text="Template content")
+    template_parameters = serializers.JSONField(required=False, allow_null=True, help_text="Template parameters")
+    
+    def validate_language_code(self, value):
+        valid_codes = ['en', 'ar', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja']
+        if value.lower() not in valid_codes:
+            raise serializers.ValidationError(f"Invalid language code. Must be one of: {valid_codes}")
+        return value.lower()

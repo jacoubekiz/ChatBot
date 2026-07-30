@@ -3,6 +3,7 @@ from rest_framework.generics import (
     ListCreateAPIView, 
     RetrieveUpdateDestroyAPIView
 )
+from rest_framework import serializers
 from api.Account.serializers_account import (
     TeamSerializer, 
     TeamMemberSerializer, 
@@ -19,6 +20,28 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from api.Account.models_account import Account, Team
 from api.Auth.models_auth import CustomUser
+
+
+class AssigningPermissionsSerializer(serializers.Serializer):
+    role = serializers.CharField(required=True)
+
+
+class AddUserForTeamSerializer(serializers.Serializer):
+    users = serializers.ListField(required=True, child=serializers.IntegerField())
+    
+    def validate(self, attrs):
+        request = self.context.get('request')
+        keword = request.GET.get('keword')
+        
+        if not keword:
+            raise serializers.ValidationError({'keword': 'keword query parameter is required'})
+        
+        valid_keywords = ['add', 'delete']
+        if keword not in valid_keywords:
+            raise serializers.ValidationError({'keword': f"Invalid keword. Must be one of: {valid_keywords}"})
+        
+        attrs['keword'] = keword
+        return attrs
 
 class ListCreateTeamView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -50,9 +73,17 @@ class RetrieveUpdateDeleteTeamView(RetrieveUpdateDestroyAPIView):
 
 
 class AssigningPermissions(APIView):
+    serializer_class = AssigningPermissionsSerializer
+    
     def post(self, request, user_id):
+        serializer = AssigningPermissionsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        if 'add' not in request.GET:
+            return Response({'error': 'add query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         user = CustomUser.objects.get(id=user_id)
-        role = request.data['role']
+        role = serializer.validated_data['role']
         add = request.GET.get('add')
         content_type = ContentType.objects.get_for_model(CustomUser)
         permission = Permission.objects.get(
@@ -95,17 +126,23 @@ class CreateTeamMemberView(GenericAPIView):
 
 class AddUserForTeam(GenericAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = AddUserForTeamSerializer
     
     def post(self, request, team_id):
+        serializer = AddUserForTeamSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
         team = Team.objects.filter(team_id=team_id).first()
         if not team:
-            return Response({'error':'Team not found'}, status=status.HTTP_200_OK)
-        users = request.data['users']
-        keword = request.GET.get('keword')
+            return Response({'error':'Team not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        users = serializer.validated_data['users']
+        keword = serializer.validated_data['keword']
+        
         for user in users:
             t_user = CustomUser.objects.filter(id=user).first()
             if not t_user:
-                return Response({'error':'User not found'}, status=status.HTTP_200_OK)
+                return Response({'error':'User not found'}, status=status.HTTP_404_NOT_FOUND)
             if keword == 'add':
                 team.members.add(t_user)
             elif keword == 'delete':

@@ -38,7 +38,8 @@ class ViewLogin(GenericAPIView):
             token = RefreshToken.for_user(user)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             team = Team.objects.filter(members__id=user.id).first()
-            account_id = team.account_id.account_id
+            manager = user.manager
+            account_id = get_object_or_404(Account, user=manager)
             channel_id = Channle.objects.filter(account_id__account_id=account_id).first()
             if user.role_user == 'admin':
                 data = {
@@ -47,7 +48,7 @@ class ViewLogin(GenericAPIView):
                         'id':user.id,
                         'name':user.username,
                         'role':user.role_user,
-                        'account_id': account_id,
+                        'account_id': account_id.account_id,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -61,8 +62,8 @@ class ViewLogin(GenericAPIView):
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
                             "account_id":account_id,
-                            "name": team.account_id.name,
-                            "email": team.account_id.user.email,
+                            "name": account_id.name,
+                            "email": account_id.user.email,
                             "channel_id":channel_id.channle_id
                         }
                     }

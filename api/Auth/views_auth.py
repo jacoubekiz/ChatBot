@@ -72,13 +72,15 @@ class ViewLogin(GenericAPIView):
             user = get_object_or_404(CustomUser, email=email)
             token = RefreshToken.for_user(user)
             team = Team.objects.filter(members__id=user.id).first()
-            account_id = team.account_id.account_id if team else None
+            manager = user.manager
+            account_id = get_object_or_404(Account, user=manager)
+            # account_id = team.account_id.account_id if team else None
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             data = {
                 'tokens':tokens,
                 'user': {
                     'id':user.id,
-                    'account_id': account_id,
+                    'account_id': account_id.account_id,
                     'name':user.username,
                     'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                 }

@@ -57,7 +57,7 @@ class CustomUserAdmin(UserAdmin):
          {'fields':('email', 'password',)}
      ),
     ('User Information',
-        {'fields':('username', 'first_name', 'last_name',)}
+        {'fields':('username', 'first_name', 'last_name', 'manager')}
     ),
     ('Permissions', 
         {'fields':('is_staff', 'is_superuser', 'is_active', 'groups','user_permissions', 'role_user')}

@@ -4,6 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 from django.contrib.contenttypes.models import ContentType
+from api.Account.models_account import Account
 from api.Auth.models_auth import CustomUser, Duration, WorkingTime, Calendar, BookAnAppointment
 
 
@@ -128,7 +129,6 @@ class AddUserSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        from api.models import Account
         manager = self.context.get('account_id')
         manager_ = Account.objects.get(account_id=manager)
         roles = self.context.get('role')

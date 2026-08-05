@@ -181,10 +181,13 @@ def handle_incoming_message(value: dict) -> dict:
     
     # Check for restart keyword
     restart_keywords = get_restart_keywords(channel.channle_id)
-    content = message_data.get('text', message_data.get('button', message_data.get('interactive', '')))
-    with open('content_user_reply.txt', 'a') as ff:
-        ff.write(f'start bot with: {content}\n')
-    
+    if message_data.get('text', '') != '':
+        content = message_data.get('text','')
+    elif message_data.get('button','') != '':
+        content = message_data.get('button','')
+    else:
+        content = message_data.get('interactive', '')
+    # content = message_data.get('text', message_data.get('button', message_data.get('interactive')))
     if content in restart_keywords:
         conversation.state = 'start_bot'
         conversation.status = 'open'
@@ -223,6 +226,7 @@ def handle_incoming_message(value: dict) -> dict:
     # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':
         # In bot state, only send to bot integration - it will handle storage and display
+        print(f"dfsdfsdfs sdfsdfsdf -----{content}")
         connect_web_socket(
             channel.channle_id,
             conversation.conversation_id,

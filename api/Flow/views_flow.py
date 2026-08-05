@@ -40,8 +40,7 @@ class AddListFlows(GenericAPIView):
 class SetDefaultFlow(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
-    serializer_class = SetDefaultFlowSerializer
-    
+
     def post(self, request, channel_id):
         serializer = SetDefaultFlowSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -56,9 +55,8 @@ class SetDefaultFlow(GenericAPIView):
             flows = channel.flows.all()
         except:
             return Response({"error":"Channel matching query does not exist"}, status=status.HTTP_404_NOT_FOUND)
-        
         for flow in flows:
-            if str(flow.id) == serializer.validated_data['flow_id']:
+            if flow.id == serializer.validated_data['flow_id']:
                 flow.is_default = request.GET['is_default']
                 flow.save()
             else:

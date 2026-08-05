@@ -182,6 +182,8 @@ def handle_incoming_message(value: dict) -> dict:
     # Check for restart keyword
     restart_keywords = get_restart_keywords(channel.channle_id)
     content = message_data.get('text', message_data.get('button', message_data.get('interactive', '')))
+    with open('content_question.txt', 'a') as t:
+        t.write(f"start bot with: {contect}")
     
     if content in restart_keywords:
         conversation.state = 'start_bot'

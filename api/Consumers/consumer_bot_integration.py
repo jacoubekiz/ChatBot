@@ -396,7 +396,8 @@ class BotIntegration:
                 "status_message": "sent"
             })
             with open('content_question.txt', 'a') as t:
-                t.write(f"receive redis: {choices}\n")
+                t.write(f": {choices}\n")
+                t.write(f"user choice: {user_reply}\n")
             if user_reply not in choices or user_reply == '':
                 error_message = question['message']['error']
                 message_wamid = await sync_to_async(send_message)(

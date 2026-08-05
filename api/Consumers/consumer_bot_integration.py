@@ -90,10 +90,6 @@ class BotIntegration:
                         next_question_id = next_options[-1][1]
 
                 if r_type == 'button' or r_type == 'list':
-                    with open('content_question.txt', 'a') as t:
-                        t.write(f"receive redis: {choices}\n")
-                    # test_data = json.loads(data)
-                    # t.write(f"from redis: {test_data}\nnew_line-------------------\n")
                     state_ = await self._retype_content_list_or_button(content, channel, question, chat, r_type, choices, platform, message, data, choices_with_next, attribute_name, conversation_id, contact_name)
                     if state_:
                         return True
@@ -399,6 +395,8 @@ class BotIntegration:
                 "from_bot":"False",
                 "status_message": "sent"
             })
+            with open('content_question.txt', 'a') as t:
+                t.write(f"receive redis: {choices}\n")
             if user_reply not in choices or user_reply == '':
                 error_message = question['message']['error']
                 message_wamid = await sync_to_async(send_message)(

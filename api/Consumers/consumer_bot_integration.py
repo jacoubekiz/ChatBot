@@ -322,6 +322,8 @@ class BotIntegration:
         return flow
 
     async def _retype_content_list_or_button(self, content, channel, question, chat, r_type, choices, platform, message, data, choices_with_next, attribute_name, conversation_id, contact_name):
+        with open('jjjjj.txt', 'a') as ff:
+            ff.write(f"hello {content}\n")
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
         if not chat.isSent:
             chat.isSent = True

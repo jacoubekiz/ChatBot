@@ -30,13 +30,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Handle new WebSocket connection."""
         self.room_group_name = f"chat_"
         self.user = self.scope['user']
+        self.account = self.scope['url_route']['kwargs']['account']
 
         query_string = self.scope['query_string'].decode()
         query_params = dict(url_parser.parse_qsl(query_string))
         self.is_from_bot = query_params.get('from_bot')
 
         if self.user and self.user.is_authenticated:
-            await self._handle_authenticated_connection()
+            account = await self.db_helpers._get_account(self.account)
+            await self._handle_authenticated_connection(account)
         elif self.is_from_bot == 'False':
             await self._handle_unauthenticated_bot_connection()
         else:
@@ -49,12 +51,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    async def _handle_authenticated_connection(self) -> None:
+    async def _handle_authenticated_connection(self, account) -> None:
         """Handle connection for authenticated users."""
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-        conversations = await self.db_helpers.get_conversations()
+        conversations = await self.db_helpers.get_conversations(account)
 
         for conversation in conversations:
             last_message = await self.db_helpers.get_last_message(conversation.get('conversation_id'))

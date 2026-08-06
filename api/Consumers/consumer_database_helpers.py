@@ -1,7 +1,9 @@
 from channels.db import database_sync_to_async
+from django.db.models import Q
 from django.utils import timezone
 from api.Auth.models_auth import CustomUser
 from api.Channel.models_channel import Channle
+from api.Account.models_account import Account
 from api.Contact.models_contact import Conversation, ChatMessage
 from api.Contact.serializers_contact import ConversationSerializer
 
@@ -65,16 +67,16 @@ class DatabaseHelpers:
         )
 
     @database_sync_to_async
-    def get_conversations(self):
+    def get_conversations(self, account_id):
         """Get all conversations for a channel."""
         user = CustomUser.objects.get(id=self.consumer.user.id)
         permissions = list(user.get_all_permissions())
         if 'api.visibility all conversations' in permissions:
-            conversation = Conversation.objects.all()
+            conversation = Conversation.objects.filter(account_id=account_id)
             serializer = ConversationSerializer(conversation, many=True)
             return serializer.data
         else:
-            conversation = Conversation.objects.filter(user=self.consumer.user)
+            conversation = Conversation.objects.filter(Q(user=self.consumer.user) & Q(account_id=account_id))
             serializer = ConversationSerializer(conversation, many=True)
             return serializer.data
 
@@ -131,3 +133,8 @@ class DatabaseHelpers:
         """Get account based on channel."""
         channel = Channle.objects.get(channle_id=channel_id)
         return channel.account_id
+
+    @database_sync_to_async
+    def _get_account(self, account):
+        account = Account.objects.get(account_id=account)
+        return account

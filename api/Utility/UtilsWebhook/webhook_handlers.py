@@ -191,7 +191,7 @@ def handle_incoming_message(value: dict) -> dict:
         content = message_data.get('button','')
     else:
         content = message_data.get('interactive', '')
-    # content = message_data.get('text', message_data.get('button', message_data.get('interactive')))
+        
     if content in restart_keywords:
         conversation.state = 'start_bot'
         conversation.status = 'open'

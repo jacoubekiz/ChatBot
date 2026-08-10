@@ -22,7 +22,7 @@ class CreateFlowSerializer(serializers.Serializer):
 
 
 class SetDefaultFlowSerializer(serializers.Serializer):
-    flow_id = serializers.IntegerField(required=True)
+    flow_id = serializers.CharField(required=True, max_length=255)
 
 
 class UpdateFlowSerializer(serializers.Serializer):

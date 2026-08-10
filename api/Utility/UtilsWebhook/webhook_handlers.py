@@ -38,7 +38,7 @@ def handle_status_update(value: dict) -> dict:
     channel = get_channel_by_phone(display_phone_number)
     if not channel:
         return {'error': 'Channel not found'}
-    
+    account = channel.account_id
     chatmessage = get_chat_message_by_wamid(message_id)
     chatmessage.status_message = status_message
     chatmessage.save()
@@ -47,13 +47,14 @@ def handle_status_update(value: dict) -> dict:
         channel.channle_id,
         chatmessage.message_id,
         chatmessage.conversation_id.conversation_id,
-        status_message
+        status_message,
+        account
     )
     
     return {'success': True}
 
 
-def handle_text_message(conversation, contact, message_data: dict, content: str, wamid: str):
+def handle_text_message(conversation, contact, message_data: dict, content: str, wamid: str, account):
     """Handle text message creation and broadcasting."""
     # Check if message already exists to avoid duplicates
     existing_message = ChatMessage.objects.filter(wamid=wamid).first()
@@ -76,11 +77,12 @@ def handle_text_message(conversation, contact, message_data: dict, content: str,
         chat_message.created_at,
         contact.phone_number,
         conversation.channle_id.channle_id,
-        contact.contact_id
+        contact.contact_id,
+        account
     )
 
 
-def handle_media_message(conversation, contact, channel, message_data: dict, media_type: str, wamid: str):
+def handle_media_message(conversation, contact, channel, message_data: dict, media_type: str, wamid: str, account):
     """Handle media message download, creation and broadcasting."""
     # Check if message already exists to avoid duplicates
     existing_message = ChatMessage.objects.filter(wamid=wamid).first()
@@ -125,7 +127,8 @@ def handle_media_message(conversation, contact, channel, message_data: dict, med
                 chat_message.media_url,
                 media_data['mime_type'],
                 channel.channle_id,
-                contact.contact_id
+                contact.contact_id,
+                account
             )
         else:
             send_func(
@@ -138,7 +141,8 @@ def handle_media_message(conversation, contact, channel, message_data: dict, med
                 contact.phone_number,
                 chat_message.media_url,
                 channel.channle_id,
-                contact.contact_id
+                contact.contact_id,
+                account
             )
 
 
@@ -199,7 +203,7 @@ def handle_incoming_message(value: dict) -> dict:
         content = message_data.get('button_text') 
         # Get or create Chat record and assign flow by payload value
 
-        handle_text_message(conversation, contact, message_data, content, wamid)
+        handle_text_message(conversation, contact, message_data, content, wamid, account)
         try:
             flow = Flow.objects.get(id=button_payload)
             chat, created = Chat.objects.get_or_create(
@@ -235,15 +239,16 @@ def handle_incoming_message(value: dict) -> dict:
             content,
             wamid,
             contact_name,
-            contact.contact_id
+            contact.contact_id,
+            account
         )
     else:
         # In non-bot state, store message and broadcast to UI
         if content_type in ['text', 'button']:
             # payload = 
-            handle_text_message(conversation, contact, message_data, content, wamid)
+            handle_text_message(conversation, contact, message_data, content, wamid, account)
         elif content_type in ['image', 'video', 'audio', 'document']:
-            handle_media_message(conversation, contact, channel, message_data, content_type, wamid)
+            handle_media_message(conversation, contact, channel, message_data, content_type, wamid, account)
     
     return {'success': True}
 

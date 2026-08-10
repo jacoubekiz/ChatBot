@@ -3,6 +3,7 @@ from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from api.Contact.models_contact import Conversation, ChatMessage
 from .consumer_constants import MediaType, WhatsAppAPI
+from django.shortcuts import get_object_or_404
 from api.utils import send_message, process_and_send_voice_note
 
 

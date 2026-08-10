@@ -4,7 +4,8 @@ import websocket
 
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id, account):
     """Connect to WebSocket and send bot integration message."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -36,7 +37,8 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
 
 def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id, contact_id, account):
     """Send text message via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -60,7 +62,8 @@ def sent_message_text(conversation_id, content, content_type, wamid, message_id,
 
 def sent_message_image(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id, contact_id, account):
     """Send image message via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -85,7 +88,8 @@ def sent_message_image(conversation_id, caption, content_type, wamid, message_id
 
 def sent_message_video(conversation_id, caption, content_type, wamid, message_id, created_at, contact_phonenumber, media_url, channel_id, contact_id, account):
     """Send video message via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -110,7 +114,8 @@ def sent_message_video(conversation_id, caption, content_type, wamid, message_id
 
 def sent_message_audio(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, channel_id, contact_id, account):
     """Send audio message via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -135,7 +140,8 @@ def sent_message_audio(conversation_id, caption, content_type, wamid, message_id
 
 def sent_message_document(conversation_id, caption, content_type, wamid, message_id, created_at, phone_number, media_url, mime_type, channel_id, contact_id, account):
     """Send document message via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -160,7 +166,8 @@ def sent_message_document(conversation_id, caption, content_type, wamid, message
 
 def read_receipt(channel_id, message_id, conversation_id, status, account):
     """Send read receipt via WebSocket."""
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account}/?token=&from_bot=False"
+    account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

@@ -41,6 +41,7 @@ class MediaHandlers:
 
         file_path = await self._save_base64_file(data)
         try:
+            print('jsldfsldfjlasd')
             if media_type == 'audio' or media_type == 'voice':
                 result = await sync_to_async(process_and_send_voice_note)(
                     file_path, 

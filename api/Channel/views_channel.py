@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from api.Account.models_account import Account
 from api.Channel.models_channel import Channle
 from api.Channel.serializers_channel import ChannleSerializer
-
+from django.shortcuts import get_object_or_404
 
 class ListCreateChannelView(ListCreateAPIView):
     

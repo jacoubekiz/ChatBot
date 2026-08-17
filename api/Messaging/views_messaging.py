@@ -1,3 +1,4 @@
+import base64
 from rest_framework.generics import (
     GenericAPIView, 
     RetrieveUpdateDestroyAPIView, 
@@ -76,6 +77,26 @@ class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
         serializer.save(account_id=account_id)
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        
+        # Convert image to base64 if exists
+        if instance.image:
+            try:
+                with open(instance.image.path, 'rb') as image_file:
+                    image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                    data['image_base64'] = image_data
+                    data['image_content_type'] = 'image/jpeg' if instance.image.name.endswith('.jpg') or instance.image.name.endswith('.jpeg') else 'image/png'
+            except Exception as e:
+                data['image_base64'] = None
+                data['image_error'] = str(e)
+        else:
+            data['image_base64'] = None
+        
+        return Response(data)
 
 
 class ListCreateTriggerView(GenericAPIView):

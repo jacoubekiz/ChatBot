@@ -15,7 +15,7 @@ class Channle(models.Model):
     tocken = models.TextField(max_length=600)
     phone_number = models.PositiveBigIntegerField()
     phone_number_id = models.PositiveBigIntegerField()
-    organization_id = models.PositiveBigIntegerField(default=1)
+    organization_id = models.PositiveBigIntegerField()
     name = models.CharField(max_length=50)
     flows = models.ManyToManyField(Flow, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

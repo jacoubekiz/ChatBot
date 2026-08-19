@@ -5,17 +5,17 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from api.Flow.models_flow import Flow
 from api.Channel.models_channel import Channle
-from api.Flow.serializers_flow import SerializerFlows, CreateFlowSerializer, SetDefaultFlowSerializer, UpdateFlowSerializer
+from api.Flow.serializers_flow import SerializerFlows
 import json, requests
 
 
 class AddListFlows(GenericAPIView):
     
     permission_classes = [IsAuthenticated]
-    serializer_class = CreateFlowSerializer
+    serializer_class = SerializerFlows
     
     def post(self, request, channel_id):
-        serializer = CreateFlowSerializer(data=request.data)
+        serializer = SerializerFlows(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         channel = get_object_or_404(Channle, channle_id=channel_id)
@@ -42,11 +42,11 @@ class SetDefaultFlow(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, channel_id):
-        serializer = SetDefaultFlowSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
         if 'is_default' not in request.GET:
             return Response({'error': 'is_default query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if 'flow_id' not in request.data:
+            return Response({'error': 'flow_id is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             channel = Channle.objects.filter(channle_id=channel_id).first()
@@ -56,7 +56,7 @@ class SetDefaultFlow(GenericAPIView):
         except:
             return Response({"error":"Channel matching query does not exist"}, status=status.HTTP_404_NOT_FOUND)
         for flow in flows:
-            if flow.id == serializer.validated_data['flow_id']:
+            if flow.id == request.data['flow_id']:
                 flow.is_default = request.GET['is_default']
                 flow.save()
             else:
@@ -67,10 +67,10 @@ class SetDefaultFlow(GenericAPIView):
 
 
 class UpdateFlowView(GenericAPIView):
-    serializer_class = UpdateFlowSerializer
+    serializer_class = SerializerFlows
     
     def put(self, request, pk):
-        serializer = UpdateFlowSerializer(data=request.data)
+        serializer = SerializerFlows(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         flow = get_object_or_404(Flow, id=pk)

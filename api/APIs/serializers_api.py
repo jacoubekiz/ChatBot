@@ -10,7 +10,11 @@ class APISerializer(serializers.ModelSerializer):
         fields = ['api_id', 'api_name', 'endpoint', 'method', 'body', 'parameters', 'response']
         extra_kwargs = {
             'parameters':{'read_only':True},
+            'api_name': {'required': True, 'allow_blank':False},
+            'endpoint': {'required': True, 'allow_blank':False},
+            'method': {'required': True, 'allow_blank':False},
         }
+
 
     def create(self, validated_data):
         parameters = self.context.get('parameters', [])
@@ -32,11 +36,13 @@ class APISerializer(serializers.ModelSerializer):
         custome_attrs = self.context.get('custome_attrs', [])
         if custome_attrs:
             for custome_attr in custome_attrs:
-                Custome_attribute.objects.create(
-                    attribute=Attribute.objects.filter(id=custome_attr['attr_id']),
-                    variable=custome_attr['variable'],
-                    api=api
-                )
+                attribute = Attribute.objects.filter(id=custome_attr['attr_id']).first()
+                if attribute:
+                    Custome_attribute.objects.create(
+                        attribute=attribute,
+                        variable=custome_attr['variable'],
+                        api=api
+                    )
         return api
     
     def update(self, instance, validated_data):
@@ -64,11 +70,13 @@ class APISerializer(serializers.ModelSerializer):
         if custome_attrs:
             Custome_attribute.objects.filter(api=instance).delete()
             for custome_attr in custome_attrs:
-                Custome_attribute.objects.create(
-                    attribute=Attribute.objects.filter(id=custome_attr['attr_id']).first(),
-                    variable=custome_attr['variable'],
-                    api=instance
-                )
+                attribute = Attribute.objects.filter(id=custome_attr['attr_id']).first()
+                if attribute:
+                    Custome_attribute.objects.create(
+                        attribute=attribute,
+                        variable=custome_attr['variable'],
+                        api=instance
+                    )
         return instance
 
 

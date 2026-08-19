@@ -89,7 +89,50 @@ class UpdateTeamMemberSerializer(serializers.ModelSerializer):
         instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
         instance.role_user = validated_data.get('role_user', instance.role_user)
         instance.save()
-        roles = self.context.get('role')
+        
+        # Validate conflicting permissions
+        roles = self.context.get('role', [])
+        if not isinstance(roles, list):
+            roles = [roles] if roles else []
+        
+        # Get all valid permission codenames for CustomUser
+        content_type = ContentType.objects.get_for_model(CustomUser)
+        valid_permissions = set(Permission.objects.filter(
+            content_type=content_type
+        ).values_list('codename', flat=True))
+        
+        # Check if all provided roles are valid permission codenames
+        invalid_roles = [r for r in roles if r not in valid_permissions]
+        if invalid_roles:
+            raise serializers.ValidationError({
+                'role': f'Invalid permission codenames: {invalid_roles}. Valid codenames are: {sorted(valid_permissions)}'
+            })
+        
+        # Reassignment permissions - mutually exclusive
+        reassign_permissions = [
+            'can_reassign_for_all_chat',
+            'can_reassign_for_own_chat', 
+            'can_not_reassign'
+        ]
+        selected_reassign = [r for r in roles if r in reassign_permissions]
+        
+        if len(selected_reassign) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one reassignment permission: can_reassign_for_all_chat, can_reassign_for_own_chat, or can_not_reassign'
+            })
+        
+        # Visibility permissions - mutually exclusive
+        visibility_permissions = [
+            'visibility_all_conversations',
+            'visibility_assigned_conversations'
+        ]
+        selected_visibility = [r for r in roles if r in visibility_permissions]
+        
+        if len(selected_visibility) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one visibility permission: visibility_all_conversations or visibility_assigned_conversations'
+            })
+        
         instance.user_permissions.clear()
         user = CustomUser.objects.get(email=instance.email)
         for role in roles:
@@ -126,6 +169,50 @@ class AddUserSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         password = attrs.get('password')
         validate_password(password)
+        
+        # Validate conflicting permissions
+        roles = self.context.get('role', [])
+        if not isinstance(roles, list):
+            roles = [roles] if roles else []
+        
+        # Get all valid permission codenames for CustomUser
+        content_type = ContentType.objects.get_for_model(CustomUser)
+        valid_permissions = set(Permission.objects.filter(
+            content_type=content_type
+        ).values_list('codename', flat=True))
+        
+        # Check if all provided roles are valid permission codenames
+        invalid_roles = [r for r in roles if r not in valid_permissions]
+        if invalid_roles:
+            raise serializers.ValidationError({
+                'role': f'Invalid permission codenames: {invalid_roles}. Valid codenames are: {sorted(valid_permissions)}'
+            })
+        
+        # Reassignment permissions - mutually exclusive
+        reassign_permissions = [
+            'can_reassign_for_all_chat',
+            'can_reassign_for_own_chat', 
+            'can_not_reassign'
+        ]
+        selected_reassign = [r for r in roles if r in reassign_permissions]
+        
+        if len(selected_reassign) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one reassignment permission: can_reassign_for_all_chat, can_reassign_for_own_chat, or can_not_reassign'
+            })
+        
+        # Visibility permissions - mutually exclusive
+        visibility_permissions = [
+            'visibility_all_conversations',
+            'visibility_assigned_conversations'
+        ]
+        selected_visibility = [r for r in roles if r in visibility_permissions]
+        
+        if len(selected_visibility) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one visibility permission: visibility_all_conversations or visibility_assigned_conversations'
+            })
+        
         return attrs
     
     def create(self, validated_data):
@@ -152,7 +239,50 @@ class AddUserSerializer(serializers.ModelSerializer):
         instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
         instance.role_user = validated_data.get('role_user', instance.role_user)
         instance.save()
-        roles = self.context.get('role')
+        
+        # Validate conflicting permissions
+        roles = self.context.get('role', [])
+        if not isinstance(roles, list):
+            roles = [roles] if roles else []
+        
+        # Get all valid permission codenames for CustomUser
+        content_type = ContentType.objects.get_for_model(CustomUser)
+        valid_permissions = set(Permission.objects.filter(
+            content_type=content_type
+        ).values_list('codename', flat=True))
+        
+        # Check if all provided roles are valid permission codenames
+        invalid_roles = [r for r in roles if r not in valid_permissions]
+        if invalid_roles:
+            raise serializers.ValidationError({
+                'role': f'Invalid permission codenames: {invalid_roles}. Valid codenames are: {sorted(valid_permissions)}'
+            })
+        
+        # Reassignment permissions - mutually exclusive
+        reassign_permissions = [
+            'can_reassign_for_all_chat',
+            'can_reassign_for_own_chat', 
+            'can_not_reassign'
+        ]
+        selected_reassign = [r for r in roles if r in reassign_permissions]
+        
+        if len(selected_reassign) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one reassignment permission: can_reassign_for_all_chat, can_reassign_for_own_chat, or can_not_reassign'
+            })
+        
+        # Visibility permissions - mutually exclusive
+        visibility_permissions = [
+            'visibility_all_conversations',
+            'visibility_assigned_conversations'
+        ]
+        selected_visibility = [r for r in roles if r in visibility_permissions]
+        
+        if len(selected_visibility) > 1:
+            raise serializers.ValidationError({
+                'role': 'You can only select one visibility permission: visibility_all_conversations or visibility_assigned_conversations'
+            })
+        
         instance.user_permissions.clear()
         user = CustomUser.objects.get(email=instance.email)
         for role in roles:

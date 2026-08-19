@@ -1,7 +1,7 @@
 import base64
 from rest_framework.generics import (
-    GenericAPIView, 
-    RetrieveUpdateDestroyAPIView, 
+    GenericAPIView,
+    RetrieveUpdateDestroyAPIView,
     ListCreateAPIView
 )
 from api.Core.pagination import CustomPaginatins
@@ -14,34 +14,35 @@ from api.Flow.models_flow import Trigger
 from api.Contact.models_contact import Conversation
 from api.Messaging.models_messaging import Group, QuickReply, Tag
 from api.Messaging.serializers_messaging import (
-    QuickReplySerializer, 
-    TriggerSerializer, 
+    QuickReplySerializer,
+    TriggerSerializer,
     GroupSerializer,
-    TagSerializer
+    TagSerializer,
+    ChatMessageSerializer
 )
 
 class CreateTagView(GenericAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = TagSerializer
 
     def post(self, request, account_id):
-        name = request.data['name']
         account = get_object_or_404(Account, account_id=account_id)
+        serializer = TagSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         tag = Tag.objects.create(
-            name=name,
+            name=serializer.validated_data['name'],
             account_id=account
         )
         return Response({'tag_id': tag.tag_id, 'name': tag.name}, status=status.HTTP_201_CREATED)
-    
+
     def get(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)
         tags = account.tag_set.all()
-        data = []
-        for tag in tags:
-            data.append({'tag_id': tag.tag_id, 'name': tag.name})
-        return Response(data, status=status.HTTP_200_OK)
+        serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RetrieveUpdateDeleteTagView(RetrieveUpdateDestroyAPIView):
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     lookup_field = 'tag_id'
@@ -70,20 +71,19 @@ class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
     lookup_field = 'quickreply_id'
 
     def get_queryset(self):
-        account = self.kwargs['account_id']
+        account_id = self.kwargs['account_id']
         quick_reply_id = self.kwargs['quickreply_id']
-        return QuickReply.objects.filter(account_id=account, quickreply_id=quick_reply_id).select_related('account_id')
-    
+        return QuickReply.objects.filter(account_id=account_id, quickreply_id=quick_reply_id).select_related('account_id')
+
     def perform_update(self, serializer):
-        account_id = get_object_or_404(Account, account_id=self.kwargs['account_id'])
-        serializer.save(account_id=account_id)
-    
+        account = get_object_or_404(Account, account_id=self.kwargs['account_id'])
+        serializer.save(account_id=account)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         data = serializer.data
-        
-        # Convert image to base64 if exists
+
         if instance.image:
             try:
                 with open(instance.image.path, 'rb') as image_file:
@@ -95,7 +95,7 @@ class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
                 data['image_error'] = str(e)
         else:
             data['image_base64'] = None
-        
+
         return Response(data)
 
 
@@ -123,8 +123,8 @@ class RetrieveUpdateDeleteTriggerView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         trigger_id = self.kwargs['id']
-        account = self.kwargs['account_id']
-        return Trigger.objects.filter(id=trigger_id, account_id=account)
+        account_id = self.kwargs['account_id']
+        return Trigger.objects.filter(id=trigger_id, account_id=account_id)
 
     def perform_update(self, serializer):
         account = get_object_or_404(Account, account_id=self.kwargs['account_id'])
@@ -135,39 +135,31 @@ class ListCreateGroupView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         account_id = self.kwargs['account_id']
         tag = self.request.query_params.get('tag')
-        
-        # Filter by account
+
         queryset = queryset.filter(account_id=account_id)
-        
-        # If tag is provided, filter groups related to that tag
+
         if tag:
-            # Get conversations with this tag
             conversations = Conversation.objects.filter(tags__tag_id=tag)
-            # Get contacts from those conversations
             contact_ids = conversations.values_list('contact_id', flat=True).distinct()
-            # Filter groups that contain any of these contacts
             queryset = queryset.filter(contact__in=contact_ids).distinct()
-        
+
         return queryset
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['account_id'] = self.kwargs['account_id']
-        
-        # If creating with tag, get all contacts with that tag
+
         tag = self.request.query_params.get('tag')
         if tag and self.request.method == 'POST':
-            # Get conversations with this tag
             conversations = Conversation.objects.filter(tags__tag_id=tag)
-            # Get contacts from those conversations
             contact_ids = conversations.values_list('contact_id', flat=True).distinct()
             context['members'] = list(contact_ids)
-        
+
         return context
     
     
@@ -179,14 +171,17 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     lookup_field = 'id'
 
+    def get_queryset(self):
+        account_id = self.kwargs['account_id']
+        return Group.objects.filter(account_id=account_id)
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['account_id'] = self.kwargs['account_id']
         tag = self.request.query_params.get('tag')
-        members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
-        if not members:
-            return {'error':'No members found'}
-        context["members"] = members
+        if tag:
+            members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
+            context['members'] = list(members)
         return context
 
 
@@ -196,8 +191,7 @@ class ListMessgesForSpecificConversation(GenericAPIView):
 
     def get(self, request, conversation_id):
         paginator = CustomPaginatins()
-        # paginator.page_size = 20
-        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
         messages = conversation.chatmessage_set.all().order_by('-created_at')
         result_page = paginator.paginate_queryset(messages, request)
         messages_serializer = ChatMessageSerializer(result_page, many=True)

@@ -17,6 +17,7 @@ from api.Auth.serializers_auth import (
 
 
 class RefreshTokenView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         refresh_token = request.data['refresh']
         token = RefreshToken(refresh_token)

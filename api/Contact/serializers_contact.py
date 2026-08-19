@@ -8,6 +8,14 @@ class ConversationContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ['contact_id', 'name', 'phone_number']
+        extra_kwargs = {
+            'phone_number': {
+                'error_messages': {
+                    'required': 'Phone number is required',
+                    'invalid': 'Invalid phone number format'
+                }
+            }
+        }
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
@@ -17,6 +25,34 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
         extra_kwargs = {
             'user_id':{'read_only': True},
+            'conversation_id': {
+                'error_messages': {
+                    'required': 'Conversation ID is required',
+                    'invalid': 'Invalid conversation ID'
+                }
+            },
+            'content_type': {
+                'error_messages': {
+                    'required': 'Content type is required',
+                    'invalid_choice': 'Invalid content type. Must be text, image, video, document, audio, or template'
+                }
+            },
+            'wamid': {
+                'error_messages': {
+                    'required': 'WhatsApp message ID is required',
+                    'max_length': 'WhatsApp message ID cannot exceed 500 characters'
+                }
+            },
+            'content': {
+                'error_messages': {
+                    'max_length': 'Content cannot exceed 1000 characters'
+                }
+            },
+            'caption': {
+                'error_messages': {
+                    'max_length': 'Caption cannot exceed 500 characters'
+                }
+            }
         }
 
     def to_representation(self, instance):
@@ -67,8 +103,20 @@ class ConverstionSerializerCreate(serializers.ModelSerializer):
         extra_kwargs = {
             'status':{'read_only': True},
             'conversation_id':{'read_only': True},
-            'contact_id':{'write_only':True},
-            'channle_id':{'write_only':True}
+            'contact_id':{
+                'write_only':True,
+                'error_messages': {
+                    'required': 'Contact ID is required',
+                    'invalid': 'Invalid contact ID'
+                }
+            },
+            'channle_id':{
+                'write_only':True,
+                'error_messages': {
+                    'required': 'Channel ID is required',
+                    'invalid': 'Invalid channel ID'
+                }
+            }
         }
 
 
@@ -132,9 +180,21 @@ class ContactSerializer(serializers.ModelSerializer):
                 'required':False,
                 'allow_null':False
             },
-            'conversation_id':{
-                'required':False,
-                'allow_null':False
+            'phone_number': {
+                'error_messages': {
+                    'required': 'Phone number is required',
+                    'invalid': 'Invalid phone number format'
+                }
+            },
+            'name': {
+                'error_messages': {
+                    'max_length': 'Name cannot exceed 50 characters'
+                }
+            },
+            'email': {
+                'error_messages': {
+                    'invalid': 'Invalid email format'
+                }
             }
         }
 

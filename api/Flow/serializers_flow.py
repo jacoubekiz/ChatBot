@@ -8,24 +8,24 @@ class SerializerFlows(serializers.ModelSerializer):
     class Meta:
         model = Flow
         fields = '__all__'
+        extra_kwargs = {
+            'flow_name': {
+                'error_messages': {
+                    'required': 'Flow name is required',
+                    'blank': 'Flow name cannot be empty',
+                    'max_length': 'Flow name cannot exceed 100 characters'
+                }
+            },
+            'flow': {
+                'error_messages': {
+                    'required': 'Flow file is required'
+                }
+            }
+        }
     
     def get_flow_url(self, obj):
         request = self.context.get('request')
         if obj.flow:
             return request.build_absolute_uri(obj.flow.url)
         return None
-
-
-class CreateFlowSerializer(serializers.Serializer):
-    flow = serializers.FileField(required=True)
-    flow_name = serializers.CharField(required=True, max_length=255)
-
-
-class SetDefaultFlowSerializer(serializers.Serializer):
-    flow_id = serializers.CharField(required=True, max_length=255)
-
-
-class UpdateFlowSerializer(serializers.Serializer):
-    flow_name = serializers.CharField(required=True, max_length=255)
-    flow = serializers.FileField(required=True)
 

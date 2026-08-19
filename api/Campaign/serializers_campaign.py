@@ -33,10 +33,42 @@ class CampaignsSerializer(serializers.ModelSerializer):
 
 
 class CreateCampaignSerializer(serializers.Serializer):
-    file = serializers.FileField(required=True, help_text="CSV file containing recipient data")
-    campaign_name = serializers.CharField(required=True, max_length=255, help_text="Name of the campaign")
-    template_name = serializers.CharField(required=True, help_text="WhatsApp template name")
-    language_code = serializers.CharField(required=True, help_text="Template language code (e.g., en, ar)")
+    file = serializers.FileField(
+        required=True, 
+        help_text="CSV file containing recipient data", 
+        error_messages={
+            'required': 'CSV file is required',
+            'invalid': 'Please upload a valid file',
+            'empty': 'The uploaded file is empty'
+        }
+    )
+
+    campaign_name = serializers.CharField(
+        required=True, 
+        max_length=255, 
+        help_text="Name of the campaign",
+        error_messages={
+            'required': 'Campaign name is required',
+            'blank': 'Campaign name cannot be blank',
+            'max_length': 'Campaign name cannot exceed 255 characters'
+        }
+    )
+
+    template_name = serializers.CharField(
+        required=True,
+        help_text="WhatsApp template name",
+        error_messages={
+            'required': 'Template name is required'
+        }
+    )
+
+    language_code = serializers.CharField(
+        required=True,
+        help_text="Template language code (e.g., en, ar)",
+        error_messages={
+            'required': 'Language code is required'
+        }
+    )    
     content_template = serializers.CharField(required=False, allow_blank=True, help_text="Template content")
     template_parameters = serializers.JSONField(required=False, allow_null=True, help_text="Template parameters")
     

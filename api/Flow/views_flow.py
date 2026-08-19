@@ -55,12 +55,15 @@ class SetDefaultFlow(GenericAPIView):
             flows = channel.flows.all()
         except:
             return Response({"error":"Channel matching query does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        is_default_value = request.GET['is_default'].lower() == 'true'
+        
         for flow in flows:
             if flow.id == request.data['flow_id']:
-                flow.is_default = request.GET['is_default']
+                flow.is_default = is_default_value
                 flow.save()
             else:
-                flow.is_default = 'False'
+                flow.is_default = False
                 flow.save()
 
         return Response(status=status.HTTP_200_OK)

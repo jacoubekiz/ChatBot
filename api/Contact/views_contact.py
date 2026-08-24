@@ -30,6 +30,8 @@ class CreateNewContact(GenericAPIView):
         data = request.data
         account = get_object_or_404(Account, account_id=account_id)
         channel = get_object_or_404(Channle, channle_id=channel_id)
+        if data['phone_number'] == '':
+            return Response({'error':'Phone Number is required'}, status=status.HTTP_400_BAD_REQUEST)
         contact, created = Contact.objects.get_or_create(
             phone_number=data['phone_number'], 
             account_id=account

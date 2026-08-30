@@ -16,12 +16,6 @@ class TagSerializer(serializers.ModelSerializer):
                     'blank': 'Tag name cannot be empty',
                     'max_length': 'Tag name cannot exceed 50 characters'
                 }
-            },
-            'account_id': {
-                'error_messages': {
-                    'required': 'Account ID is required',
-                    'invalid': 'Invalid account ID'
-                }
             }
         }
 

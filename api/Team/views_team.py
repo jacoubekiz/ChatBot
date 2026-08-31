@@ -110,6 +110,9 @@ class ListTeamMember(APIView):
 class CreateTeamMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, account_id):
+        if 'role' not in request.data:
+            return Response({'error': 'role is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
         data_request = request.data
         serializer = AddUserSerializer(
             data=data_request, 

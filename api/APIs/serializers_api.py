@@ -10,11 +10,43 @@ class APISerializer(serializers.ModelSerializer):
         fields = ['api_id', 'api_name', 'endpoint', 'method', 'body', 'parameters', 'response']
         extra_kwargs = {
             'parameters':{'read_only':True},
-            'api_name': {'required': True, 'allow_blank':False},
-            'endpoint': {'required': True, 'allow_blank':False},
-            'method': {'required': True, 'allow_blank':False},
+            'api_name': {
+                'required': True,
+                'allow_blank':False,
+                'error_messages': {
+                    'required': 'API name is required',
+                    'blank': 'API name cannot be empty'
+                }
+            },
+            'endpoint': {
+                'required': True,
+                'allow_blank':False,
+                'error_messages': {
+                    'required': 'Endpoint is required',
+                    'blank': 'Endpoint cannot be empty'
+                }
+            },
+            'method': {
+                'required': True,
+                'allow_blank':False,
+                'error_messages': {
+                    'required': 'HTTP method is required',
+                    'blank': 'HTTP method cannot be empty'
+                }
+            },
         }
 
+    def validate(self, attrs):
+        method = attrs.get('method', '').upper()
+        valid_methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+        
+        if method not in valid_methods:
+            raise serializers.ValidationError({
+                'method': f'Invalid HTTP method. Must be one of: {valid_methods}'
+            })
+        
+        attrs['method'] = method
+        return attrs
 
     def create(self, validated_data):
         parameters = self.context.get('parameters', [])

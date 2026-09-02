@@ -22,7 +22,7 @@ from api.Messaging.serializers_messaging import (
 )
 
 class CreateTagView(GenericAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = TagSerializer
 
     def post(self, request, account_id):

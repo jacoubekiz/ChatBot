@@ -31,7 +31,7 @@ from api.APIs.serializers_api import (
 )
 
 class ListCreateApiView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)

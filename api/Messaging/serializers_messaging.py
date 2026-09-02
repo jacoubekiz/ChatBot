@@ -16,6 +16,10 @@ class TagSerializer(serializers.ModelSerializer):
                     'blank': 'Tag name cannot be empty',
                     'max_length': 'Tag name cannot exceed 50 characters'
                 }
+            },
+            
+            'account_id': {
+                'read_only': True
             }
         }
 

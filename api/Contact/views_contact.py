@@ -157,6 +157,7 @@ class AddTagToConversation(APIView):
     def post(self, request, conversation_id):
         tag_ids = request.data.get('tag_ids', [])
         conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
+        conversation.tags.clear()
         for tag_id in tag_ids:
             tag = Tag.objects.filter(tag_id=tag_id).first()
             if not tag:

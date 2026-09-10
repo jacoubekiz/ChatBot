@@ -98,14 +98,8 @@ class UpdateTeamMemberSerializer(serializers.ModelSerializer):
                 'required': False
             }
         }
+    def validate(self, attrs):
 
-    def update(self, instance, validated_data):
-        instance.username = validated_data.get('username', instance.username)
-        instance.email = validated_data.get('email', instance.email)
-        instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
-        instance.role_user = validated_data.get('role_user', instance.role_user)
-        instance.save()
-        
         # Validate conflicting permissions
         roles = self.context.get('role', [])
         for ro in roles:
@@ -152,9 +146,21 @@ class UpdateTeamMemberSerializer(serializers.ModelSerializer):
                 'role': 'You can only select one visibility permission: visibility_all_conversations or visibility_assigned_conversations'
             })
         
+        return attrs
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
+        instance.role_user = validated_data.get('role_user', instance.role_user)
+        instance.save()
+        
+        roles = self.context.get('role', [])
+        
         instance.user_permissions.clear()
         user = CustomUser.objects.get(email=instance.email)
         for role in roles:
+            # print(MODELS.get(role["model"]))
             content_type = ContentType.objects.get_for_model(MODELS.get(role["model"]))
             for r in role["rols"]:
                 permission = Permission.objects.get(
@@ -252,7 +258,6 @@ class AddUserSerializer(serializers.ModelSerializer):
                     codename= r,
                     content_type=content_type
                 )
-                print(f"{r}    -------- True")
                 user.user_permissions.add(permission)
         user.set_password(password)
         user.save()

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from api.Core.forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission
 # from .handel_time import get_day_name
 from api.Account.models_account import Account, Team
 from api.APIs.models_api import (
@@ -184,3 +185,4 @@ admin.site.register(APILog)
 admin.site.register(Template)
 admin.site.register(TemplateBox)
 admin.site.register(TemplateBoxTemplate)
+admin.site.register(Permission)

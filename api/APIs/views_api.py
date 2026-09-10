@@ -1,26 +1,23 @@
 from rest_framework.generics import (
-    GenericAPIView, 
-    UpdateAPIView, 
-    DestroyAPIView, 
-    ListCreateAPIView, 
-    RetrieveUpdateDestroyAPIView, 
+    GenericAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    UpdateAPIView,
+    DestroyAPIView
 )
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from api.Flow.models_flow import (
-    Custome_attribute,
-    Attribute
-)
+from api.Account.models_account import Account
 from api.APIs.models_api import (
     API, 
     Parameter, 
     Api_parameter, 
-    Account,
     APILog
 )
+from api.Flow.models_flow import Custome_attribute, Attribute
 from api.APIs.serializers_api import (
     APISerializer, 
     APIParametersSerializer, 
@@ -29,9 +26,10 @@ from api.APIs.serializers_api import (
     ParameterSerializer, 
     SerializerAttributes
 )
+from api.APIs.permissions_api import APIPermissions
 
 class ListCreateApiView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, APIPermissions]
 
     def post(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)
@@ -96,7 +94,7 @@ class ListCreateApiView(APIView):
 
 
 class GetApiView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, APIPermissions]
     serializer_class = APISerializer
     lookup_field = 'api_id'
 
@@ -118,7 +116,7 @@ class GetApiView(GenericAPIView):
             
 
 class UpdateApiview(UpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, APIPermissions]
     serializer_class = APISerializer
     queryset = API.objects.all()
     lookup_field = 'api_id'
@@ -141,7 +139,7 @@ class SaveResponse(APIView):
 
 
 class DeleteAPIView(DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, APIPermissions]
     serializer_class = APISerializer
     queryset = API.objects.all()
     lookup_field = 'api_id'

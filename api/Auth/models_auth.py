@@ -34,15 +34,11 @@ class CustomUser(AbstractUser):
     
     class Meta:
         permissions = [
-            ('can_access_chatBotBuilder', 'Can Access ChatBot Builder'),
-            ('can_access_channels', 'Can Access Channels'),
-            ('can_access_team_members', 'Can Access Team Members'),
             ('can_reassign_for_all_chat', 'can reassign for all chat'),
             ('can_reassign_for_own_chat', 'can reassign for own chat'),
             ('can_not_reassign', 'can not reassign'),
             ('visibility_all_conversations', 'visibility all conversations'),
             ('visibility_assigned_conversations', 'visibility assigned conversations'),
-            ('can_access_developer', 'can access developer')
         ]
 
 

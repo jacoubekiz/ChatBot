@@ -4,9 +4,25 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 from django.contrib.contenttypes.models import ContentType
-from api.Account.models_account import Account
+from api.Account.models_account import Account, Team
+from api.Channel.models_channel import Channle
+from api.Contact.models_contact import Contact
+from api.Flow.models_flow import Flow
+from api.Messaging.models_messaging import Tag, Group, QuickReply
 from api.Auth.models_auth import CustomUser, Duration, WorkingTime, Calendar, BookAnAppointment
 
+MODELS ={
+    "Channle": Channle,
+    "Contact": Contact,
+    "Account": Account,
+    "Team": Team,
+    "Flow": Flow,
+    "Tag": Tag,
+    "Group": Group,
+    "QuickReply": QuickReply,
+    "CustomUser": CustomUser
+
+}
 
 class DurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,6 +108,9 @@ class UpdateTeamMemberSerializer(serializers.ModelSerializer):
         
         # Validate conflicting permissions
         roles = self.context.get('role', [])
+        for ro in roles:
+            roles = ro["rols"] if ro["model"] == 'CustomUser' else []
+
         if not isinstance(roles, list):
             roles = [roles] if roles else []
         
@@ -136,12 +155,13 @@ class UpdateTeamMemberSerializer(serializers.ModelSerializer):
         instance.user_permissions.clear()
         user = CustomUser.objects.get(email=instance.email)
         for role in roles:
-            content_type = ContentType.objects.get_for_model(CustomUser)
-            permission = Permission.objects.get(
-                codename= role,
-                content_type=content_type
-            )
-            user.user_permissions.add(permission)
+            content_type = ContentType.objects.get_for_model(MODELS.get(role["model"]))
+            for r in role["rols"]:
+                permission = Permission.objects.get(
+                    codename= r,
+                    content_type=content_type
+                )
+                user.user_permissions.add(permission)
         return instance
 
     def to_representation(self, instance):
@@ -172,6 +192,9 @@ class AddUserSerializer(serializers.ModelSerializer):
         
         # Validate conflicting permissions
         roles = self.context.get('role', [])
+        for ro in roles:
+            roles = ro["rols"] if ro["model"] == 'CustomUser' else []
+
         if not isinstance(roles, list):
             roles = [roles] if roles else []
         
@@ -223,12 +246,14 @@ class AddUserSerializer(serializers.ModelSerializer):
         validated_data['manager'] = manager_.user
         user = CustomUser.objects.create(**validated_data)
         for role in roles:
-            content_type = ContentType.objects.get_for_model(CustomUser)
-            permission = Permission.objects.get(
-                codename= role,
-                content_type=content_type
-            )
-            user.user_permissions.add(permission)
+            content_type = ContentType.objects.get_for_model(MODELS.get(role["model"]))
+            for r in role["rols"]:
+                permission = Permission.objects.get(
+                    codename= r,
+                    content_type=content_type
+                )
+                print(f"{r}    -------- True")
+                user.user_permissions.add(permission)
         user.set_password(password)
         user.save()
         return user
@@ -242,6 +267,9 @@ class AddUserSerializer(serializers.ModelSerializer):
         
         # Validate conflicting permissions
         roles = self.context.get('role', [])
+        for ro in roles:
+            roles = ro["rols"] if ro["model"] == 'CustomUser' else []
+
         if not isinstance(roles, list):
             roles = [roles] if roles else []
         
@@ -286,12 +314,13 @@ class AddUserSerializer(serializers.ModelSerializer):
         instance.user_permissions.clear()
         user = CustomUser.objects.get(email=instance.email)
         for role in roles:
-            content_type = ContentType.objects.get_for_model(CustomUser)
-            permission = Permission.objects.get(
-                codename= role,
-                content_type=content_type
-            )
-            user.user_permissions.add(permission)
+            content_type = ContentType.objects.get_for_model(MODELS.get(role["model"]))
+            for r in role["rols"]:
+                permission = Permission.objects.get(
+                    codename= r,
+                    content_type=content_type
+                )
+                user.user_permissions.add(permission)
         return instance
 
     def to_representation(self, instance):

@@ -35,6 +35,14 @@ class API(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    # class Meta:
+    #     permissions = [
+    #         ('can_create_api', 'Can create API'),
+    #         ('can_edit_api', 'Can edit API'),
+    #         ('can_delete_api', 'Can delete API'),
+    #         ('can_view_api', 'Can view API'),
+    #     ]
+
     def __str__(self) -> str:
         return f'api {self.api_name} for account {self.account_id.name}'
 

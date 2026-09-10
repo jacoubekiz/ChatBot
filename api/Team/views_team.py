@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from api.Account.models_account import Account, Team
 from api.Auth.models_auth import CustomUser
+from api.Account.permissions_account import TeamPermissions, TeamMemberPermissions
 
 
 class AssigningPermissionsSerializer(serializers.Serializer):
@@ -44,7 +45,7 @@ class AddUserForTeamSerializer(serializers.Serializer):
         return attrs
 
 class ListCreateTeamView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamPermissions]
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
@@ -59,7 +60,7 @@ class ListCreateTeamView(ListCreateAPIView):
 
 
 class RetrieveUpdateDeleteTeamView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamPermissions]
     serializer_class = TeamSerializer
     lookup_field = 'team_id'
     def get_queryset(self):
@@ -108,7 +109,7 @@ class ListTeamMember(APIView):
 
 
 class CreateTeamMemberView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamMemberPermissions]
     def post(self, request, account_id):
         if 'role' not in request.data:
             return Response({'error': 'role is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -131,7 +132,7 @@ class CreateTeamMemberView(GenericAPIView):
 
 
 class AddUserForTeam(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamMemberPermissions]
     serializer_class = AddUserForTeamSerializer
     
     def post(self, request, team_id):
@@ -157,7 +158,7 @@ class AddUserForTeam(GenericAPIView):
 
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamMemberPermissions]
     serializer_class = UpdateTeamMemberSerializer
     queryset = CustomUser.objects.all()
     lookup_field = 'pk'

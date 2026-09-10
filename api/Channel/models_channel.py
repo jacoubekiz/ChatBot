@@ -21,5 +21,13 @@ class Channle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    # class Meta:
+    #     permissions = [
+    #         ('can_create_channle', 'Can create channle'),
+    #         ('can_edit_channle', 'Can edit channle'),
+    #         ('can_delete_channle', 'Can delete channle'),
+    #         ('can_view_channle', 'Can view channle'),
+    #     ]
+
     def __str__(self) -> str:
         return self.name

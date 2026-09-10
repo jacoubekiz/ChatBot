@@ -20,9 +20,10 @@ from api.Messaging.serializers_messaging import (
     TagSerializer,
     ChatMessageSerializer
 )
+from api.Messaging.permissions_messaging import TagPermissions, GroupPermissions, QuickReplyPermissions
 
 class CreateTagView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TagPermissions]
     serializer_class = TagSerializer
 
     def post(self, request, account_id):
@@ -42,14 +43,14 @@ class CreateTagView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RetrieveUpdateDeleteTagView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TagPermissions]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     lookup_field = 'tag_id'
 
 
 class CreateListQuickReplyView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, QuickReplyPermissions]
 
     def post(self, request, account_id):
         data = request.data
@@ -66,7 +67,7 @@ class CreateListQuickReplyView(GenericAPIView):
 
 
 class RetrieveUpdateDeleteQuickReplyView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, QuickReplyPermissions]
     serializer_class = QuickReplySerializer
     lookup_field = 'quickreply_id'
 
@@ -132,7 +133,7 @@ class RetrieveUpdateDeleteTriggerView(RetrieveUpdateDestroyAPIView):
 
 
 class ListCreateGroupView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, GroupPermissions]
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
 
@@ -167,7 +168,7 @@ class ListCreateGroupView(ListCreateAPIView):
 
 class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, GroupPermissions]
     queryset = Group.objects.all()
     lookup_field = 'id'
 

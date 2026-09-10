@@ -11,6 +11,14 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    # class Meta:
+    #     permissions = [
+    #         ('can_create_account', 'Can create account'),
+    #         ('can_edit_account', 'Can edit account'),
+    #         ('can_delete_account', 'Can delete account'),
+    #         ('can_view_account', 'Can view account'),
+    #     ]
+
     def __str__(self) -> str:
         return self.name
 
@@ -26,6 +34,15 @@ class Team(models.Model):
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        permissions = [
+    #         ('can_create_team', 'Can create team'),
+    #         ('can_edit_team', 'Can edit team'),
+    #         ('can_delete_team', 'Can delete team'),
+    #         ('can_view_team', 'Can view team'),
+            ('can_manage_team_members', 'Can manage team members'),
+        ]
 
     def __str__(self) -> str:
         return self.name

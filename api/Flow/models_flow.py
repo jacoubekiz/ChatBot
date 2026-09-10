@@ -15,6 +15,15 @@ class Flow(models.Model):
     flow = models.FileField(upload_to='flows/')
     is_default = models.BooleanField(default=False)
 
+    class Meta:
+        permissions = [
+    #         ('can_create_flow', 'Can create flow'),
+    #         ('can_edit_flow', 'Can edit flow'),
+    #         ('can_delete_flow', 'Can delete flow'),
+    #         ('can_view_flow', 'Can view flow'),
+            ('can_set_default_flow', 'Can set default flow'),
+        ]
+
     def __str__(self) -> str:
         return f'{self.flow}'
 

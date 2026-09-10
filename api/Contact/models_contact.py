@@ -53,6 +53,14 @@ class Contact(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    # class Meta:
+    #     permissions = [
+    #         ('can_create_contact', 'Can create contact'),
+    #         ('can_edit_contact', 'Can edit contact'),
+    #         ('can_delete_contact', 'Can delete contact'),
+    #         ('can_view_contact', 'Can view contact'),
+    #     ]
+
     def __str__(self) -> str:
         if self.name:
             return self.name

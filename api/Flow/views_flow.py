@@ -6,12 +6,13 @@ from django.shortcuts import get_object_or_404
 from api.Flow.models_flow import Flow
 from api.Channel.models_channel import Channle
 from api.Flow.serializers_flow import SerializerFlows
+from api.Flow.permissions_flow import FlowPermissions, SetDefaultFlowPermission
 import json, requests
 
 
 class AddListFlows(GenericAPIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, FlowPermissions]
     serializer_class = SerializerFlows
     
     def post(self, request, channel_id):
@@ -39,7 +40,7 @@ class AddListFlows(GenericAPIView):
 
 class SetDefaultFlow(GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, SetDefaultFlowPermission]
 
     def post(self, request, channel_id):
         if 'is_default' not in request.GET:
@@ -70,6 +71,7 @@ class SetDefaultFlow(GenericAPIView):
 
 
 class UpdateFlowView(GenericAPIView):
+    permission_classes = [IsAuthenticated, FlowPermissions]
     serializer_class = SerializerFlows
     
     def put(self, request, pk):

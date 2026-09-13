@@ -11,6 +11,7 @@ from api.Account.serializers_account import (
     UpdateAccountSerializer, 
     AccontSerializer
 )
+from api.Account.permissions_account import APIKeyPermissions
 
 
 class CreateListAccount(GenericAPIView):
@@ -49,7 +50,7 @@ class RetrieveUpdateDeleteAccount(RetrieveUpdateDestroyAPIView):
 
 
 class GenerateapiKeyView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, APIKeyPermissions]
 
     def post(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)

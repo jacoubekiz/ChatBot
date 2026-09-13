@@ -11,13 +11,10 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
-    # class Meta:
-    #     permissions = [
-    #         ('can_create_account', 'Can create account'),
-    #         ('can_edit_account', 'Can edit account'),
-    #         ('can_delete_account', 'Can delete account'),
-    #         ('can_view_account', 'Can view account'),
-    #     ]
+    class Meta:
+        permissions = [
+            ('can_view_apikey', 'Can view apikey'),
+        ]
 
     def __str__(self) -> str:
         return self.name

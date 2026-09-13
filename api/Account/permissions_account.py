@@ -100,3 +100,36 @@ class TeamMemberPermissions(BasePermission):
             return True
         
         return request.user.has_perm('api.can_manage_team_members')
+
+
+class APIKeyPermissions(BasePermission):
+    """
+    Custom permission class for API key operations
+    """
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if request.user.is_superuser:
+            return True
+        
+        if request.method == 'GET':
+            return request.user.has_perm('api.can_view_apikey')
+        return False
+    
+    def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if request.user.is_superuser:
+            return True
+        
+        # Check if user has access to the account
+        if hasattr(obj, 'user') and obj.user:
+            if obj.user != request.user:
+                return False
+        
+        if request.method == 'GET':
+            return request.user.has_perm('api.can_view_apikey')
+        return False

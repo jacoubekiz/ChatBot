@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from api.Channel.models_channel import Channle
 from api.Campaign.models_campaign import WhatsAppCampaign
 from api.Campaign.serializers_campaign import CampaignsSerializer, CampaignSerializer_, CreateCampaignSerializer
+from api.Campaign.permissions_campaign import CampaignPermissions
 import pandas as pd
 import json
 from ..tasks import send_whatsapp_campaign
@@ -13,7 +14,7 @@ from ..tasks import send_whatsapp_campaign
 
 class CreateListCampaignsView(GenericAPIView):
     serializer_class = CampaignsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CampaignPermissions]
 
     def get(self, request, channel_id):
         channel = get_object_or_404(Channle.objects.select_related('account_id'), channle_id=channel_id)
@@ -60,7 +61,7 @@ class CreateListCampaignsView(GenericAPIView):
 
 class GetCampaignView(GenericAPIView):
     serializer_class = CampaignSerializer_
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CampaignPermissions]
 
     def get(self, request, campaign_id):
         campaign = get_object_or_404(WhatsAppCampaign.objects.select_related('account_id', 'created_by'), campaign_id=campaign_id)

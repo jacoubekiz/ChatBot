@@ -230,6 +230,7 @@ def handle_incoming_message(value: dict) -> dict:
     # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':
         # In bot state, only send to bot integration - it will handle storage and display
+        handle_text_message(conversation, contact, message_data, content, wamid, account)
         with open('kkkk.txt', 'a') as ll:
             ll.write(f"jjjjjjjjjj {content}")
         connect_web_socket(

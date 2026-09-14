@@ -8,6 +8,8 @@ from api.Account.models_account import Account, Team
 from api.Channel.models_channel import Channle
 from api.Contact.models_contact import Contact
 from api.Flow.models_flow import Flow
+from api.APIs.models_api import API
+from api.Campaign.models_campaign import WhatsAppCampaign
 from api.Messaging.models_messaging import Tag, Group, QuickReply
 from api.Auth.models_auth import CustomUser, Duration, WorkingTime, Calendar, BookAnAppointment
 
@@ -20,7 +22,9 @@ MODELS ={
     "Tag": Tag,
     "Group": Group,
     "QuickReply": QuickReply,
-    "CustomUser": CustomUser
+    "CustomUser": CustomUser,
+    "API": API,
+    "Campaign": WhatsAppCampaign
 
 }
 

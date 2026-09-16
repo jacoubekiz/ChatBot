@@ -3,6 +3,7 @@ Handler functions for webhook processing.
 """
 from api.Flow.models_flow import Chat, Flow
 from django.db import transaction
+from django.db.models import Q
 from api.Contact.models_contact import Contact, Conversation, ChatMessage
 from api.Consumers.utils_websocket import (
     connect_web_socket,
@@ -230,7 +231,7 @@ def handle_incoming_message(value: dict) -> dict:
     # Handle based on conversation state to avoid duplicate storage
     if conversation.state == 'start_bot':
         # In bot state, only send to bot integration - it will handle storage and display
-        message = ChatMessage.objects.filter(conversation_id=conversation.conversation_id)
+        message = ChatMessage.objects.filter(Q(conversation_id=conversation.conversation_id) & ~Q(from_message="bot")).first()
         if not message:
             handle_text_message(conversation, contact, message_data, content, wamid, account)
         connect_web_socket(
@@ -246,7 +247,6 @@ def handle_incoming_message(value: dict) -> dict:
     else:
         # In non-bot state, store message and broadcast to UI
         if content_type in ['text', 'button']:
-            # payload = 
             handle_text_message(conversation, contact, message_data, content, wamid, account)
         elif content_type in ['image', 'video', 'audio', 'document']:
             handle_media_message(conversation, contact, channel, message_data, content_type, wamid, account)

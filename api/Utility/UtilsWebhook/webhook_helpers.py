@@ -69,11 +69,13 @@ def get_restart_keywords(channel_id: str):
 def extract_message_data(value: dict) -> dict:
     """Extract common message data from webhook payload."""
     messages = value.get('messages', [])
+    contact = value.get('contacts', [])[0]
     if not messages:
         return {}
     
     message = messages[0]
     return {
+        'name':contact.get('profile', {}).get('name', ''),
         'from': message.get('from', ''),
         'id': message.get('id', ''),
         'type': message.get('type', ''),

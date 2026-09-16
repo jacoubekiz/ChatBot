@@ -14,13 +14,13 @@ class CampaignPermissions(BasePermission):
             return True
         
         if request.method == 'GET':
-            return request.user.has_perm('api.view_campaign')
+            return request.user.has_perm('api.view_whatsappcampaign')
         elif request.method == 'POST':
-            return request.user.has_perm('api.add_campaign')
+            return request.user.has_perm('api.add_whatsappcampaign')
         elif request.method in ['PUT', 'PATCH']:
-            return request.user.has_perm('api.change_campaign')
+            return request.user.has_perm('api.change_whatsappcampaign')
         elif request.method == 'DELETE':
-            return request.user.has_perm('api.delete_campaign')
+            return request.user.has_perm('api.delete_whatsappcampaign')
         return False
     
     def has_object_permission(self, request, view, obj):
@@ -36,9 +36,9 @@ class CampaignPermissions(BasePermission):
                 return False
         
         if request.method == 'GET':
-            return request.user.has_perm('Campaign.view_campaign')
+            return request.user.has_perm('api.view_whatsappcampaign')
         elif request.method in ['PUT', 'PATCH']:
-            return request.user.has_perm('Campaign.change_campaign')
+            return request.user.has_perm('api.change_whatsappcampaign')
         elif request.method == 'DELETE':
-            return request.user.has_perm('Campaign.delete_campaign')
+            return request.user.has_perm('api.delete_whatsappcampaign')
         return False

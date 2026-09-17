@@ -56,7 +56,7 @@ def handle_status_update(value: dict) -> dict:
     return {'success': True}
 
 
-def handle_text_message(conversation, contact, message_data: dict, content: str, wamid: str, account, channel, channel_id, name, contact_phonenumber):
+def handle_text_message(conversation, contact, message_data: dict, content: str, wamid: str, account, channel, channel_id, name):
     """Handle text message creation and broadcasting."""
     # Check if message already exists to avoid duplicates
     existing_message = ChatMessage.objects.filter(wamid=wamid).first()
@@ -75,7 +75,6 @@ def handle_text_message(conversation, contact, message_data: dict, content: str,
         content,
         'text',
         wamid,
-        contact_phonenumber,
         chat_message.message_id,
         chat_message.created_at,
         contact.phone_number,
@@ -210,7 +209,7 @@ def handle_incoming_message(value: dict) -> dict:
         content = message_data.get('button_text') 
         # Get or create Chat record and assign flow by payload value
 
-        handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name, contact_phonenumber)
+        handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name )
         try:
             flow = Flow.objects.get(id=button_payload)
             chat, created = Chat.objects.get_or_create(
@@ -239,7 +238,7 @@ def handle_incoming_message(value: dict) -> dict:
         # In bot state, only send to bot integration - it will handle storage and display
         message = ChatMessage.objects.filter(Q(conversation_id=conversation.conversation_id) & ~Q(from_message="bot")).first()
         if not message:
-            handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name, contact_phonenumber)
+            handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name )
         connect_web_socket(
             channel.channle_id,
             conversation.conversation_id,
@@ -253,7 +252,7 @@ def handle_incoming_message(value: dict) -> dict:
     else:
         # In non-bot state, store message and broadcast to UI
         if content_type in ['text', 'button']:
-            handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name, contact_phonenumber)
+            handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name )
         elif content_type in ['image', 'video', 'audio', 'document']:
             handle_media_message(conversation, contact, channel, message_data, content_type, wamid, account)
     

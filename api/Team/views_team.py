@@ -158,7 +158,7 @@ class AddUserForTeam(GenericAPIView):
 
 
 class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated, TeamMemberPermissions]
+    permission_classes = [IsAuthenticated, TeamPermissions]
     serializer_class = UpdateTeamMemberSerializer
     queryset = CustomUser.objects.all()
     lookup_field = 'pk'

@@ -35,7 +35,7 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         pass
 
 
-def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id, contact_id, account, channel, name):
+def sent_message_text(conversation_id, content, content_type, wamid, message_id, created_at, contact_phonenumber, channel_id, contact_id, account, channel,channel_id_, name):
     """Send text message via WebSocket."""
     account_id = account.account_id if hasattr(account, 'account_id') else account
     url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"

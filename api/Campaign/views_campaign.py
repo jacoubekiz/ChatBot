@@ -72,4 +72,4 @@ class GetCampaignView(GenericAPIView):
     def delete(self, request, campaign_id):
         campaign = get_object_or_404(WhatsAppCampaign.objects.select_related('account_id', 'created_by'), campaign_id=campaign_id)
         campaign.delete()
-        return Response({'message': 'Campaign deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Campaign deleted successfully'}, status=status.HTTP_200_OK)

@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 from api.Flow.models_flow import Flow, Chat, Attribute, Custome_attribute, RestartKeyword
 from api.Channel.models_channel import Channle
-from api.Contact.models_contact import Conversation
+from api.Contact.models_contact import Conversation, ChatMessage
 from api.APIs.models_api import API, Api_parameter, APILog
 from api.utils import change_occurences
 

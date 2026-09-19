@@ -71,7 +71,7 @@ class DatabaseHelpers:
         """Get all conversations for a channel."""
         user = CustomUser.objects.get(id=self.consumer.user.id)
         permissions = list(user.get_all_permissions())
-        if 'api.visibility all conversations' in permissions:
+        if 'api.visibility_all_conversations' in permissions:
             conversation = Conversation.objects.filter(account_id=account_id)
             serializer = ConversationSerializer(conversation, many=True)
             return serializer.data

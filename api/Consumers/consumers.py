@@ -6,7 +6,8 @@ from django.utils import timezone
 from .consumer_constants import MessageType, ContentType
 from .consumer_utils import create_websocket_payload, safe_nested_get
 from .consumer_message_handlers import MessageHandlers
-from .consumer_bot_integration import BotIntegration
+# from .consumer_bot_integration import BotIntegration
+from .consumer_bot_integration_refactored import BotIntegration
 from .consumer_media_handlers import MediaHandlers
 from .consumer_database_helpers import DatabaseHelpers
 

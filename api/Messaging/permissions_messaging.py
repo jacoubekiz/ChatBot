@@ -104,13 +104,13 @@ class QuickReplyPermissions(BasePermission):
             return True
         
         if request.method == 'GET':
-            return request.user.has_perm('api.view_quick_reply')
+            return request.user.has_perm('api.view_quickreply')
         elif request.method == 'POST':
-            return request.user.has_perm('api.add_quick_reply')
+            return request.user.has_perm('api.add_quickreply')
         elif request.method in ['PUT', 'PATCH']:
-            return request.user.has_perm('api.change_quick_reply')
+            return request.user.has_perm('api.change_quickreply')
         elif request.method == 'DELETE':
-            return request.user.has_perm('api.delete_quick_reply')
+            return request.user.has_perm('api.delete_quickreply')
         return False
     
     def has_object_permission(self, request, view, obj):
@@ -128,9 +128,9 @@ class QuickReplyPermissions(BasePermission):
         
         
         if request.method == 'GET':
-            return request.user.has_perm('api.view_quick_reply')
+            return request.user.has_perm('api.view_quickreply')
         elif request.method in ['PUT', 'PATCH']:
-            return request.user.has_perm('api.change_quick_reply')
+            return request.user.has_perm('api.change_quickreply')
         elif request.method == 'DELETE':
-            return request.user.has_perm('api.delete_quick_reply')
+            return request.user.has_perm('api.delete_quickreply')
         return False

@@ -41,7 +41,19 @@ class ViewLogin(GenericAPIView):
             team = Team.objects.filter(members__id=user.id).first()
             account_id = team.account_id.account_id
             channel_id = Channle.objects.filter(account_id__account_id=account_id).first()
-            if user.role_user == 'admin':
+            if user.is_superuser:
+                data = {
+                    'tokens':tokens,
+                    'user': {
+                        'id':user.id,
+                        'name':user.username,
+                        'role_user': 'superAdmin',
+                        'account_id': account_id,
+                        'channel_id': channel_id.channle_id,
+                        'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
+                    }
+                }
+            elif user.role_user == 'admin':
                 data = {
                     'tokens':tokens,
                     'user': {
@@ -76,11 +88,12 @@ class ViewLogin(GenericAPIView):
             manager = user.manager
             account_id = get_object_or_404(Account, user=manager)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
+            role_user = 'SuperAdmin' if user.is_superuser else user.role_user
             data = {
                 'tokens':tokens,
                 'user': {
                     'id':user.id,
-                    'role_user':user.role_user,
+                    'role_user':role_user,
                     'account_id': account_id.account_id,
                     'name':user.username,
                     'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],

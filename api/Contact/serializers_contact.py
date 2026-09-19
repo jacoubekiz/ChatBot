@@ -140,11 +140,10 @@ class ContactSerializerView(serializers.ModelSerializer):
         }
 
     def get_assigned_user(self, obj):
-        try:
-            conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
-            return conversation.user.username if conversation.user else None
-        except Conversation.DoesNotExist:
-            return None
+        conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
+        if conversation and conversation.user:
+            return conversation.user.username
+        return None
         
     def get_conversation_id(self, obj):
         conversation = Conversation.objects.filter(contact_id=obj.contact_id)
@@ -199,11 +198,10 @@ class ContactSerializer(serializers.ModelSerializer):
         }
 
     def get_assigned_user(self, obj):
-        try:
-            conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
-            return conversation.user.username if conversation.user else None
-        except Conversation.DoesNotExist:
-            return None
+        conversation = Conversation.objects.filter(contact_id=obj.contact_id).first()
+        if conversation and conversation.user:
+            return conversation.user.username
+        return None
     
     def update(self, instance, validated_data):
         instance.account_id = validated_data.get('account_id', instance.account_id)

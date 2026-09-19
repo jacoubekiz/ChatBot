@@ -22,6 +22,7 @@ class ChannelPermissions(BasePermission):
         elif request.method in ['PUT', 'PATCH']:
             return request.user.has_perm('api.change_channle')
         elif request.method == 'DELETE':
+            print(request.user.has_perm('api.delete_channle'))
             return request.user.has_perm('api.delete_channle')
         return False
     
@@ -35,7 +36,8 @@ class ChannelPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            if obj.account_id != request.user.account_set.first():
+            user_account = request.user.manager.id
+            if not user_account or obj.account_id.account_id != user_account:
                 return False
         
         if request.method == 'GET':

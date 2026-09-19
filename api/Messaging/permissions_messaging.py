@@ -32,8 +32,10 @@ class TagPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            if obj.account_id != request.user.account_set.first():
+            user_account = request.user.manager.id
+            if not user_account or obj.account_id.account_id != user_account:
                 return False
+        
         
         if request.method == 'GET':
             return request.user.has_perm('api.view_tag')
@@ -75,8 +77,10 @@ class GroupPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account') and obj.account:
-            if obj.account != request.user.account_set.first():
+            user_account = request.user.manager.id
+            if not user_account or obj.account_id.account_id != user_account:
                 return False
+        
         
         if request.method == 'GET':
             return request.user.has_perm('api.view_group')
@@ -118,8 +122,10 @@ class QuickReplyPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            if obj.account_id != request.user.account_set.first():
+            user_account = request.user.manager.id
+            if not user_account or obj.account_id.account_id != user_account:
                 return False
+        
         
         if request.method == 'GET':
             return request.user.has_perm('api.view_quick_reply')

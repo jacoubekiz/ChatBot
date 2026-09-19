@@ -78,7 +78,7 @@ class GroupPermissions(BasePermission):
         # Check if user has access to the account
         if hasattr(obj, 'account') and obj.account:
             user_account = Account.objects.filter(user=request.user.manager.id).first()
-            if not user_account or obj.account_id.account_id != user_account.account_id:
+            if not user_account or obj.account.account_id != user_account.account_id:
                 return False
         
         

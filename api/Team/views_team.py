@@ -99,7 +99,7 @@ class AssigningPermissions(APIView):
 
 
 class ListTeamMember(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamMemberPermissions]
     serializer_class = TeamMemberSerializer
     def get(self, request, team_id):
         team = get_object_or_404(Team, team_id=team_id)
@@ -190,7 +190,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
 
 class ListAllTeamMembers(GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TeamPermissions]
     def get(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)
         member = CustomUser.objects.filter(Q(role_user="agent") & Q(manager=account.user))

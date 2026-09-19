@@ -47,7 +47,7 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'name':user.username,
-                        'role':user.role_user,
+                        'role_user':user.role_user,
                         'account_id': account_id,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
@@ -58,6 +58,7 @@ class ViewLogin(GenericAPIView):
                     'tokens':tokens,
                     'user': {
                         'id':user.id,
+                        'role_user':user.role_user,
                         'name':user.username,
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
@@ -79,6 +80,7 @@ class ViewLogin(GenericAPIView):
                 'tokens':tokens,
                 'user': {
                     'id':user.id,
+                    'role_user':user.role_user,
                     'account_id': account_id.account_id,
                     'name':user.username,
                     'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],

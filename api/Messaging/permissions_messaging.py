@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-
+from api.Account.models_account import Account
 
 class TagPermissions(BasePermission):
     """
@@ -32,8 +32,8 @@ class TagPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            user_account = request.user.manager.id
-            if not user_account or obj.account_id.account_id != user_account:
+            user_account = Account.objects.filter(user=request.user.manager.id).first()
+            if not user_account or obj.account_id.account_id != user_account.account_id:
                 return False
         
         
@@ -77,8 +77,8 @@ class GroupPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account') and obj.account:
-            user_account = request.user.manager.id
-            if not user_account or obj.account_id.account_id != user_account:
+            user_account = Account.objects.filter(user=request.user.manager.id).first()
+            if not user_account or obj.account_id.account_id != user_account.account_id:
                 return False
         
         
@@ -122,8 +122,8 @@ class QuickReplyPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            user_account = request.user.manager.id
-            if not user_account or obj.account_id.account_id != user_account:
+            user_account = Account.objects.filter(user=request.user.manager.id).first()
+            if not user_account or obj.account_id.account_id != user_account.account_id:
                 return False
         
         

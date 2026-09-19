@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-
+from api.Account.models_account import Account
 
 class ChannelPermissions(BasePermission):
     """
@@ -36,7 +36,7 @@ class ChannelPermissions(BasePermission):
         
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
-            user_account = Account.objects.filter(user=request.user.manager.id)
+            user_account = Account.objects.filter(user=request.user.manager.id).first()
             if not user_account or obj.account_id.account_id != user_account.account_id:
                 return False
         

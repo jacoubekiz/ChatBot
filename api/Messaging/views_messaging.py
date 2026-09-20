@@ -137,20 +137,6 @@ class ListCreateGroupView(ListCreateAPIView):
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        account_id = self.kwargs['account_id']
-        tag = self.request.query_params.get('tag')
-
-        queryset = queryset.filter(account_id=account_id)
-
-        if tag:
-            conversations = Conversation.objects.filter(tags__tag_id=tag)
-            contact_ids = conversations.values_list('contact_id', flat=True).distinct()
-            queryset = queryset.filter(contact__in=contact_ids).distinct()
-
-        return queryset
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['account_id'] = self.kwargs['account_id']
@@ -160,6 +146,8 @@ class ListCreateGroupView(ListCreateAPIView):
             conversations = Conversation.objects.filter(tags__tag_id=tag)
             contact_ids = conversations.values_list('contact_id', flat=True).distinct()
             context['members'] = list(contact_ids)
+            # Also pass the tag ID to the serializer for group creation
+            context['tag'] = tag
 
         return context
     
@@ -183,6 +171,7 @@ class RetrieveUpdateDeleteGroupView(RetrieveUpdateDestroyAPIView):
         if tag:
             members = Conversation.objects.filter(tags__tag_id=tag).values_list('contact_id', flat=True).distinct()
             context['members'] = list(members)
+            context['tag'] = tag
         return context
 
 

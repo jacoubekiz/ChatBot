@@ -24,6 +24,7 @@ class Group(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     contact = models.ManyToManyField(Contact)
+    tag = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True, blank=True)
 
     # class Meta:
     #     permissions = [

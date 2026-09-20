@@ -156,10 +156,21 @@ class GroupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account_id = self.context.get('account_id')
         members = self.context.get('members', [])
+        tag_id = self.context.get('tag')
         account = Account.objects.filter(account_id=account_id).first()
         if not account:
             raise serializers.ValidationError({'account_id': 'Account not found'})
         validated_data['account'] = account
+        
+        # Handle tag assignment
+        if tag_id:
+            from api.Messaging.models_messaging import Tag
+            try:
+                tag = Tag.objects.get(tag_id=tag_id, account_id=account)
+                validated_data['tag'] = tag
+            except Tag.DoesNotExist:
+                raise serializers.ValidationError({'tag': 'Tag not found or does not belong to this account'})
+        
         group = Group.objects.create(**validated_data)
         for member in members:
             group.contact.add(member)
@@ -168,6 +179,22 @@ class GroupSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         members = self.context.get('members', [])
         instance.name = validated_data.get('name', instance.name)
+        
+        # Handle tag update
+        tag_data = self.context.get('tag')
+        if tag_data is not None:
+            if tag_data == '' or tag_data is None:
+                instance.tag = None
+            else:
+                # Convert tag_data to integer if it's a string
+                from api.Messaging.models_messaging import Tag
+                try:
+                    tag_id = int(tag_data) if isinstance(tag_data, str) else tag_data
+                    tag = Tag.objects.get(tag_id=tag_id, account_id=instance.account)
+                    instance.tag = tag
+                except (ValueError, Tag.DoesNotExist):
+                    raise serializers.ValidationError({'tag': 'Tag not found or does not belong to this account'})
+        
         instance.contact.clear()
         instance.save()
 
@@ -178,4 +205,8 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['contact'] = [con.name for con in instance.contact.all()]
+        if instance.tag:
+            repr['tag'] = instance.tag.tag_id
+        else:
+            repr['tag'] = None
         return repr

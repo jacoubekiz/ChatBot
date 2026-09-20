@@ -157,7 +157,8 @@ class BotIntegration:
                     )
                 
                 # Handle null next_question_id by sending default message
-                if next_question_id is None:
+                await database_sync_to_async(chat.update_state)(next_question_id)
+                if next_question_id is None or next_question_id == 'end':
                     # Send a default fallback message
                     default_message = "Sorry, I didn't understand that. Please try again."
                     message_id, message_con, message_wamid = await MessageHelpers.send_text_message(
@@ -169,11 +170,11 @@ class BotIntegration:
                     await MessageHelpers.broadcast_message(self.consumer, payload)
                     break
                 
-                await database_sync_to_async(chat.update_state)(next_question_id)
-                if next_question_id == 'end':
-                    chat.isSent = False
-                    await database_sync_to_async(chat.save)()
-                    break
+                # await database_sync_to_async(chat.update_state)(next_question_id)
+                # if next_question_id == 'end':
+                #     chat.isSent = False
+                #     await database_sync_to_async(chat.save)()
+                #     break
 
         if not next_question_id or next_question_id == 'end':
             return True

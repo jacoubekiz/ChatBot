@@ -156,6 +156,19 @@ class BotIntegration:
                         message, chat, channel, platform, question, conversation_id, self.consumer
                     )
                 
+                # Handle null next_question_id by sending default message
+                if next_question_id is None:
+                    # Send a default fallback message
+                    default_message = "Sorry, I didn't understand that. Please try again."
+                    message_id, message_con, message_wamid = await MessageHelpers.send_text_message(
+                        default_message, chat, channel, platform, question, conversation_id, contact_name, from_bot=True
+                    )
+                    payload, _ = await MessageHelpers.create_and_broadcast_bot_message(
+                        conversation_id, message_con, message_wamid
+                    )
+                    await MessageHelpers.broadcast_message(self.consumer, payload)
+                    break
+                
                 await database_sync_to_async(chat.update_state)(next_question_id)
                 if next_question_id == 'end':
                     chat.isSent = False

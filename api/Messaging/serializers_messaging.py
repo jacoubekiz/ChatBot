@@ -1,3 +1,4 @@
+from tkinter.constants import TRUE
 from rest_framework import serializers
 from api.Flow.models_flow import Trigger
 from api.Messaging.models_messaging import Group, QuickReply, Tag
@@ -138,6 +139,7 @@ class TriggerSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    tag_name = serializers.CharField(read_only=True)
     class Meta:
         model = Group
         fields = '__all__'
@@ -205,6 +207,7 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['contact'] = [con.name for con in instance.contact.all()]
+        repr['tag_name'] = instance.tag.name
         if instance.tag:
             repr['tag'] = instance.tag.tag_id
         else:

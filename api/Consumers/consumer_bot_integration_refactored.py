@@ -168,6 +168,8 @@ class BotIntegration:
                         conversation_id, message_con, message_wamid
                     )
                     await MessageHelpers.broadcast_message(self.consumer, payload)
+                    chat.isSent = False
+                    await database_sync_to_async(chat.save)()
                     break
                 
                 # await database_sync_to_async(chat.update_state)(next_question_id)

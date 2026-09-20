@@ -72,10 +72,12 @@ def show_response(question, questions, chat_id):
             if next_question_id != None:
                 break
         if next_question_id == None:
-            next_question_id = question['next']['target']
+            if question.get('next') and isinstance(question['next'], dict):
+                next_question_id = question['next'].get('target')
 
     else:
-        next_question_id = question['next']['target']
+        if question.get('next') and isinstance(question['next'], dict):
+            next_question_id = question['next'].get('target')
 
     r_type = question['type']
     try:

@@ -57,4 +57,4 @@ class SetDefaultFlowPermission(BasePermission):
         if request.user.is_superuser:
             return True
         
-        return request.user.has_perm('api.can_set_default_flow')
+        return request.user.has_perm('api.add_flow')

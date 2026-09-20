@@ -109,9 +109,9 @@ class APIKeyPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
-        if request.method == 'GET':
-            return request.user.has_perm('api.can_view_apikey')
+
+        elif request.user.role_user == 'admin':
+            return True
         return False
     
     def has_object_permission(self, request, view, obj):

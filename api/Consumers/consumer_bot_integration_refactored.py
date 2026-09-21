@@ -31,8 +31,52 @@ class BotIntegration:
         conversation_id = data.get("conversation_id")
         source_id = data.get("data", {}).get("source_id")
         platform = 'whatsapp'
+        content_type = data.get("data", {}).get('content_type', 'text')
         
         channel = await DatabaseHelpers.get_channel(data['channel_id'])
+        
+        # Store incoming message in database before processing flow
+        if wamid:
+            existing_message = await database_sync_to_async(
+                ChatMessage.objects.filter(wamid=wamid).first
+            )()
+            if not existing_message:
+                from api.Contact.models_contact import Conversation, Contact
+                from api.Account.models_account import Account
+                
+                # Get conversation and contact
+                conversation = await database_sync_to_async(
+                    Conversation.objects.select_related('contact_id', 'account_id').get
+                )(conversation_id=conversation_id)
+                contact = conversation.contact_id
+                account = conversation.account_id
+                
+                # Store message based on content type
+                if content_type in ['text', 'button']:
+                    await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type=content_type,
+                        content=content,
+                        from_message=contact.name or str(contact.phone_number),
+                        wamid=wamid
+                    )
+                elif content_type in ['image', 'video', 'audio', 'document']:
+                    media_url = data.get("data", {}).get('media_url', '')
+                    media_mime_type = data.get("data", {}).get('media_mime_type', '')
+                    media_sha256_hash = data.get("data", {}).get('media_sha256_hash', '')
+                    caption = data.get("data", {}).get('caption', '')
+                    
+                    await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type=content_type,
+                        from_message=contact.name or str(contact.phone_number),
+                        wamid=wamid,
+                        media_url=media_url,
+                        media_mime_type=media_mime_type,
+                        media_sha256_hash=media_sha256_hash,
+                        caption=caption
+                    )
+        
         flow = await FlowHandlers.get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await FlowHandlers.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
 

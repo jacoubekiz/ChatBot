@@ -102,7 +102,7 @@ def handle_media_message(conversation, contact, channel, message_data: dict, med
     chat_message = ChatMessage.objects.create(
         conversation_id=conversation,
         content_type=media_type,
-        from_message=conversation.contact_id.name,
+        from_message=conversation.contact_id.name or contact.phone_number,
         wamid=wamid,
         media_url=media_url,
         media_sha256_hash=media_data['sha256'],

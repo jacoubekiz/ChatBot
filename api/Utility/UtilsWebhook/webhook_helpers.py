@@ -69,16 +69,36 @@ def get_restart_keywords(channel_id: str):
 def extract_message_data(value: dict) -> dict:
     """Extract common message data from webhook payload."""
     messages = value.get('messages', [])
-    contact = value.get('contacts', [])[0]
     if not messages:
         return {}
     
     message = messages[0]
+    message_type = message.get('type', '')
+    
+    # If type is missing, try to infer from available fields
+    if not message_type:
+        if message.get('image'):
+            message_type = 'image'
+        elif message.get('video'):
+            message_type = 'video'
+        elif message.get('audio'):
+            message_type = 'audio'
+        elif message.get('document'):
+            message_type = 'document'
+        elif message.get('text'):
+            message_type = 'text'
+        elif message.get('button'):
+            message_type = 'button'
+        elif message.get('interactive'):
+            message_type = 'interactive'
+    
+    contact = value.get('contacts', [])[0] if value.get('contacts') else {}
+    
     return {
-        'name':contact.get('profile', {}).get('name', ''),
+        'name': contact.get('profile', {}).get('name', ''),
         'from': message.get('from', ''),
         'id': message.get('id', ''),
-        'type': message.get('type', ''),
+        'type': message_type,
         'text': message.get('text', {}).get('body', ''),
         'button': message.get('button', {}).get('text', ''),
         'payload': message.get('button', {}).get('payload', ''),

@@ -133,13 +133,13 @@ def download_media(media_id: str, token: str, file_name: str) -> str:
     response.raise_for_status()
     
     result_data = response.json()
-    file_path = download_and_save_image(
+    download_and_save_image(
         result_data.get('url'),
         headers,
         MEDIA_BASE_PATH,
         file_name
     )
-    return f"{MEDIA_PUBLIC_URL}/{file_path}"
+    return f"{MEDIA_PUBLIC_URL}/{file_name}"
 
 
 def get_media_file_name(media_type: str, media_data: dict) -> str:

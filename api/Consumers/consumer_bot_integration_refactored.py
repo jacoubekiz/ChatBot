@@ -178,7 +178,7 @@ class BotIntegration:
                 #     await database_sync_to_async(chat.save)()
                 #     break
 
-        if not next_question_id or next_question_id == 'end':
-            return True
-        else:
-            return False
+        # if not next_question_id or next_question_id == 'end':
+        #     return True
+        # else:
+        #     return False

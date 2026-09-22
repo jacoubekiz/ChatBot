@@ -129,10 +129,6 @@ class MessageTypeHandlers:
                 is_valid = False
             
             if not is_valid:
-                # If next_question_id is 'end', skip error message and let flow end
-                if next_question_id == 'end':
-                    await DatabaseHelpers.update_chat_status(chat, next_question_id)
-                    return False
                 error_message = question['message']['error']
                 message_id, message_con, message_wamid = await MessageHelpers.send_text_message(
                     error_message, chat, channel, platform, question, conversation_id, contact_name, from_bot=True

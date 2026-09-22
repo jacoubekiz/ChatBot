@@ -74,13 +74,18 @@ class RetrieveUpdateDestroyContactView(RetrieveUpdateDestroyAPIView):
 
 
 class ListContactView(ListAPIView):
-    queryset = Contact.objects.all().prefetch_related(
-        'conversation_set__tags'
-    )
     serializer_class = ContactSerializerView
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ContactFilter
+
+    def get_queryset(self):
+        """Filter contacts by account_id from URL parameter."""
+        account_id = self.kwargs.get('account_id')
+        queryset = Contact.objects.filter(account_id=account_id).prefetch_related(
+            'conversation_set__tags'
+        )
+        return queryset
 
 
 class ListConversationView(GenericAPIView):

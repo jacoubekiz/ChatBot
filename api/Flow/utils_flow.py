@@ -78,6 +78,9 @@ def show_response(question, questions, chat_id):
     else:
         if question.get('next') and isinstance(question['next'], dict):
             next_question_id = question['next'].get('target')
+            # If target is 'end' or empty string, set to 'end' to signal flow termination
+            if next_question_id == '' or next_question_id is None:
+                next_question_id = 'end'
 
     r_type = question['type']
     try:

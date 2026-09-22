@@ -12,7 +12,10 @@ class FlowPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
+            
+        elif request.user.role_user == 'admin':
+            return True
+
         if request.method == 'GET':
             print(request.user.user_permissions)
             return request.user.has_perm('api.view_flow')
@@ -55,6 +58,9 @@ class SetDefaultFlowPermission(BasePermission):
             return False
         
         if request.user.is_superuser:
+            return True
+
+        elif request.user.role_user == 'admin':
             return True
         
         return request.user.has_perm('api.add_flow')

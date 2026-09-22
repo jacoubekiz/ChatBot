@@ -12,7 +12,10 @@ class ContactPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
+            
+        elif request.user.role_user == 'admin':
+            return True
+
         if request.method == 'GET':
             return request.user.has_perm('api.view_contact')
         elif request.method == 'POST':

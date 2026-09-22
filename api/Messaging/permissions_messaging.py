@@ -12,7 +12,10 @@ class TagPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
+
+        elif request.user.role_user == 'admin':
+            return True
+
         if request.method == 'GET':
             return request.user.has_perm('api.view_tag')
         elif request.method == 'POST':
@@ -57,7 +60,10 @@ class GroupPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
+
+        elif request.user.role_user == 'admin':
+            return True
+
         if request.method == 'GET':
             return request.user.has_perm('api.view_group')
         elif request.method == 'POST':
@@ -103,6 +109,9 @@ class QuickReplyPermissions(BasePermission):
         if request.user.is_superuser:
             return True
         
+        elif request.user.role_user == 'admin':
+            return True
+            
         if request.method == 'GET':
             return request.user.has_perm('api.view_quickreply')
         elif request.method == 'POST':

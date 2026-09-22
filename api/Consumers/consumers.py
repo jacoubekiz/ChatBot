@@ -29,13 +29,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self) -> None:
         """Handle new WebSocket connection."""
-        self.room_group_name = f"chat_"
         self.user = self.scope['user']
         self.account = self.scope['url_route']['kwargs']['account']
 
         query_string = self.scope['query_string'].decode()
         query_params = dict(url_parser.parse_qsl(query_string))
         self.is_from_bot = query_params.get('from_bot')
+
+        # Set room_group_name based on account to prevent cross-account message leakage
+        self.room_group_name = f"chat_{self.account}"
 
         if self.user and self.user.is_authenticated:
             account = await self.db_helpers._get_account(self.account)

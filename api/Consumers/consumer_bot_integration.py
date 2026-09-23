@@ -241,6 +241,31 @@ class BotIntegration:
                         platform=platform,
                         question=question
                     )
+                    
+                    # Store message in database
+                    from api.Contact.models_contact import Conversation
+                    conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                    chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type='text',
+                        content=default_message,
+                        from_message='bot',
+                        wamid=message_wamid
+                    )
+                    
+                    # Broadcast via websocket
+                    payload = {
+                        "conversation_id": conversation_id,
+                        "content": default_message,
+                        "content_type": "text",
+                        "wamid": message_wamid,
+                        "created_at": f"{chat_message.created_at}",
+                        "message_id": chat_message.message_id,
+                        "from_bot": "True",
+                        "status_message": "sent"
+                    }
+                    await MessageHelpers.broadcast_message(self.consumer, payload)
+                    
                     chat.isSent = False
                     await database_sync_to_async(chat.save)()
                     break

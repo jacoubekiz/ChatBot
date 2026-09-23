@@ -33,6 +33,22 @@ class BotIntegration:
         platform = 'whatsapp'
         
         channel = await DatabaseHelpers.get_channel(data['channel_id'])
+        
+        # Check if chat exists and its state
+        if source_id:
+            chat = await DatabaseHelpers.get_chat(source_id, channel)
+            if chat and chat.state == 'end':
+                # Send default message when chat state is 'end'
+                default_message = "The conversation has ended. Please start a new conversation."
+                message_id, message_con, message_wamid = await MessageHelpers.send_text_message(
+                    default_message, chat, channel, platform, None, conversation_id, contact_name, from_bot=True
+                )
+                payload, _ = await MessageHelpers.create_and_broadcast_bot_message(
+                    conversation_id, message_con, message_wamid
+                )
+                await MessageHelpers.broadcast_message(self.consumer, payload)
+                return
+        
         flow = await FlowHandlers.get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await FlowHandlers.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
 

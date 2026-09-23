@@ -11,6 +11,7 @@ from api.Channel.models_channel import Channle
 from api.Contact.models_contact import Conversation, ChatMessage
 from api.APIs.models_api import API, Api_parameter, APILog
 from .consumer_constants import ContentType
+from .helpers import DatabaseHelpers, MessageHelpers
 from api.utils import (
     send_message, 
     change_occurences,
@@ -57,7 +58,7 @@ class BotIntegration:
             
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 await database_sync_to_async(chat.update_state)('start')
-            
+
             while True:
                 next_question_id = None
                 if chat.state == 'start':
@@ -229,14 +230,25 @@ class BotIntegration:
                 
                 await database_sync_to_async(chat.update_state)(next_question_id)
                 if next_question_id == 'end':
+                    # Send default fallback message before ending flow
+                    default_message = "تم انهاء المحادثة , لبدء محادثة جديدة أرسل من جديد"
+                    message_wamid = await sync_to_async(send_message)(
+                        message_content=default_message,
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question
+                    )
                     chat.isSent = False
                     await database_sync_to_async(chat.save)()
                     break
 
-        if not next_question_id or next_question_id == 'end':
-            return True
-        else:
-            return False
+        # if not next_question_id or next_question_id == 'end':
+        #     return True
+        # else:
+        #     return False
 
     async def reset_flow(self, channel, source_id, conversation_id, wamid, content, contact_name):
         """Reset flow if content matches a restart keyword."""
@@ -461,7 +473,7 @@ class BotIntegration:
         await self._save_api_response_in_custome_attribute(custome_attrs, response, chat)
         for option in choices_with_next:
             for state in option:
-                if str(response.status_code) == str(state):
+                if str(response.status_code) == str(state) or str(state)=='other':
                     next_question_id = option[2]
                     await self._update_chat_status(chat, next_question_id)
                     return next_question_id

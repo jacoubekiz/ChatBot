@@ -23,6 +23,8 @@ class CreateListAccount(GenericAPIView):
         serializer.save()
         email = data_request['email']
         user = get_object_or_404(CustomUser, email=email)
+        user.manager = user
+        user.save()
         account = Account.objects.create(
             user=user,
             name=user.username

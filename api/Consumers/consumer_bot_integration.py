@@ -74,7 +74,7 @@ class BotIntegration:
                 chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                     conversation_id=conversation,
                     content_type='text',
-                    content=default_message,
+                    content=content,
                     from_message='bot',
                     wamid=message_wamid
                 )
@@ -82,7 +82,7 @@ class BotIntegration:
                 # Broadcast via websocket
                 payload = {
                     "conversation_id": conversation_id,
-                    "content": default_message,
+                    "content": content,
                     "content_type": "text",
                     "wamid": message_wamid,
                     "created_at": f"{chat_message.created_at}",

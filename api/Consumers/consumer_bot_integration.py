@@ -60,13 +60,13 @@ class BotIntegration:
                 await database_sync_to_async(chat.update_state)('start')
             elif chat.state == 'start':
                     message_wamid = await sync_to_async(send_message)(
-                        message_content=default_message,
+                        message_content=content,
                         to=chat.conversation_id,
                         bearer_token=channel.tocken,
                         wa_id=channel.phone_number_id,
                         chat_id=chat.id,
                         platform=platform,
-                        question=question
+                        # question=question
                     )
                     
                     # Store message in database

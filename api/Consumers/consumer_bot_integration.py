@@ -58,7 +58,39 @@ class BotIntegration:
             
             if not bool(chat.state) or chat.state == 'end' or chat.state == '':
                 await database_sync_to_async(chat.update_state)('start')
-
+            elif chat.state == 'start':
+                    message_wamid = await sync_to_async(send_message)(
+                        message_content=default_message,
+                        to=chat.conversation_id,
+                        bearer_token=channel.tocken,
+                        wa_id=channel.phone_number_id,
+                        chat_id=chat.id,
+                        platform=platform,
+                        question=question
+                    )
+                    
+                    # Store message in database
+                    conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                    chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type='text',
+                        content=default_message,
+                        from_message='bot',
+                        wamid=message_wamid
+                    )
+                    
+                    # Broadcast via websocket
+                    payload = {
+                        "conversation_id": conversation_id,
+                        "content": default_message,
+                        "content_type": "text",
+                        "wamid": message_wamid,
+                        "created_at": f"{chat_message.created_at}",
+                        "message_id": chat_message.message_id,
+                        "from_bot": "True",
+                        "status_message": "sent"
+                    }
+                    await MessageHelpers.broadcast_message(self.consumer, payload)
             while True:
                 next_question_id = None
                 if chat.state == 'start':
@@ -243,7 +275,6 @@ class BotIntegration:
                     )
                     
                     # Store message in database
-                    from api.Contact.models_contact import Conversation
                     conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
                     chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                         conversation_id=conversation,

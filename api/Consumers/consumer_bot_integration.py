@@ -41,7 +41,6 @@ class BotIntegration:
 
         flow = await self._get_flow_by_trigger(channel, content, source_id)
         reset_flow_, ch = await self.reset_flow(channel, source_id, conversation_id, wamid, content, contact_name)
-
         if not flow or reset_flow_ == True:
             flow = await database_sync_to_async(channel.flows.get)(is_default=True)
         
@@ -56,17 +55,40 @@ class BotIntegration:
             
             questions = chat_flow['payload']['questions']
             
-            if not bool(chat.state) or chat.state == 'end' or chat.state == '':
+            if not bool(chat.state) or chat.state == '' or chat.state == 'start':
                 await database_sync_to_async(chat.update_state)('start')
-            # elif chat.state == 'start':
+                
+                # Store message in database
+                conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                    conversation_id=conversation,
+                    content_type='text',
+                    content=content,
+                    from_message=contact_name,
+                    wamid="message_wamid"
+                )
+                
+                # Broadcast via websocket
+                payload = {
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": "text",
+                    "wamid": "message_wamid",
+                    "created_at": f"{chat_message.created_at}",
+                    "message_id": chat_message.message_id,
+                    "from_bot": "false",
+                    "status_message": "sent"
+                }
+                await MessageHelpers.broadcast_message(self.consumer, payload)
+                print('kjkjkjkjk')
+            if chat.state == 'end':
                 message_wamid = await sync_to_async(send_message)(
-                    message_content=content,
+                    message_content="this is end",
                     to=chat.conversation_id,
                     bearer_token=channel.tocken,
                     wa_id=channel.phone_number_id,
                     chat_id=chat.id,
-                    platform=platform,
-                    # question=question
+                    # platform=platform,
                 )
                 
                 # Store message in database
@@ -87,10 +109,11 @@ class BotIntegration:
                     "wamid": message_wamid,
                     "created_at": f"{chat_message.created_at}",
                     "message_id": chat_message.message_id,
-                    "from_bot": "True",
+                    "from_bot": "true",
                     "status_message": "sent"
                 }
                 await MessageHelpers.broadcast_message(self.consumer, payload)
+                return True
             while True:
                 next_question_id = None
                 if chat.state == 'start':
@@ -262,49 +285,9 @@ class BotIntegration:
                 
                 await database_sync_to_async(chat.update_state)(next_question_id)
                 if next_question_id == 'end':
-                    # Send default fallback message before ending flow
-                    default_message = "تم انهاء المحادثة , لبدء محادثة جديدة أرسل من جديد"
-                    message_wamid = await sync_to_async(send_message)(
-                        message_content=default_message,
-                        to=chat.conversation_id,
-                        bearer_token=channel.tocken,
-                        wa_id=channel.phone_number_id,
-                        chat_id=chat.id,
-                        platform=platform,
-                        question=question
-                    )
-                    
-                    # Store message in database
-                    conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
-                    chat_message = await database_sync_to_async(ChatMessage.objects.create)(
-                        conversation_id=conversation,
-                        content_type='text',
-                        content=default_message,
-                        from_message='bot',
-                        wamid=message_wamid
-                    )
-                    
-                    # Broadcast via websocket
-                    payload = {
-                        "conversation_id": conversation_id,
-                        "content": default_message,
-                        "content_type": "text",
-                        "wamid": message_wamid,
-                        "created_at": f"{chat_message.created_at}",
-                        "message_id": chat_message.message_id,
-                        "from_bot": "True",
-                        "status_message": "sent"
-                    }
-                    await MessageHelpers.broadcast_message(self.consumer, payload)
-                    
                     chat.isSent = False
                     await database_sync_to_async(chat.save)()
                     break
-
-        # if not next_question_id or next_question_id == 'end':
-        #     return True
-        # else:
-        #     return False
 
     async def reset_flow(self, channel, source_id, conversation_id, wamid, content, contact_name):
         """Reset flow if content matches a restart keyword."""

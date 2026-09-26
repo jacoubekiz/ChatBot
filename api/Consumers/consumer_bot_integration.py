@@ -82,7 +82,6 @@ class BotIntegration:
                 # await MessageHelpers.broadcast_message(self.consumer, payload)
 
             if chat.state == 'end':
-                
                 # Store message in database
                 conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
                 chat_message = await database_sync_to_async(ChatMessage.objects.create)(
@@ -121,7 +120,7 @@ class BotIntegration:
                     content_type='text',
                     content=defualt_message,
                     from_message='bot',
-                    wamid=message_wamid
+                    wamid=message_wamid['messages'][0]['id']
                 )
                 # Broadcast via websocket
                 payload = {

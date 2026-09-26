@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from api.Account.models_account import Account, Team
 from api.Auth.models_auth import CustomUser
-from api.Account.permissions_account import TeamPermissions, TeamMemberPermissions
+from api.Account.permissions_account import TeamPermissions, TeamMemberPermissions, ListMemberPermissions
 
 
 class AssigningPermissionsSerializer(serializers.Serializer):

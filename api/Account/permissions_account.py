@@ -79,6 +79,42 @@ class TeamPermissions(BasePermission):
                 return False
         
 
+class ListMemberPermissions(BasePermission):
+    """
+    Custom permission class for Team operations
+    """
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if request.user.is_superuser:
+            return True
+
+        if request.user.role_user == 'admin':
+            return True
+        elif request.method == 'GET':
+            return request.user.has_perm('api.can_reassign_for_own_chat')
+        elif request.methode == 'GET':
+            return request.user.has_perm('api.can_reassign_for_all_chat')
+        else:
+            return False
+        
+    
+    def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if request.user.is_superuser:
+            return True
+        if request.user.role_user == 'admin':
+            return True
+        else :
+            return False
+        # Check if user has access to the account
+        if hasattr(obj, 'account_id') and obj.account_id:
+            if obj.account_id != request.user.account_set.first():
+                return False
 
 class TeamMemberPermissions(BasePermission):
     """

@@ -190,7 +190,7 @@ class RetrieveUpdateDeleteTeamMemberView(RetrieveUpdateDestroyAPIView):
 
 class ListAllTeamMembers(GenericAPIView):
 
-    permission_classes = [IsAuthenticated, TeamPermissions]
+    permission_classes = [IsAuthenticated, ListMemberPermissions]
     def get(self, request, account_id):
         account = get_object_or_404(Account, account_id=account_id)
         member = CustomUser.objects.filter(Q(role_user="agent") & Q(manager=account.user))

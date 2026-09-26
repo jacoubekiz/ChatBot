@@ -55,31 +55,32 @@ class BotIntegration:
             
             questions = chat_flow['payload']['questions']
             
-            if not bool(chat.state) or chat.state == '' or chat.state == 'start':
+            # if not bool(chat.state) or chat.state == '' or chat.state == 'start':
+            if chat.state == '' or chat.state == 'start':
                 await database_sync_to_async(chat.update_state)('start')
                 
                 # Store message in database
-                # conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
-                # chat_message = await database_sync_to_async(ChatMessage.objects.create)(
-                #     conversation_id=conversation,
-                #     content_type='text',
-                #     content=content,
-                #     from_message=contact_name,
-                #     wamid="message_wamid"
-                # )
+                conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                    conversation_id=conversation,
+                    content_type='text',
+                    content=content,
+                    from_message=contact_name,
+                    wamid="message_wamid"
+                )
                 
-                # # Broadcast via websocket
-                # payload = {
-                #     "conversation_id": conversation_id,
-                #     "content": content,
-                #     "content_type": "text",
-                #     "wamid": "message_wamid",
-                #     "created_at": f"{chat_message.created_at}",
-                #     "message_id": chat_message.message_id,
-                #     "from_bot": "false",
-                #     "status_message": "sent"
-                # }
-                # await MessageHelpers.broadcast_message(self.consumer, payload)
+                # Broadcast via websocket
+                payload = {
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": "text",
+                    "wamid": "message_wamid",
+                    "created_at": f"{chat_message.created_at}",
+                    "message_id": chat_message.message_id,
+                    "from_bot": "false",
+                    "status_message": "sent"
+                }
+                await MessageHelpers.broadcast_message(self.consumer, payload)
 
             if chat.state == 'end':
                 # Store message in database

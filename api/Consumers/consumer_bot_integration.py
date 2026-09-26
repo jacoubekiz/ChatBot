@@ -82,8 +82,31 @@ class BotIntegration:
                 # await MessageHelpers.broadcast_message(self.consumer, payload)
 
             if chat.state == 'end':
+                
+                # Store message in database
+                conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                    conversation_id=conversation,
+                    content_type='text',
+                    content=content,
+                    from_message=contact_name,
+                    wamid=wamid
+                )
+                # Broadcast via websocket
+                payload = {
+                    "conversation_id": conversation_id,
+                    "content": content,
+                    "content_type": "text",
+                    "wamid": wamid,
+                    "created_at": f"{chat_message.created_at}",
+                    "message_id": chat_message.message_id,
+                    "from_bot": "false",
+                    "status_message": "sent"
+                }
+                await MessageHelpers.broadcast_message(self.consumer, payload)
+                defualt_message = "this is end"
                 message_wamid = await sync_to_async(send_message)(
-                    message_content="this is end",
+                    message_content=defualt_message,
                     to=chat.conversation_id,
                     bearer_token=channel.tocken,
                     wa_id=channel.phone_number_id,
@@ -96,15 +119,14 @@ class BotIntegration:
                 chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                     conversation_id=conversation,
                     content_type='text',
-                    content=content,
+                    content=defualt_message,
                     from_message='bot',
                     wamid=message_wamid
                 )
-                
                 # Broadcast via websocket
                 payload = {
                     "conversation_id": conversation_id,
-                    "content": content,
+                    "content": defualt_message,
                     "content_type": "text",
                     "wamid": message_wamid,
                     "created_at": f"{chat_message.created_at}",
@@ -114,6 +136,7 @@ class BotIntegration:
                 }
                 await MessageHelpers.broadcast_message(self.consumer, payload)
                 return True
+
             while True:
                 next_question_id = None
                 if chat.state == 'start':

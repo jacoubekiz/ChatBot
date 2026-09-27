@@ -41,6 +41,7 @@ class ViewLogin(GenericAPIView):
             team = Team.objects.filter(members__id=user.id).first()
             account_id = team.account_id.account_id
             channel_id = Channle.objects.filter(account_id__account_id=account_id).first()
+            template_box = TemplateBox.objects.filter(account_id__account_id=account_id).first()
             if user.is_superuser:
                 data = {
                     'tokens':tokens,
@@ -49,6 +50,7 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user': 'superAdmin',
                         'account_id': account_id,
+                        'template_box': template_box,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -61,6 +63,7 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user':user.role_user,
                         'account_id': account_id,
+                        'template_box': template_box,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -71,6 +74,7 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'role_user':user.role_user,
+                        'template_box': template_box,
                         'name':user.username,
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
@@ -89,6 +93,7 @@ class ViewLogin(GenericAPIView):
             account_id = get_object_or_404(Account, user=manager)
             tokens = {'refresh':str(token), 'access':str(token.access_token)}
             role_user = 'SuperAdmin' if user.is_superuser else user.role_user
+            template_box = TemplateBox.objects.filter(account_id=account_id).first()
             data = {
                 'tokens':tokens,
                 'user': {
@@ -96,6 +101,7 @@ class ViewLogin(GenericAPIView):
                     'role_user':role_user,
                     'account_id': account_id.account_id,
                     'name':user.username,
+                    'template_box': template_box.account_id,
                     'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                 }
             }

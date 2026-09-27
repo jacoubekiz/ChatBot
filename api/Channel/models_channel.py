@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from api.Account.models_account import Account
 from api.Flow.models_flow import Flow
@@ -12,10 +13,10 @@ class Channle(models.Model):
     channle_id = models.AutoField(primary_key=True)
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
     type_channle = models.CharField(choices=TYPE_CHANNLE, max_length=25)
-    tocken = models.TextField(max_length=600)
-    phone_number = models.PositiveBigIntegerField()
-    phone_number_id = models.PositiveBigIntegerField()
-    organization_id = models.PositiveBigIntegerField()
+    tocken = models.TextField(max_length=600, unique=True)
+    phone_number = models.PositiveBigIntegerField(unique=True)
+    phone_number_id = models.PositiveBigIntegerField(unique=True)
+    organization_id = models.PositiveBigIntegerField(unique=True)
     name = models.CharField(max_length=50)
     flows = models.ManyToManyField(Flow, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

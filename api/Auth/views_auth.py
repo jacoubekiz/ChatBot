@@ -50,7 +50,9 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user': 'superAdmin',
                         'account_id': account_id,
-                        'template_box': template_box.account_id,
+                        'account':{
+                            'template_box': template_box.account_id
+                        },
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -63,7 +65,9 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user':user.role_user,
                         'account_id': account_id,
-                        'template_box': template_box.account_id,
+                        'account':{
+                            'template_box': template_box.account_id
+                        },
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -78,6 +82,7 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {
+                            'template_box': template_box.account_id,
                             "account_id":account_id,
                             "name": team.account_id.name,
                             "email": team.account_id.user.email,
@@ -101,7 +106,9 @@ class ViewLogin(GenericAPIView):
                     'role_user':role_user,
                     'account_id': account_id.account_id,
                     'name':user.username,
-                    'template_box': template_box.account_id,
+                    'account':{
+                        'template_box': template_box.account_id
+                    },
                     'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                 }
             }

@@ -50,7 +50,7 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user': 'superAdmin',
                         'account_id': account_id,
-                        'template_box': template_box,
+                        'template_box': template_box.account_id,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -63,7 +63,7 @@ class ViewLogin(GenericAPIView):
                         'name':user.username,
                         'role_user':user.role_user,
                         'account_id': account_id,
-                        'template_box': template_box,
+                        'template_box': template_box.account_id,
                         'channel_id': channel_id.channle_id,
                         'permissions': [perm.split('.')[1] for perm in user.get_all_permissions()]
                     }
@@ -74,7 +74,7 @@ class ViewLogin(GenericAPIView):
                     'user': {
                         'id':user.id,
                         'role_user':user.role_user,
-                        'template_box': template_box,
+                        'template_box': template_box.account_id,
                         'name':user.username,
                         'permissions':[perm.split('.')[1] for perm in user.get_all_permissions()],
                         'account': {

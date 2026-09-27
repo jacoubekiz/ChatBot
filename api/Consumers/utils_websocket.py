@@ -194,3 +194,35 @@ def read_receipt(channel_id, message_id, conversation_id, status, account):
         ws.close()
     except Exception as e:
         pass
+
+
+def send_template_message(content, conversation_id, template_info, channel_id, account_id, campaign_id):
+    """Send template via WebSocket."""
+    # account_id = account.account_id if hasattr(account, 'account_id') else account
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?token=&from_bot=False"
+    ws = websocket.WebSocket()
+    ws.connect(url_ws)
+    data = {
+        "content": content,
+        "content_type": "template",
+        # "message_id": "86efd324-1e75-42ce-926b-30f0c17c1609",
+        "front_id": "90332784-0459-4e53-9ac4-4b69e33f63ed",
+        "from_bot": "True",
+        "time": "2026-07-01T11:14:13.302Z",
+        "created_at": "2026-07-01T11:14:13.302Z",
+        "conversation_id": conversation_id,
+        "template_info": template_info,
+        "channel_id": channel_id,
+        "status_message": "pending",
+        'broadcast':"True",
+        "account_id": account_id,
+        "campaign_id":campaign_id
+
+    }
+    try:
+        ws.send(json.dumps(data))
+        result = ws.recv()
+        ws.close()
+    except Exception as e:
+        pass

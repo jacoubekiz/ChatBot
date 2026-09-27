@@ -6,6 +6,8 @@ from channels.db import database_sync_to_async
 from django.utils import timezone
 from api.Contact.models_contact import Conversation, ChatMessage
 from api.Channel.models_channel import Channle
+from api.Account.models_account import Account
+from api.Campaign.models_campaign import AnalyticsCampaign, WhatsAppCampaign
 from .consumer_constants import MessageType, ContentType, WhatsAppAPI
 from api.utils import send_message
 from django.shortcuts import get_object_or_404
@@ -97,6 +99,14 @@ class MessageHandlers:
                 content=data["content"],
                 whatsapp_message_id=whatsapp_message_id
             )
+            if data['broadcast'] == 'True':
+                await self._create_analytics_campaign(
+                    account= await self._get_account_id(data['account_id']),
+                    campaing = await self._get_campaign_id(data['campaign_id']),
+                    contact = await self.get_contact_id(message_id.message_id),
+                    status_message = 'sent',
+                    error_message = None
+                )
 
             await self._broadcast_message({
                 **data,
@@ -115,6 +125,14 @@ class MessageHandlers:
                 content=data["content"],
                 error_message=error_message
             )
+            if data['broadcast'] == 'True':
+                await self._create_analytics_campaign(
+                    account= await self._get_account_id(data['account_id']),
+                    campaing = await self._get_campaign_id(data['campaign_id']),
+                    contact = await self.get_contact_id(message_id.message_id),
+                    status_message = 'failed',
+                    error_message = error_message
+                )
             await self._send_error_message(str(error_message))
 
     async def _broadcast_message(self, payload: dict) -> None:
@@ -202,6 +220,24 @@ class MessageHandlers:
             error_message=error_message,
             status_message="failed"
         )
+
+    @database_sync_to_async
+    def _create_analytics_campaign(self, account, campaign, contact, status_message, error_message):
+        return AnalyticsCampaign.objects.create(
+            account_id=account,
+            campaign_id=campaign,
+            contact=contact,
+            status_message=status_message,
+            error_message=error_message
+        )
+
+    @database_sync_to_async
+    def _get_campaign_id(self, campaign_id):
+        return WhatsAppCampaign.objects.filter(campaign_id=campaign_id).first()
+
+    @database_sync_to_async
+    def _get_account_id(self, account_id):
+        return Account.objects.filter(account_id=account_id).first()
 
     @database_sync_to_async
     def get_contact_id(self, messgae_id):

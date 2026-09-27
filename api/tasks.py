@@ -11,7 +11,7 @@ import json
 from functools import lru_cache
 from typing import Dict, List, Any
 from django.db import transaction
-
+from api.Consumers.utils_websocket import send_template_message
 # Connection pooling for better performance
 _http_session = requests.Session()
 _http_session.headers.update({
@@ -71,59 +71,66 @@ def send_whatsapp_campaign(self, payload: str) -> Dict[str, Any]:
                         "components": data_e['template_parameters']
                     }
                 }
-                
+                send_template_message(
+                    data_e['content_template'],
+                    conversation.conversation_id,
+                    template_info,
+                    channel.channel_id,
+                    account.account_id,
+                    campaign.campaign_id
+                )
                 # Use connection pooling and add timeout
-                url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
-                headers = {
-                    "Authorization": f"Bearer {channel.tocken}"
-                }
+            #     url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"
+            #     headers = {
+            #         "Authorization": f"Bearer {channel.tocken}"
+            #     }
                 
-                try:
-                    response = _http_session.post(url, headers=headers, json=template_info, timeout=30)
-                    response.raise_for_status()
-                    data_ = response.json()
+            #     try:
+            #         response = _http_session.post(url, headers=headers, json=template_info, timeout=30)
+            #         response.raise_for_status()
+            #         data_ = response.json()
                     
-                    if 'messages' in data_:
-                        template_wamid = data_['messages'][0]['id']
-                        ChatMessage.objects.create(
-                            conversation_id=conversation,
-                            user_id=user,
-                            content_type="template",
-                            content=data_e['content_template'],
-                            wamid=template_wamid
-                        )
-                        analytics_batch.append(AnalyticsCampaign(
-                            account_id=account,
-                            campaign_id=campaign,
-                            contact=contact,
-                            status_message='sent',
-                            error_message=None
-                        ))
-                        sent_count += 1
-                    else:
-                        error_message = data_.get('error', {}).get('message', 'Unknown error')
-                        analytics_batch.append(AnalyticsCampaign(
-                            account_id=account,
-                            campaign_id=campaign,
-                            contact=contact,
-                            status_message='failed',
-                            error_message=error_message
-                        ))
-                        failed_count += 1
+            #         if 'messages' in data_:
+            #             template_wamid = data_['messages'][0]['id']
+            #             ChatMessage.objects.create(
+            #                 conversation_id=conversation,
+            #                 user_id=user,
+            #                 content_type="template",
+            #                 content=data_e['content_template'],
+            #                 wamid=template_wamid
+            #             )
+            #             analytics_batch.append(AnalyticsCampaign(
+            #                 account_id=account,
+            #                 campaign_id=campaign,
+            #                 contact=contact,
+            #                 status_message='sent',
+            #                 error_message=None
+            #             ))
+            #             sent_count += 1
+            #         else:
+            #             error_message = data_.get('error', {}).get('message', 'Unknown error')
+            #             analytics_batch.append(AnalyticsCampaign(
+            #                 account_id=account,
+            #                 campaign_id=campaign,
+            #                 contact=contact,
+            #                 status_message='failed',
+            #                 error_message=error_message
+            #             ))
+            #             failed_count += 1
                         
-                except requests.exceptions.RequestException as e:
-                    analytics_batch.append(AnalyticsCampaign(
-                        account_id=account,
-                        campaign_id=campaign,
-                        contact=contact,
-                        status_message='failed',
-                        error_message=str(e)
-                    ))
-                    failed_count += 1
+            #     except requests.exceptions.RequestException as e:
+            #         analytics_batch.append(AnalyticsCampaign(
+            #             account_id=account,
+            #             campaign_id=campaign,
+            #             contact=contact,
+            #             status_message='failed',
+            #             error_message=str(e)
+            #         ))
+            #         failed_count += 1
             
-            # Bulk create analytics for better performance
-            if analytics_batch:
-                AnalyticsCampaign.objects.bulk_create(analytics_batch, batch_size=100)
+            # # Bulk create analytics for better performance
+            # if analytics_batch:
+            #     AnalyticsCampaign.objects.bulk_create(analytics_batch, batch_size=100)
         
         # Update campaign statistics
         campaign.failed_count = failed_count

@@ -93,10 +93,10 @@ class ListMemberPermissions(BasePermission):
 
         if request.user.role_user == 'admin':
             return True
-        elif request.method == 'GET':
-            return request.user.has_perm('api.can_reassign_for_own_chat')
-        elif request.methode == 'GET':
-            return request.user.has_perm('api.can_reassign_for_all_chat')
+        elif request.method == 'GET' and request.user.has_perm('api.can_reassign_for_own_chat') :
+            return True
+        elif request.method == 'GET' and request.user.has_perm('api.can_reassign_for_all_chat'):
+            return True
         else:
             return False
         

@@ -35,13 +35,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         query_string = self.scope['query_string'].decode()
         query_params = dict(url_parser.parse_qsl(query_string))
         self.is_from_bot = query_params.get('from_bot')
+        self.broadcast = query_params.get('broadcast')
 
         # Set room_group_name based on account to prevent cross-account message leakage
         self.room_group_name = f"chat_{self.account}"
 
         if self.user and self.user.is_authenticated:
             account = await self.db_helpers._get_account(self.account)
-            await self._handle_authenticated_connection(account)
+            await self._handle_authenticated_connection(account, self.broadcast)
         elif self.is_from_bot == 'False':
             await self._handle_unauthenticated_bot_connection()
         else:
@@ -54,22 +55,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    async def _handle_authenticated_connection(self, account) -> None:
+    async def _handle_authenticated_connection(self, account, broadcast) -> None:
         """Handle connection for authenticated users."""
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
+        if not broadcast:
+            conversations = await self.db_helpers.get_conversations(account)
 
-        conversations = await self.db_helpers.get_conversations(account)
-
-        for conversation in conversations:
-            last_message = await self.db_helpers.get_last_message(conversation.get('conversation_id'))
-            if not last_message or (timezone.now() - last_message.created_at).seconds > 86400:
-                await self.db_helpers.archive_conversation(conversation.get('conversation_id'))
-        print('my name is jacoub')
-        await self.send(json.dumps({
-            "type": MessageType.CONVERSATION,
-            "conversation": conversations
-        }))
+            for conversation in conversations:
+                last_message = await self.db_helpers.get_last_message(conversation.get('conversation_id'))
+                if not last_message or (timezone.now() - last_message.created_at).seconds > 86400:
+                    await self.db_helpers.archive_conversation(conversation.get('conversation_id'))
+            await self.send(json.dumps({
+                "type": MessageType.CONVERSATION,
+                "conversation": conversations
+            }))
 
     async def _handle_unauthenticated_bot_connection(self) -> None:
         """Handle connection for unauthenticated bot requests."""
@@ -98,7 +98,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Receive and route incoming WebSocket messages."""
         data = json.loads(text_data)
         content_type = data.get("content_type")
-        print(f"jjjjjjjjjj {content_type}")
 
         handler_mapping = {
             ContentType.BOT_INTEGRATION: self.bot_integration.handle_bot_integration,

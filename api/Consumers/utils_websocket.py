@@ -199,8 +199,8 @@ def read_receipt(channel_id, message_id, conversation_id, status, account):
 def send_template_message(content, conversation_id, template_info, channel_id, account_id, campaign_id, user):
     """Send template via WebSocket."""
     token = RefreshToken.for_user(user)
-    # url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?from_bot=True&token={token.access_token}&broadcast=True"
-    url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?from_bot=True&token={token.access_token}&broadcast=True"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?from_bot=True&token={token.access_token}&broadcast=True"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?from_bot=True&token={token.access_token}&broadcast=True"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {

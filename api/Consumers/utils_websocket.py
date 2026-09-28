@@ -196,11 +196,11 @@ def read_receipt(channel_id, message_id, conversation_id, status, account):
         pass
 
 
-def send_template_message(content, conversation_id, template_info, channel_id, account_id, campaign_id):
+def send_template_message(content, conversation_id, template_info, channel_id, account_id, campaign_id, user):
     """Send template via WebSocket."""
     # account_id = account.account_id if hasattr(account, 'account_id') else account
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?token=&from_bot=False"
+    # url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
+    url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?token=&from_bot=False"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
@@ -217,7 +217,8 @@ def send_template_message(content, conversation_id, template_info, channel_id, a
         "status_message": "pending",
         'broadcast':"True",
         "account_id": account_id,
-        "campaign_id":campaign_id
+        "campaign_id":campaign_id,
+        "user": user
 
     }
     try:

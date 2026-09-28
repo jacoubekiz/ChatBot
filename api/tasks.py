@@ -75,9 +75,10 @@ def send_whatsapp_campaign(self, payload: str) -> Dict[str, Any]:
                     data_e['content_template'],
                     conversation.conversation_id,
                     template_info,
-                    channel.channel_id,
+                    channel.channle_id,
                     account.account_id,
-                    campaign.campaign_id
+                    campaign.campaign_id,
+                    user
                 )
                 # Use connection pooling and add timeout
             #     url = f"https://graph.facebook.com/v22.0/{channel.phone_number_id}/messages"

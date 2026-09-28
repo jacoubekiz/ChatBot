@@ -94,7 +94,7 @@ class MessageHandlers:
 
             message_id = await self._create_chat_message(
                 conversation_id=await self._get_conversation(data["conversation_id"]),
-                user=self.consumer.user,
+                user= data['user'] if data['broadcast'] == 'True' else self.consumer.user,
                 content_type=data["content_type"],
                 content=data["content"],
                 whatsapp_message_id=whatsapp_message_id
@@ -120,12 +120,13 @@ class MessageHandlers:
         # Store failed message in database with error details
             await self._create_failed_message(
                 conversation_id=await self._get_conversation(data["conversation_id"]),
-                user=self.consumer.user,
+                user=data['user'] if data['broadcast'] == 'True' else self.consumer.user,
                 content_type=data["content_type"],
                 content=data["content"],
                 error_message=error_message
             )
             if data['broadcast'] == 'True':
+                print("hello my name is jacoub")
                 await self._create_analytics_campaign(
                     account= await self._get_account_id(data['account_id']),
                     campaing = await self._get_campaign_id(data['campaign_id']),

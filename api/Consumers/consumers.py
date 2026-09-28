@@ -65,7 +65,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             last_message = await self.db_helpers.get_last_message(conversation.get('conversation_id'))
             if not last_message or (timezone.now() - last_message.created_at).seconds > 86400:
                 await self.db_helpers.archive_conversation(conversation.get('conversation_id'))
-
+        print('my name is jacoub')
         await self.send(json.dumps({
             "type": MessageType.CONVERSATION,
             "conversation": conversations
@@ -98,6 +98,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Receive and route incoming WebSocket messages."""
         data = json.loads(text_data)
         content_type = data.get("content_type")
+        print(f"jjjjjjjjjj {content_type}")
 
         handler_mapping = {
             ContentType.BOT_INTEGRATION: self.bot_integration.handle_bot_integration,

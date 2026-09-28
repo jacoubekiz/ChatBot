@@ -77,6 +77,7 @@ class MessageHandlers:
     async def handle_template_message(self, data: dict) -> None:
         """Handle WhatsApp template messages."""
         # try:
+        print('lkdflkjsdflkjsdlkfjsdlkfjskldfjslkdfjslkdfjl')
         channel = await self._get_channel(data['channel_id'])
 
         response = await sync_to_async(requests.post)(
@@ -89,12 +90,13 @@ class MessageHandlers:
         )
 
         response_data = await sync_to_async(response.json)()
+        print(response_data)
         if 'messages' in response_data:
             whatsapp_message_id = response_data['messages'][0]['id']
 
             message_id = await self._create_chat_message(
                 conversation_id=await self._get_conversation(data["conversation_id"]),
-                user= data['user'] if data['broadcast'] == 'True' else self.consumer.user,
+                user= self.consumer.user,
                 content_type=data["content_type"],
                 content=data["content"],
                 whatsapp_message_id=whatsapp_message_id
@@ -102,8 +104,8 @@ class MessageHandlers:
             if data['broadcast'] == 'True':
                 await self._create_analytics_campaign(
                     account= await self._get_account_id(data['account_id']),
-                    campaing = await self._get_campaign_id(data['campaign_id']),
-                    contact = await self.get_contact_id(message_id.message_id),
+                    campaign = await self._get_campaign_id(data['campaign_id']),
+                    contact = await self._get_contact_id(message_id.message_id),
                     status_message = 'sent',
                     error_message = None
                 )
@@ -118,9 +120,9 @@ class MessageHandlers:
         else:
             error_message = response_data.get('error', {}).get('message', 'Unknown error')
         # Store failed message in database with error details
-            await self._create_failed_message(
+            message_id = await self._create_failed_message(
                 conversation_id=await self._get_conversation(data["conversation_id"]),
-                user=data['user'] if data['broadcast'] == 'True' else self.consumer.user,
+                user=self.consumer.user,
                 content_type=data["content_type"],
                 content=data["content"],
                 error_message=error_message
@@ -129,8 +131,8 @@ class MessageHandlers:
                 print("hello my name is jacoub")
                 await self._create_analytics_campaign(
                     account= await self._get_account_id(data['account_id']),
-                    campaing = await self._get_campaign_id(data['campaign_id']),
-                    contact = await self.get_contact_id(message_id.message_id),
+                    campaign = await self._get_campaign_id(data['campaign_id']),
+                    contact = await self._get_contact_id(message_id.message_id),
                     status_message = 'failed',
                     error_message = error_message
                 )
@@ -244,3 +246,9 @@ class MessageHandlers:
     def get_contact_id(self, messgae_id):
         message_id = get_object_or_404(ChatMessage, message_id = messgae_id)
         return message_id.conversation_id.contact_id.contact_id
+
+
+    @database_sync_to_async
+    def _get_contact_id(self, messgae_id):
+        message_id = get_object_or_404(ChatMessage, message_id = messgae_id)
+        return message_id.conversation_id.contact_id

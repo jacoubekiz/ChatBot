@@ -1,6 +1,6 @@
 import json
 import websocket
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id, account):
     """Connect to WebSocket and send bot integration message."""
@@ -198,15 +198,16 @@ def read_receipt(channel_id, message_id, conversation_id, status, account):
 
 def send_template_message(content, conversation_id, template_info, channel_id, account_id, campaign_id, user):
     """Send template via WebSocket."""
+    token = RefreshToken.for_user(user)
     # account_id = account.account_id if hasattr(account, 'account_id') else account
-    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
-    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?token=&from_bot=False"
+    url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?from_bot=True&token={token.access_token}"
+    # url_ws = f"ws://127.0.0.1:8000/ws/chat/{account_id}/?from_bot=True&token={token.access_token}"
     ws = websocket.WebSocket()
     ws.connect(url_ws)
     data = {
         "content": content,
         "content_type": "template",
-        # "message_id": "86efd324-1e75-42ce-926b-30f0c17c1609",
+        "message_id": "86efd324-1e75-42ce-926b-30f0c17c1609",
         "front_id": "90332784-0459-4e53-9ac4-4b69e33f63ed",
         "from_bot": "True",
         "time": "2026-07-01T11:14:13.302Z",
@@ -218,7 +219,7 @@ def send_template_message(content, conversation_id, template_info, channel_id, a
         'broadcast':"True",
         "account_id": account_id,
         "campaign_id":campaign_id,
-        "user": user
+        # "user": user
 
     }
     try:

@@ -74,6 +74,6 @@ class CreateCampaignSerializer(serializers.Serializer):
     
     def validate_language_code(self, value):
         valid_codes = ['en', 'en_US', 'ar', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja']
-        if value.lower() not in valid_codes:
+        if value not in valid_codes:
             raise serializers.ValidationError(f"Invalid language code. Must be one of: {valid_codes}")
-        return value.lower()
+        return value

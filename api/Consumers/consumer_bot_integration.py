@@ -598,7 +598,7 @@ class BotIntegration:
                     "media_url": media_url,
                     "caption": caption
                 }
-            await MessageHelpers.broadcast_message(self.consumer, payload)
+                await MessageHelpers.broadcast_message(self.consumer, payload)
             
             user_reply = content
             message_id = await self._create_chat_message(

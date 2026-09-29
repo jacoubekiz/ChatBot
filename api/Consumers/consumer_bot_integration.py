@@ -606,43 +606,43 @@ class BotIntegration:
                     "from_bot":"False",
                     "status_message": "sent"
                 })
-                if r_type == 'name' and len(user_reply) > question['maxRange'] or\
-                r_type == 'phone' and not validate_phone_number(user_reply) or\
-                r_type == 'email' and not validate_email(user_reply) or\
-                r_type == 'number' and not str(user_reply).isdigit():
-                    error_message = question['message']['error']
-                    message_wamid = await sync_to_async(send_message)(
-                        message_content=await sync_to_async(change_occurences)(error_message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
-                        to=chat.conversation_id,
-                        bearer_token=channel.tocken,
-                        wa_id=channel.phone_number_id,
-                        chat_id=chat.id,
-                        platform=platform,
-                        question=question)
-                    message_id = await self._create_chat_message(
-                        conversation_id=await self._get_conversation(data["conversation_id"]),
-                        user=None,
-                        content_type="text",
-                        content=error_message,
-                        whatsapp_message_id=message_wamid['messages'][0]['id'],
-                    )
-                    await self._broadcast_message_flow({
-                        "conversation_id": conversation_id,
-                        "phoneNumber":await self._get_phone_number(conversation_id),
-                        "content": error_message,
-                        "created_at": f"{message_id.created_at}",
-                        "content_type": "text",
-                        "wamid": message_wamid['messages'][0]['id'],
-                        "message_id": message_id.message_id,
-                        "from_bot":"True",
-                        "status_message": "sent"
-                    })
-                    return True
-                else:
-                    account = await self._get_account(data['channel_id'])
-                    attr = await self._create_attribute(attribute_name, account)
-                    await self._save_custome_attribute(attr, chat, user_reply)
-                    await self._update_chat_status(chat, next_question_id)
+            if r_type == 'name' and len(user_reply) > question['maxRange'] or\
+            r_type == 'phone' and not validate_phone_number(user_reply) or\
+            r_type == 'email' and not validate_email(user_reply) or\
+            r_type == 'number' and not str(user_reply).isdigit():
+                error_message = question['message']['error']
+                message_wamid = await sync_to_async(send_message)(
+                    message_content=await sync_to_async(change_occurences)(error_message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True),
+                    to=chat.conversation_id,
+                    bearer_token=channel.tocken,
+                    wa_id=channel.phone_number_id,
+                    chat_id=chat.id,
+                    platform=platform,
+                    question=question)
+                message_id = await self._create_chat_message(
+                    conversation_id=await self._get_conversation(data["conversation_id"]),
+                    user=None,
+                    content_type="text",
+                    content=error_message,
+                    whatsapp_message_id=message_wamid['messages'][0]['id'],
+                )
+                await self._broadcast_message_flow({
+                    "conversation_id": conversation_id,
+                    "phoneNumber":await self._get_phone_number(conversation_id),
+                    "content": error_message,
+                    "created_at": f"{message_id.created_at}",
+                    "content_type": "text",
+                    "wamid": message_wamid['messages'][0]['id'],
+                    "message_id": message_id.message_id,
+                    "from_bot":"True",
+                    "status_message": "sent"
+                })
+                return True
+            else:
+                account = await self._get_account(data['channel_id'])
+                attr = await self._create_attribute(attribute_name, account)
+                await self._save_custome_attribute(attr, chat, user_reply)
+                await self._update_chat_status(chat, next_question_id)
 
     async def _retype_document(self, channel, chat, question, message, platform, conversation_id, data, next_question_id):
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)

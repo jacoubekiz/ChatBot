@@ -575,18 +575,18 @@ class BotIntegration:
                 )
             
             # Broadcast via websocket
-            if content_type in ['text', 'button']:
-                payload = {
-                    "conversation_id": conversation_id,
-                    "content": content,
-                    "content_type": content_type,
-                    "wamid": wamid,
-                    "created_at": f"{chat_message.created_at}",
-                    "message_id": chat_message.message_id,
-                    "from_bot": "False",
-                    "status_message": "sent"
-                }
-            elif content_type in ['image', 'video', 'audio', 'document']:
+            # if content_type in ['text', 'button']:
+            #     payload = {
+            #         "conversation_id": conversation_id,
+            #         "content": content,
+            #         "content_type": content_type,
+            #         "wamid": wamid,
+            #         "created_at": f"{chat_message.created_at}",
+            #         "message_id": chat_message.message_id,
+            #         "from_bot": "False",
+            #         "status_message": "sent"
+            #     }
+            # elif content_type in ['image', 'video', 'audio', 'document']:
                 payload = {
                     "conversation_id": conversation_id,
                     "content_type": content_type,

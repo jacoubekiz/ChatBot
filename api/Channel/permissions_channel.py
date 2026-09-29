@@ -36,7 +36,10 @@ class ChannelPermissions(BasePermission):
         # Allow superusers
         if request.user.is_superuser:
             return True
-        
+
+        if request.user.role_user == 'admin':
+            return True
+            
         # Check if user has access to the account
         if hasattr(obj, 'account_id') and obj.account_id:
             user_account = Account.objects.filter(user=request.user.manager.id).first()

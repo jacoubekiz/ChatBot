@@ -22,13 +22,16 @@ class APIPermissions(BasePermission):
             return request.user.has_perm('api.change_api')
         elif request.method == 'DELETE':
             return request.user.has_perm('api.delete_api')
-        return False
+        # return False
     
     def has_object_permission(self, request, view, obj):
         if not request.user or not request.user.is_authenticated:
             return False
         
         if request.user.is_superuser:
+            return True
+        
+        if request.user.role_user == 'admin':
             return True
         
         # Check if user has access to the account

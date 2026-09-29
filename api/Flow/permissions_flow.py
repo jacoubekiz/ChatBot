@@ -17,7 +17,6 @@ class FlowPermissions(BasePermission):
             return True
 
         if request.method == 'GET':
-            print(request.user.user_permissions)
             return request.user.has_perm('api.view_flow')
         elif request.method == 'POST':
             return request.user.has_perm('api.add_flow')
@@ -33,7 +32,8 @@ class FlowPermissions(BasePermission):
         
         if request.user.is_superuser:
             return True
-        
+        if request.user.role_user == 'admin':
+            return True
         # Check if user has access to the account
         if hasattr(obj, 'account') and obj.account:
             if obj.account != request.user.account_set.first():

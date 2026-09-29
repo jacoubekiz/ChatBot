@@ -37,6 +37,12 @@ class BotIntegration:
         conversation_id = data.get("conversation_id")
         source_id = data.get("data", {}).get("source_id")
         platform = 'whatsapp'
+        content_type = data.get("data", {}).get('content_type', 'text')
+        media_url = data.get("data", {}).get('media_url')
+        media_mime_type = data.get("data", {}).get('media_mime_type')
+        media_sha256_hash = data.get("data", {}).get('media_sha256_hash')
+        caption = data.get("data", {}).get('caption')
+        
         channel = await self._get_channel(data['channel_id'])
 
         flow = await self._get_flow_by_trigger(channel, content, source_id)
@@ -59,26 +65,54 @@ class BotIntegration:
                 await database_sync_to_async(chat.update_state)('start')
                 
                 # Store message in database
-                # conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
-                # chat_message = await database_sync_to_async(ChatMessage.objects.create)(
-                #     conversation_id=conversation,
-                #     content_type='text',
-                #     content=content,
-                #     from_message=contact_name,
-                #     wamid="message_wamid"
-                # )
+                conversation = await database_sync_to_async(Conversation.objects.select_related('contact_id', 'account_id').get)(conversation_id=conversation_id)
+                contact = conversation.contact_id
                 
-                # # Broadcast via websocket
-                # payload = {
-                #     "conversation_id": conversation_id,
-                #     "content": content,
-                #     "content_type": "text",
-                #     "wamid": "message_wamid",
-                #     "created_at": f"{chat_message.created_at}",
-                #     "message_id": chat_message.message_id,
-                #     "from_bot": "false",
-                #     "status_message": "sent"
-                # }
+                if content_type in ['text', 'button']:
+                    chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type=content_type,
+                        content=content,
+                        from_message=contact.name or str(contact.phone_number),
+                        wamid=wamid
+                    )
+                elif content_type in ['image', 'video', 'audio', 'document']:
+                    chat_message = await database_sync_to_async(ChatMessage.objects.create)(
+                        conversation_id=conversation,
+                        content_type=content_type,
+                        from_message=contact.name or str(contact.phone_number),
+                        wamid=wamid,
+                        media_url=media_url,
+                        media_mime_type=media_mime_type,
+                        media_sha256_hash=media_sha256_hash,
+                        caption=caption
+                    )
+                
+                # Broadcast via websocket
+                if content_type in ['text', 'button']:
+                    payload = {
+                        "conversation_id": conversation_id,
+                        "content": content,
+                        "content_type": content_type,
+                        "wamid": wamid,
+                        "created_at": f"{chat_message.created_at}",
+                        "message_id": chat_message.message_id,
+                        "from_bot": "False",
+                        "status_message": "sent"
+                    }
+                elif content_type in ['image', 'video', 'audio', 'document']:
+                    payload = {
+                        "conversation_id": conversation_id,
+                        "content_type": content_type,
+                        "wamid": wamid,
+                        "created_at": f"{chat_message.created_at}",
+                        "message_id": chat_message.message_id,
+                        "from_bot": "False",
+                        "status_message": "sent",
+                        "media_url": media_url,
+                        "caption": caption
+                    }
+                await MessageHelpers.broadcast_message(self.consumer, payload)
                 # await MessageHelpers.broadcast_message(self.consumer, payload)
 
             if chat.state == 'end':

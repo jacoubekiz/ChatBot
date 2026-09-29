@@ -238,7 +238,24 @@ def handle_incoming_message(value: dict) -> dict:
         # In bot state, only send to bot integration - it will handle storage and display
         message = ChatMessage.objects.filter(Q(conversation_id=conversation.conversation_id) & ~Q(from_message="bot")).first()
         if not message:
-            handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name )
+            if content_type in ['text', 'button']:
+                handle_text_message(conversation, contact, message_data, content, wamid, account, channel.name, channel.channle_id, name )
+            elif content_type in ['image', 'video', 'audio', 'document']:
+                handle_media_message(conversation, contact, channel, message_data, content_type, wamid, account)
+        
+        # Prepare media data if content type is media
+        media_url = None
+        media_mime_type = None
+        media_sha256_hash = None
+        caption = None
+        
+        if content_type in ['image', 'video', 'audio', 'document']:
+            media_data = extract_media_data(message_data[content_type])
+            media_url = download_media(media_data['id'], channel.tocken, get_media_file_name(content_type, media_data))
+            media_mime_type = media_data['mime_type']
+            media_sha256_hash = media_data['sha256']
+            caption = media_data['caption']
+        
         connect_web_socket(
             channel.channle_id,
             conversation.conversation_id,
@@ -247,7 +264,12 @@ def handle_incoming_message(value: dict) -> dict:
             wamid,
             contact_name,
             contact.contact_id,
-            account
+            account,
+            content_type,
+            media_url,
+            media_mime_type,
+            media_sha256_hash,
+            caption
         )
     else:
         # In non-bot state, store message and broadcast to UI

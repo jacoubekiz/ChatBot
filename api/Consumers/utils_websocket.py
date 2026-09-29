@@ -2,7 +2,7 @@ import json
 import websocket
 from rest_framework_simplejwt.tokens import RefreshToken
 
-def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id, account):
+def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, contact_name, contact_id, account, content_type='text', media_url=None, media_mime_type=None, media_sha256_hash=None, caption=None):
     """Connect to WebSocket and send bot integration message."""
     account_id = account.account_id if hasattr(account, 'account_id') else account
     url_ws = f"wss://chatapi.icsl.me/ws/chat/{account_id}/?token=&from_bot=False"
@@ -17,6 +17,11 @@ def connect_web_socket(channel_id, conversation_id, source_id, content, wamid, c
         "data": {
             "content": f"{content}",
             "source_id": f"{source_id}",
+            "content_type": content_type,
+            "media_url": media_url,
+            "media_mime_type": media_mime_type,
+            "media_sha256_hash": media_sha256_hash,
+            "caption": caption,
             "conversation": {
                 "contact_inbox": {
                     "source_id": f"{source_id}"

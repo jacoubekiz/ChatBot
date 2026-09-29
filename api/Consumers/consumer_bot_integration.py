@@ -606,6 +606,7 @@ class BotIntegration:
                     "from_bot":"False",
                     "status_message": "sent"
                 })
+            user_reply = content
             if r_type == 'name' and len(user_reply) > question['maxRange'] or\
             r_type == 'phone' and not validate_phone_number(user_reply) or\
             r_type == 'email' and not validate_email(user_reply) or\

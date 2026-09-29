@@ -77,7 +77,6 @@ class MessageHandlers:
     async def handle_template_message(self, data: dict) -> None:
         """Handle WhatsApp template messages."""
         # try:
-        print('lkdflkjsdflkjsdlkfjsdlkfjskldfjslkdfjslkdfjl')
         channel = await self._get_channel(data['channel_id'])
 
         response = await sync_to_async(requests.post)(
@@ -90,7 +89,6 @@ class MessageHandlers:
         )
 
         response_data = await sync_to_async(response.json)()
-        print(response_data)
         if 'messages' in response_data:
             whatsapp_message_id = response_data['messages'][0]['id']
 

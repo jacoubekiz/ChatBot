@@ -215,7 +215,7 @@ def send_template_message(content, conversation_id, template_info, channel_id, a
         "template_info": template_info,
         "channel_id": channel_id,
         "status_message": "pending",
-        'broadcast':"True",
+        "broadcast":"True",
         "account_id": account_id,
         "campaign_id":campaign_id,
 

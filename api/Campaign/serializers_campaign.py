@@ -73,7 +73,7 @@ class CreateCampaignSerializer(serializers.Serializer):
     template_parameters = serializers.JSONField(required=False, allow_null=True, help_text="Template parameters")
     
     def validate_language_code(self, value):
-        valid_codes = ['en', 'ar', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja']
+        valid_codes = ['en', 'en_US', 'ar', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja']
         if value.lower() not in valid_codes:
             raise serializers.ValidationError(f"Invalid language code. Must be one of: {valid_codes}")
         return value.lower()

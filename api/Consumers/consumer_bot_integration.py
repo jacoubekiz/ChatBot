@@ -647,105 +647,168 @@ class BotIntegration:
 
     async def _retype_document(self, channel, chat, question, message, platform, conversation_id, data, next_question_id):
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-        message_wamid = await sync_to_async(send_message)(
-            message_content=message_con,
-            to=chat.conversation_id,
-            bearer_token=channel.tocken,
-            type='document',
-            source=question['source'],
-            beem_media_id=question.get('beem_media_id'),
-            wa_id=channel.phone_number_id,
-            chat_id=chat.id,
-            platform=platform,
-            question=question)
-        message_id = await self._create_chat_media_message(
-            conversation_id= await self._get_conversation(conversation_id),
-            user=None,
-            media_type="document",
-            caption=message_con or "",
-            whatsapp_message_id=message_wamid['messages'][0]['id'],
-            file_path= question['source'],
-        )
-        await self._broadcast_message_flow({
-            "conversation_id": conversation_id,
-            "phoneNumber":await self._get_phone_number(conversation_id),
-            "content": message_con,
-            "created_at": f"{message_id.created_at}",
-            "content_type": "document",
-            "wamid": message_wamid['messages'][0]['id'],
-            "message_id": message_id.message_id,
-            "from_bot":"True",
-            "status_message": "sent"
-        })
-        await self._update_chat_status(chat, next_question_id)
+        try:
+            message_wamid = await sync_to_async(send_message)(
+                message_content=message_con,
+                to=chat.conversation_id,
+                bearer_token=channel.tocken,
+                type='document',
+                source=question['source'],
+                beem_media_id=question.get('beem_media_id'),
+                wa_id=channel.phone_number_id,
+                chat_id=chat.id,
+                platform=platform,
+                question=question)
+            
+            # Check if message_wamid contains messages before accessing
+            if not message_wamid or 'messages' not in message_wamid or not message_wamid['messages']:
+                await self._create_failed_message(
+                    conversation_id=await self._get_conversation(conversation_id),
+                    user=None,
+                    content_type="document",
+                    content=message_con,
+                    error_message="No messages in response from WhatsApp API"
+                )
+                return
+            
+            message_id = await self._create_chat_media_message(
+                conversation_id= await self._get_conversation(conversation_id),
+                user=None,
+                media_type="document",
+                caption=message_con or "",
+                whatsapp_message_id=message_wamid['messages'][0]['id'],
+                file_path= question['source'],
+            )
+            await self._broadcast_message_flow({
+                "conversation_id": conversation_id,
+                "phoneNumber":await self._get_phone_number(conversation_id),
+                "content": message_con,
+                "created_at": f"{message_id.created_at}",
+                "content_type": "document",
+                "wamid": message_wamid['messages'][0]['id'],
+                "message_id": message_id.message_id,
+                "from_bot":"True",
+                "status_message": "sent"
+            })
+            await self._update_chat_status(chat, next_question_id)
+        except Exception as e:
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(conversation_id),
+                user=None,
+                content_type="document",
+                content=message_con,
+                error_message=str(e)
+            )
 
     async def _retype_image(self, message, chat, channel, question, platform, conversation_id, data, next_question_id):
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-        message_wamid = await sync_to_async(send_message)(
-            message_content=message_con,
-            to=chat.conversation_id,
-            bearer_token=channel.tocken,
-            wa_id=channel.phone_number_id,
-            type='image',
-            source=question['source'],
-            beem_media_id=question.get('beem_media_id'), 
-            chat_id=chat.id,
-            platform=platform,
-            question=question
-        )
-        message_id = await database_sync_to_async(ChatMessage.objects.create)(
-            conversation_id= await self._get_conversation(conversation_id),
-            user=None,
-            media_type="image",
-            caption=message_con or "",
-            wamid=message_wamid['messages'][0]['id'],
-            media_url= question['source'],
-        )
-        await self._broadcast_message_flow({
-            "conversation_id": conversation_id,
-            "content": message_con,
-            "phoneNumber":await self._get_phone_number(conversation_id),
-            "created_at": f"{message_id.created_at}",
-            "content_type": "image",
-            "wamid": message_wamid['messages'][0]['id'],
-            "message_id": message_id.message_id,
-            "from_bot":"True",
-            "status_message": "sent"
-        })
-        await self._update_chat_status(chat, next_question_id)
+        try:
+            message_wamid = await sync_to_async(send_message)(
+                message_content=message_con,
+                to=chat.conversation_id,
+                bearer_token=channel.tocken,
+                wa_id=channel.phone_number_id,
+                type='image',
+                source=question['source'],
+                beem_media_id=question.get('beem_media_id'), 
+                chat_id=chat.id,
+                platform=platform,
+                question=question
+            )
+            
+            # Check if message_wamid contains messages before accessing
+            if not message_wamid or 'messages' not in message_wamid or not message_wamid['messages']:
+                await self._create_failed_message(
+                    conversation_id=await self._get_conversation(conversation_id),
+                    user=None,
+                    content_type="image",
+                    content=message_con,
+                    error_message="No messages in response from WhatsApp API"
+                )
+                return
+            
+            message_id = await database_sync_to_async(ChatMessage.objects.create)(
+                conversation_id= await self._get_conversation(conversation_id),
+                user=None,
+                media_type="image",
+                caption=message_con or "",
+                wamid=message_wamid['messages'][0]['id'],
+                media_url= question['source'],
+            )
+            await self._broadcast_message_flow({
+                "conversation_id": conversation_id,
+                "content": message_con,
+                "phoneNumber":await self._get_phone_number(conversation_id),
+                "created_at": f"{message_id.created_at}",
+                "content_type": "image",
+                "wamid": message_wamid['messages'][0]['id'],
+                "message_id": message_id.message_id,
+                "from_bot":"True",
+                "status_message": "sent"
+            })
+            await self._update_chat_status(chat, next_question_id)
+        except Exception as e:
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(conversation_id),
+                user=None,
+                content_type="image",
+                content=message_con,
+                error_message=str(e)
+            )
 
     async def _retype_audio_vedio_steker(self, message, chat, channel, question, platform, r_type, conversation_id, data, next_question_id):
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
-        message_wamid = await sync_to_async(send_message)(
-            message_content=message_con,
-            to=chat.conversation_id,
-            bearer_token=channel.tocken,
-            wa_id=channel.phone_number_id,
-            type=r_type,
-            source=question['source'], 
-            chat_id=chat.id,
-            platform=platform,
-            question=question)
-        message_id = await self._create_chat_media_message(
-            conversation_id= await self._get_conversation(conversation_id),
-            user=None,
-            media_type=r_type,
-            caption=message_con or "",
-            whatsapp_message_id=message_wamid['messages'][0]['id'],
-            file_path= question['source'],
-        )
-        await self._broadcast_message_flow({
-            "conversation_id": conversation_id,
-            "phoneNumber":await self._get_phone_number(conversation_id),
-            "content": message_con,
-            "created_at": f"{message_id.created_at}",
-            "content_type": "audio",
-            "wamid": message_wamid['messages'][0]['id'],
-            "message_id": message_id.message_id,
-            "from_bot":"True",
-            "status_message": "sent"
-        })
-        await self._update_chat_status(chat, next_question_id)
+        try:
+            message_wamid = await sync_to_async(send_message)(
+                message_content=message_con,
+                to=chat.conversation_id,
+                bearer_token=channel.tocken,
+                wa_id=channel.phone_number_id,
+                type=r_type,
+                source=question['source'], 
+                chat_id=chat.id,
+                platform=platform,
+                question=question)
+            
+            # Check if message_wamid contains messages before accessing
+            if not message_wamid or 'messages' not in message_wamid or not message_wamid['messages']:
+                await self._create_failed_message(
+                    conversation_id=await self._get_conversation(conversation_id),
+                    user=None,
+                    content_type=r_type,
+                    content=message_con,
+                    error_message="No messages in response from WhatsApp API"
+                )
+                return
+            
+            message_id = await self._create_chat_media_message(
+                conversation_id= await self._get_conversation(conversation_id),
+                user=None,
+                media_type=r_type,
+                caption=message_con or "",
+                whatsapp_message_id=message_wamid['messages'][0]['id'],
+                file_path= question['source'],
+            )
+            await self._broadcast_message_flow({
+                "conversation_id": conversation_id,
+                "phoneNumber":await self._get_phone_number(conversation_id),
+                "content": message_con,
+                "created_at": f"{message_id.created_at}",
+                "content_type": r_type,
+                "wamid": message_wamid['messages'][0]['id'],
+                "message_id": message_id.message_id,
+                "from_bot":"True",
+                "status_message": "sent"
+            })
+            await self._update_chat_status(chat, next_question_id)
+        except Exception as e:
+            await self._create_failed_message(
+                conversation_id=await self._get_conversation(conversation_id),
+                user=None,
+                content_type=r_type,
+                content=message_con,
+                error_message=str(e)
+            )
 
     async def _retype_live_chat(self, message, chat, channel, question, platform, conversation_id, data):
         message_con = await sync_to_async(change_occurences)(message, pattern=r'\{\{(\w+)\}\}', chat_id=chat.id, sql=True)
@@ -852,6 +915,19 @@ class BotIntegration:
             caption=caption or "",
             wamid=whatsapp_message_id,
             media_url=file_path
+        )
+
+    @database_sync_to_async
+    def _create_failed_message(self, conversation_id, user, content_type: str,
+                               content: str, error_message: str) -> int:
+        """Create a failed message record."""
+        return ChatMessage.objects.create(
+            conversation_id=conversation_id,
+            user_id=user,
+            content_type=content_type,
+            content=content,
+            error_message=error_message,
+            status_message="failed"
         )
 
     @database_sync_to_async

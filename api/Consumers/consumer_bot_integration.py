@@ -109,10 +109,11 @@ class BotIntegration:
                 )
                 # Broadcast via websocket
                 payload = {
+                    "phoneNumber": await self._get_phone_number(conversation_id),
                     "conversation_id": conversation_id,
                     "content": defualt_message,
                     "content_type": "text",
-                    "wamid": message_wamid,
+                    "wamid": message_wamid['messages'][0]['id'],
                     "created_at": f"{chat_message.created_at}",
                     "message_id": chat_message.message_id,
                     "from_bot": "true",
